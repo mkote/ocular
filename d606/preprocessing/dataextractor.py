@@ -3,6 +3,8 @@ import numpy as np
 from numpy import *
 from collections import namedtuple
 
+from sklearn import preprocessing
+
 PATH = '../matfiles/'  # Path to math files
 HERTZ = 250  # Frequency of obtained data
 TRIAL_BEGINNING = 700  # 2.8s * 250Hz
