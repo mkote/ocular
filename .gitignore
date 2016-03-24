@@ -18,6 +18,8 @@
 .idea/sqlDataSources.xml
 .idea/dynamic.xml
 .idea/uiDesigner.xml
+.idea/*
+.idea
 
 # Gradle:
 .idea/gradle.xml
@@ -118,3 +120,6 @@ fabric.properties
 ### Intellij Patch ###
 *.iml
 *.mat
+
+### Pycharm
+*.pyc
