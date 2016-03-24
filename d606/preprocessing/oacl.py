@@ -91,9 +91,25 @@ def find_time_indexes(relative_heights, peak_range):
     return time_indexes_in_range
 
 
-def artifact_signals():
-    pass
+def artifact_signals(time_indexes, smoothed_data):
+    artifact_signal = []
+    for t in time_indexes:
+        # TODO: Here lives some ugly code. Maybe need refactoring.
+        left = smoothed_data[0:t]
+        right = smoothed_data[t+1:len(smoothed_data)]
+        # Find the zero in the reversed list and find offset in original list.
+        b = len(left) - first_zero_point(left[::-1])
+        a = first_zero_point(right)
+        if b < t < a:
+            artifact_signal.append(smoothed_data[t])
+        else:
+            artifact_signal.append(0)
+    return artifact_signal
 
+def first_zero_point(eeg_series):
+    for i in range(0, len(eeg_series)):
+        if eeg_series[i] == 0:
+            return i+1  # Add one because we want an offset, not index.
 
 def maf_example():
     eeg_data = load_data(1, 'T')

@@ -98,10 +98,18 @@ class TestOACLfunctions(unittest.TestCase):
         # Arrange
         data = [79, 79, 20, 41, 41, 92, 92, 6, 53]
         peak_range = (30,70)
-        expected = [3, 4, 5, 8, 9]
+        expected = [3+1, 4+1, 8+1]
 
         # Act
         actual = find_time_indexes(data, peak_range)
 
+        # Assert
+        assert_array_almost_equal(expected, actual)
+
+    def test_artifact_signal(self):
+        # Arrange
+        data = None
+        expected = None
+        # Act
         # Assert
         pass
