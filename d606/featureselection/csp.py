@@ -10,7 +10,7 @@ from d606.preprocessing.dataextractor import *
 # the trials cannot be compared
 
 
-def common_spatial_patterns(*tasks):
+def common_spatial_patterns(tasks):
     if len(tasks) < 2:
         print "Must have at least 2 tasks for filtering."
         return (None,) * len(tasks)
@@ -89,6 +89,7 @@ def spatial_filter(ra, rb):
     return sfa.astype(np.float32)
 
 
+""" For testing purposes
 # load data
 data = load_data(3, 'T')
 matrix, trials, labels, artifacts = data[3]
@@ -97,7 +98,7 @@ matrix, trials, labels, artifacts = data[3]
 matrix, trials = extract_trials(matrix, trials)
 
 # split matrix into array of trials
-matrix = trial_splitter(matrix, trials)
-print len(matrix)
-# feed shit to csp algorithm
-common_spatial_patterns(matrix)
+matrix_list = trial_splitter(matrix, trials)
+
+common_spatial_patterns(matrix_list)
+"""

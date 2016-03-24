@@ -100,8 +100,7 @@ def trial_splitter(matrix, trials):
     """
     matrix_list = []
     trials.append(len(matrix[1]))  # Initialize trials with a end trial
-    print trials
     for i in range(0, len(trials) - 1):
-        matrix_list.append(matrix[:, trials[i]:trials[i + 1]])
+        matrix_list.append(np.transpose([matrix[:, trials[i]:trials[i + 1]]]))
 
     return matrix_list
