@@ -3,7 +3,7 @@ import numpy as np
 from numpy import *
 from collections import namedtuple
 
-PATH = '../matfiles/'  # Path to math files
+PATH = '../../matfiles/'  # Path to math files
 HERTZ = 250  # Frequency of obtained data
 TRIAL_BEGINNING = 700  # 2.8s * 250Hz
 TRIAL_LENGTH = 750  # 3s * 250Hz
@@ -75,13 +75,33 @@ def extract_trials(matrix, trials):
              and a new trial start list
     """
     new_matrix = matrix
-    trials.append(len(matrix))  # Initialize trials with a end trial
+    trials.append(len(matrix[1]))  # Initialize trials with a end trial
     num_trials = len(trials) - 1
 
-    for i, trial in enumerate(reversed(trials[0:48])):
-        new_matrix = delete(new_matrix, s_[trial + JUMP: trials[num_trials - i]], axis=0)
-        new_matrix = delete(new_matrix, s_[trial:trial + TRIAL_BEGINNING], axis=0)
+    for i, trial in enumerate(reversed(trials[0:num_trials])):
+        new_matrix = delete(new_matrix,
+                            s_[trial + JUMP: trials[num_trials - i]],
+                            axis=1)
 
-    new_matrix = delete(new_matrix, s_[0:trials[0]], axis=0)
-    new_trials = [int(x) * 750 for x in range(0, 48)]
+        new_matrix = delete(new_matrix,
+                            s_[trial:trial + TRIAL_BEGINNING],
+                            axis=1)
+
+    new_matrix = delete(new_matrix, s_[0:trials[0]], axis=1)
+    new_trials = [int(x) * TRIAL_LENGTH for x in range(0, 48)]
     return new_matrix, new_trials
+
+
+def trial_splitter(matrix, trials):
+    """
+    :param matrix: numpy matrix
+    :param trials: list of trial start points
+    :return: an array of matrix, one matrix per trial
+    """
+    matrix_list = []
+    trials.append(len(matrix[1]))  # Initialize trials with a end trial
+    print trials
+    for i in range(0, len(trials) - 1):
+        matrix_list.append(matrix[:, trials[i]:trials[i + 1]])
+
+    return matrix_list
