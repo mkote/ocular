@@ -69,18 +69,20 @@ def artifact_signals():
     pass
 
 
-eeg_data = load_data(1, 'T')
+def maf_example():
+    eeg_data = load_data(1, 'T')
 
-raw_signal = eeg_data[3][0][0]
-import matplotlib.pyplot as plt
-plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-plt.ylabel('amplitude')
-plt.xlabel('time point')
-plt.show()
-filtered_signal = moving_avg_filter(raw_signal, 50)
-plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-plt.axis([0, len(filtered_signal), min(filtered_signal), max(filtered_signal)])
-plt.ylabel('amplitude')
-plt.xlabel('time point')
-plt.show()
+    raw_signal = eeg_data[3][0][0]
+    raw_signal = raw_signal[0:len(raw_signal)]
+    import matplotlib.pyplot as plt
+    plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
+    plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+    plt.ylabel('amplitude')
+    plt.xlabel('time point')
+    plt.show()
+    filtered_signal = moving_avg_filter(raw_signal, 50)
+    plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
+    plt.axis([0, len(filtered_signal), min(filtered_signal), max(filtered_signal)])
+    plt.ylabel('amplitude')
+    plt.xlabel('time point')
+    plt.show()

@@ -29,8 +29,10 @@ class TestOACLfunctions(unittest.TestCase):
         actual = symmetric_moving_avg(data, m, t)
 
         # Assert
-        error_msg = "Moving average of ", actual, " was found. Expected ", \
-                    expected
+        error_msg = "Moving average of ", \
+                    str(actual), \
+                    " was found. Expected "\
+                    , str(expected)
         self.assertEqual(actual, expected, error_msg)
 
     def test_moving_avg_startof_series(self):
