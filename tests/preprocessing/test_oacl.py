@@ -83,8 +83,25 @@ class TestOACLfunctions(unittest.TestCase):
         # Act + Assert
         self.assertRaises(ValueError, relative_height, data, index_t)
 
+    def test_find_relative_heights(self):
+        # Arrange
+        data = [56, 99, 20, 36, 56, 15, 5, 97, 91, 88, 35]
+        expected = [79, 79, 20, 41, 41, 92, 92, 6, 53]
+
+        # Act
+        actual = find_relative_heights(data)
+
+        # Assert
+        assert_array_almost_equal(actual, expected)
+
     def test_find_time_indexes(self):
         # Arrange
+        data = [79, 79, 20, 41, 41, 92, 92, 6, 53]
+        peak_range = (30,70)
+        expected = [3, 4, 5, 8, 9]
+
         # Act
+        actual = find_time_indexes(data, peak_range)
+
         # Assert
         pass

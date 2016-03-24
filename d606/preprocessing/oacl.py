@@ -63,11 +63,13 @@ def relative_height(smoothed_data, time):
     return rel_height
 
 def find_relative_heights(smoothed_data):
+    relative_heights = []
     for i in range(1, len(smoothed_data)-1):
-        relative_height(smoothed_data, i)
+        next_rel_height = relative_height(smoothed_data, i)
+        relative_heights.append(next_rel_height)
+    return relative_heights
 
-def find_time_indexes(smoothed_data, relative_height, time, points_used, l,
-                      u, r, c):
+def find_time_indexes(relative_heights, peak_range):
     """
     :param time: the time offset
     :param points: the number of points used in moving average
@@ -77,12 +79,16 @@ def find_time_indexes(smoothed_data, relative_height, time, points_used, l,
     :r: number of channels
     :c: number of samples
     """
-    m = points_used
-    t = time
-    rh = relative_height
-    sd = smoothed_data
-    p = [t for t in sd and m/2 < t < c and l < rh < u]
-    return p
+    l = peak_range[0]
+    u = peak_range[1]
+    rh = relative_heights
+    time_indexes_in_range = []
+    for i in range(0, len(relative_heights)):
+        if l < rh[i] < u:
+            # Add 1 because index of rel heights list is one less than the
+            # index of the smoothed data.
+            time_indexes_in_range.append(i+1)
+    return time_indexes_in_range
 
 
 def artifact_signals():
