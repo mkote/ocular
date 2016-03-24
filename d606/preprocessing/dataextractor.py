@@ -74,14 +74,14 @@ def extract_trials(matrix, trials):
     :return: new matrix only containing motor imagery
              and a new trial start list
     """
-    nm = matrix
+    new_matrix = matrix
     trials.append(len(matrix))  # Initialize trials with a end trial
     num_trials = len(trials) - 1
 
     for i, trial in enumerate(reversed(trials[0:48])):
-        nm = delete(nm, s_[trial + JUMP: trials[num_trials - i]], axis=0)
-        nm = delete(nm, s_[trial:trial + TRIAL_BEGINNING], axis=0)
+        new_matrix = delete(new_matrix, s_[trial + JUMP: trials[num_trials - i]], axis=0)
+        new_matrix = delete(new_matrix, s_[trial:trial + TRIAL_BEGINNING], axis=0)
 
-    nm = delete(nm, s_[0:trials[0]], axis=0)
+    new_matrix = delete(new_matrix, s_[0:trials[0]], axis=0)
     new_trials = [int(x) * 750 for x in range(0, 48)]
-    return nm, new_trials
+    return new_matrix, new_trials
