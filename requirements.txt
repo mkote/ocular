@@ -1,0 +1,11 @@
+sklearn
+numpy
+ipython
+scipy
+pandas
+sympy
+nose
+pylab
+matlab
+scikit-learn
+mne
