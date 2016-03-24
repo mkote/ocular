@@ -2,8 +2,10 @@ from scipy.io import loadmat
 import numpy as np
 from numpy import *
 from collections import namedtuple
+import os
 
-PATH = '../matfiles/'  # Path to math files
+PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                    '../../matfiles/'))  # Path to math files
 HERTZ = 250  # Frequency of obtained data
 TRIAL_BEGINNING = 700  # 2.8s * 250Hz
 TRIAL_LENGTH = 750  # 3s * 250Hz
@@ -30,7 +32,7 @@ def load_data(files, type):
     file_numbers = [int(x) for x in range(start, end + 1)]  # file number load
 
     for k in file_numbers:
-        full_path = PATH + 'A0' + str(k) + type + '.mat'
+        full_path = PATH + '/A0' + str(k) + type + '.mat'
         trial = namedtuple('EEG', ['matrix', 'trials', 'labels', 'artifacts'])
         mat_data = loadmat(full_path)
 
