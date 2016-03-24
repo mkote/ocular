@@ -25,7 +25,8 @@ def symmetric_moving_avg(chan_signal, m, t):
     :param m: number of neighboring points used in the filter.
     :return: smoothed signal.
     """
-    if t + ((m-1)/2) > len(chan_signal) or t-((m-1)/2) < 0:
+    n = len(chan_signal)
+    if t + ((m-1)/2) >= n or t-((m)/2) < 0:
         raise ValueError("The desired range m for symmetric moving average "
                          "must be less for the given point t ")
     result = 0
@@ -38,13 +39,32 @@ def symmetric_moving_avg(chan_signal, m, t):
 
 
 def relative_height(smoothed_data, time):
+    """
+    This function computes the relative height of points centered around
+    point at param time.
+    points
+    :param smoothed_data: A list of (moving avg) points.
+    :param time: the index in smoothed_data to compute the relative height on.
+    :return: The relative height between time, time-1 and time+1
+    """
+    if time < 1:
+        raise ValueError("Relative height undefined for index less than 1")
+
+    # Here we subtract 2 because -1 is the last element and we want the
+    # specified time to have 1 element on each side in the list.
+    elif time > len(smoothed_data)-2:
+        raise ValueError("Relative height undefined for index at the end of "
+                         "the time series.")
     t = time
     x = smoothed_data
-    peak1 = abs(x[t] - x[t-1])
-    peak2 = abs(x[t+1] - x[t])
-    rel_height = max(peak1, peak2)
+    diff1 = abs(x[t] - x[t-1])
+    diff2 = abs(x[t+1] - x[t])
+    rel_height = max(diff1, diff2)
     return rel_height
 
+def find_relative_heights(smoothed_data):
+    for i in range(1, len(smoothed_data)-1):
+        relative_height(smoothed_data, i)
 
 def find_time_indexes(smoothed_data, relative_height, time, points_used, l,
                       u, r, c):

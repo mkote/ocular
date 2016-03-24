@@ -39,27 +39,49 @@ class TestOACLfunctions(unittest.TestCase):
         # Tests invalid MA on the beginning of the series.
         # Arrange
         t = 0
-        m = 2  # 2 point moving average
+        m = 3  # 3 point moving average
         data = [56, 99, 20, 36, 56, 15, 5, 97, 91, 88, 35]  # Odd list assumed
 
-        # Act
-        actual = symmetric_moving_avg(data, m, t)
-
-        # Assert
-        self.assertRaises(ValueError)
+        # Act + Assert
+        self.assertRaises(ValueError, symmetric_moving_avg, data, m, t)
 
     def test_moving_avg_endof_series(self):
         # Tests invalid MA on the end of the series.
         # Arrange
-        t = 8
+        t = 10
         m = 3  # 2 point moving average
         data = [56, 99, 20, 36, 56, 15, 5, 97, 91, 88, 35]  # Odd list assumed
 
-        # Act
-        actual = symmetric_moving_avg(data, m, t)
-
         # Assert
-        self.assertRaises(ValueError)
+        self.assertRaises(ValueError, symmetric_moving_avg, data, m, t)
+
+    def test_relative_height_pass(self):
+        # Arrange
+        data = [1, 3, 2]
+        expected = 2
+        index_t = 1 # 2nd element
+        # Act
+        actual = relative_height(data, index_t)
+        # Assert
+        err_msg = "Actual: ", str(actual), ". Expected: ", str(expected)
+        self.assertEqual(actual, expected)
+        pass
+
+    def test_relative_height_low_time(self):
+        # Arrange
+        data = [1, 3, 2]
+        index_t = 0 # first element, too low!
+
+        # Act + Assert
+        self.assertRaises(ValueError, relative_height, data, index_t)
+
+    def test_relative_height_high_time(self):
+        # Arrange
+        data = [1, 3, 2]
+        index_t = 2 # 2nd element
+
+        # Act + Assert
+        self.assertRaises(ValueError, relative_height, data, index_t)
 
     def test_find_time_indexes(self):
         # Arrange
