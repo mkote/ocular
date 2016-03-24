@@ -1,0 +1,24 @@
+language: python
+python:
+  - "2.7"
+
+# notifications
+notifications:
+  slack:
+    rooms:
+      - d606:THsvTZ8twmEEh8hYTqxo3FnU#build
+    on_failure: always
+    on_success: always
+  email: false
+
+# command to install dependencies
+install:
+  - pip install -U pip
+  - sudo -H pip install -U pip
+  - sudo -H pip install pep8
+# - pip install -r requirements.txt
+
+# command to run tests
+script:
+  - pep8 .
+# - python -m unittest discover
