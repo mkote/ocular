@@ -1,6 +1,8 @@
 # This module contains implementation of ocular artifact detection and removal
 from decimal import *
 
+from sklearn import preprocessing
+
 from d606.preprocessing.dataextractor import load_data
 
 
@@ -10,7 +12,6 @@ def moving_avg_filter(chan_signal, m):
     maf = []
     # We compute only so at each side of a point, we have (m-1)/2 elements.
     start = (m-1)/2
-    sig_size = len(chan_signal)
     end = len(chan_signal) - ((m-1) / 2)
     for i in range(start, end):
         ma_point = symmetric_moving_avg(chan_signal, m, i)
@@ -69,7 +70,7 @@ def find_relative_heights(smoothed_data):
         relative_heights.append(next_rel_height)
     return relative_heights
 
-def find_time_indexes(relative_heights, peak_range):
+def find_time_indexes(relative_heights, peak_range, m_range, n_samples):
     """
     :param time: the time offset
     :param points: the number of points used in moving average
@@ -83,48 +84,95 @@ def find_time_indexes(relative_heights, peak_range):
     u = peak_range[1]
     rh = relative_heights
     time_indexes_in_range = []
+
     for i in range(0, len(relative_heights)):
-        if l < rh[i] < u:
+        if m_range/2 < i < n_samples-(m_range/2) and l < rh[i] < u:
             # Add 1 because index of rel heights list is one less than the
             # index of the smoothed data.
             time_indexes_in_range.append(i+1)
     return time_indexes_in_range
 
+def artifact_ranges(signal_smooth, peak_indexes):
+    artifact_ranges = []
+    for peak in peak_indexes:
+        artifact_range = find_artifact_range(signal_smooth, peak)
+        artifact_ranges.append(artifact_range)
+    return artifact_ranges
+
+def find_artifact_range(signal_smooth, peak):
+    left = signal_smooth[0:peak]
+    left = left.reverse()
+    right = signal_smooth[peak+1:len(signal_smooth)]
+    before = nzp(left, 0, 1)
+    after = nzp(right, 0, 1)
+    return (before, after)
 
 def artifact_signals(time_indexes, smoothed_data):
     artifact_signal = []
-    for t in time_indexes:
-        # TODO: Here lives some ugly code. Maybe need refactoring.
-        left = smoothed_data[0:t]
-        right = smoothed_data[t+1:len(smoothed_data)]
-        # Find the zero in the reversed list and find offset in original list.
-        b = len(left) - first_zero_point(left[::-1])
-        a = first_zero_point(right)
-        if b < t < a:
-            artifact_signal.append(smoothed_data[t])
+    for t in range(0, smoothed_data):
+        if t in time_indexes:
+            artifact_signal.append(extract_artifact(smoothed_data, t))
         else:
-            artifact_signal.append(0)
-    return artifact_signal
+            artifact_signal.append(0.0)
 
-def first_zero_point(eeg_series):
-    for i in range(0, len(eeg_series)):
-        if eeg_series[i] == 0:
-            return i+1  # Add one because we want an offset, not index.
+def extract_artifact(smoothed_data, t):
+    b = nzp(smoothed_data[0:t].reverse(), 0, 1)
+    a = nzp(smoothed_data[t+1:len(smoothed_data)], 0, 1)
+    if b < t < a:
+        return smoothed_data[t]
+    else:
+        return 0.0
+
+def nzp(arr, a, b):
+    if b >= len(arr):
+        # False indicates no polarity changes.
+        return False
+    x = arr[a]
+    y = arr[b]
+    if x == 0.0:
+        return a
+
+    elif is_cross_zero(x, y):
+        m = min(abs(x), abs(y))
+        min_index = (a if m == arr[a] else b)
+        return min_index
+    else:
+        return nzp(arr, b, b+1)
+
+def is_cross_zero(a, b):
+    if (a > 0 and b < 0) or (a < 0 and b > 0):
+        return True
+    else:
+        return False
 
 def maf_example():
-    eeg_data = load_data(1, 'T')
+        eeg_data = load_data(1, 'T')
+        raw_signal = eeg_data[5][0][4]
+        raw_signal = raw_signal[0:500]
+        #min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0,100))
+        #raw_signal = min_max_scaler.fit_transform(raw_signal)
+        import matplotlib.pyplot as plt
 
-    raw_signal = eeg_data[3][0][0]
-    raw_signal = raw_signal[0:len(raw_signal)]
-    import matplotlib.pyplot as plt
-    plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-    plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-    plt.ylabel('amplitude')
-    plt.xlabel('time point')
-    plt.show()
-    filtered_signal = moving_avg_filter(raw_signal, 50)
-    plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-    plt.axis([0, len(filtered_signal), min(filtered_signal), max(filtered_signal)])
-    plt.ylabel('amplitude')
-    plt.xlabel('time point')
-    plt.show()
+        plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+        plt.ylabel('amplitude')
+        plt.xlabel('time point')
+        plt.figure(1)
+        plt.subplot(211)
+        plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
+        plt.subplot(211)
+        m = 15
+        num_samples = len(raw_signal)
+        filtered_signal = moving_avg_filter(raw_signal, m)
+        plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
+
+        plt.subplot(211)
+        rh = find_relative_heights(filtered_signal)
+        ti = find_time_indexes(rh, (0.70,1.50), m, num_samples)
+        artifact_signal = artifact_signals(ti, rh)
+        print max(filtered_signal)
+        print max(ti)
+        print max(rh)
+        plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
+        plt.show()
+
+maf_example()

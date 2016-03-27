@@ -107,9 +107,16 @@ class TestOACLfunctions(unittest.TestCase):
         assert_array_almost_equal(expected, actual)
 
     def test_artifact_signal(self):
-        # Arrange
-        data = None
-        expected = None
-        # Act
-        # Assert
+        # TODO: How should we test this ?
         pass
+    def test_first_zero_point(self):
+        # Arrange
+        data = [2.666,9.26344,0.00000,19.34186,-28.06994,5.0862,-47.2957,
+                14.43624,31.39732,0.00000,-28.49609,-11.87265,-33.10403,
+                -32.55213,-30.34204,47.66834,0.00000,34.43307,39.56648]
+        expected = 2+1
+        # Act
+        actual = first_zero_point(data)
+        # Assert
+        self.assertEqual(expected, actual)
+
