@@ -25,5 +25,9 @@ event_info = create_events(trials, labels)
 # Create mne structure
 epochs_data = mne.EpochsArray(d3_data, data_info, event_info)
 
+""" Do some crazy csp stuff"""
+
+# reformat labels list
+labels = csp_label_reformat(labels, 1)
 csp = CSP(n_components=4)
 csp.fit(d3_data, labels)

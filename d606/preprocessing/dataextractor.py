@@ -129,3 +129,14 @@ def create_events(trials, labels):
 
     event_data = array(event_list)
     return event_data
+
+
+def csp_label_reformat(label, type):
+    label_list = []
+    for lab in label:
+        if lab == type:
+            label_list.append(1)
+        else:
+            label_list.append(2)
+
+    return label_list
