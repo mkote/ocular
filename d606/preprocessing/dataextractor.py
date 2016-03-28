@@ -106,3 +106,26 @@ def trial_splitter(matrix, trials):
         matrix_list.append(np.transpose([matrix[:, trials[i]:trials[i + 1]]]))
 
     return matrix_list
+
+
+def d3_matrix_creator(matrix):
+    """
+    :param matrix: 2d matrix
+    :return: 3d matrix with epochs as first index
+    """
+    slice_list = []
+    num_trials = 48
+    for x in range(num_trials):
+        slice_list.append(matrix[:, x*TRIAL_LENGTH:(x+1)*TRIAL_LENGTH])
+
+    d3_data = array(slice_list)
+    return d3_data
+
+
+def create_events(trials, labels):
+    event_list = []
+    for trial, label in zip(trials, labels):
+        event_list.append([trial, 0, label])
+
+    event_data = array(event_list)
+    return event_data
