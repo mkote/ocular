@@ -2,7 +2,6 @@
 from __future__ import division
 import unittest
 from numpy.testing import *
-import numpy as np
 from d606.preprocessing.oacl import *
 
 
@@ -29,10 +28,8 @@ class TestOACLfunctions(unittest.TestCase):
         actual = symmetric_moving_avg(data, m, t)
 
         # Assert
-        error_msg = "Moving average of ", \
-                    str(actual), \
-                    " was found. Expected "\
-                    , str(expected)
+        error_msg = "Moving average of ", str(actual), " was found. " \
+                    "Expected ", str(expected)
         self.assertEqual(actual, expected, error_msg)
 
     def test_moving_avg_startof_series(self):
@@ -59,18 +56,18 @@ class TestOACLfunctions(unittest.TestCase):
         # Arrange
         data = [1, 3, 2]
         expected = 2
-        index_t = 1 # 2nd element
+        index_t = 1  # 2nd element
         # Act
         actual = relative_height(data, index_t)
         # Assert
         err_msg = "Actual: ", str(actual), ". Expected: ", str(expected)
-        self.assertEqual(actual, expected)
+        self.assertEqual(actual, expected, err_msg)
         pass
 
     def test_relative_height_low_time(self):
         # Arrange
         data = [1, 3, 2]
-        index_t = 0 # first element, too low!
+        index_t = 0  # first element, too low!
 
         # Act + Assert
         self.assertRaises(ValueError, relative_height, data, index_t)
@@ -78,7 +75,7 @@ class TestOACLfunctions(unittest.TestCase):
     def test_relative_height_high_time(self):
         # Arrange
         data = [1, 3, 2]
-        index_t = 2 # 2nd element
+        index_t = 2  # 2nd element
 
         # Act + Assert
         self.assertRaises(ValueError, relative_height, data, index_t)
@@ -94,23 +91,13 @@ class TestOACLfunctions(unittest.TestCase):
         # Assert
         assert_array_almost_equal(actual, expected)
 
-    # def test_find_time_indexes(self):
-    #     # Arrange
-    #     data = [79, 79, 20, 41, 41, 92, 92, 6, 53]
-    #     peak_range = (30,70)
-    #     expected = [3+1, 4+1, 8+1]
-    #     m = 15
-    #     num_samples = len(data)
-    #     # Act
-    #     actual = find_time_indexes(data, peak_range, m, num_samples)
-    #
-    #     # Assert
-    #     assert_array_almost_equal(expected, actual)
+    def test_find_time_indexes(self):
+        # TODO: Write test
+        pass
 
     def test_artifact_signal(self):
         # TODO: How should we test this ?
         pass
-
 
     def test_is_cross_zero_false(self):
         # Arrange
@@ -138,19 +125,19 @@ class TestOACLfunctions(unittest.TestCase):
 
     def test_nzp(self):
         # Arrange
-        t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08, 3.94]
+        t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08,
+                  3.94]
         a = 0
         b = 1
         expected = 2  # here we expect index of -10.06 since it is closest to 0
 
         # Act
-        actual = nzp(t_data, a, b)
+        actual = nearest_zero_point(t_data, a, b)
 
         # Assert
         self.assertEqual(expected, actual)
 
-
-    def test_nzp_false(self):
+    def test_nearest_zero_point_false(self):
         # Arrange
         t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08,
                   3.94]
@@ -160,18 +147,16 @@ class TestOACLfunctions(unittest.TestCase):
         # signal.
 
         # Act
-        actual = nzp(t_data, a, b)
+        actual = nearest_zero_point(t_data, a, b)
 
         # Assert
         self.assertEqual(expected, actual)
 
     def test_find_artifact_range(self):
         # Arrange
-        t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08,
-                  3.94]
         t_data = [1.0, 2.0, 0.0, 3.0, 10.0, 2.0, -1.0, 0.0]
         peak = 4
-        expected = (2,6)
+        expected = (2, 6)
 
         # Act
         actual = find_artifact_range(t_data, peak)
