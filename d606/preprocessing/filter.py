@@ -8,11 +8,12 @@ class Filter:
 
     def filter(self, data):
         filters = []
-        if self.range.size() <= 0:
+        if len(self.range) <= 0:
             ValueError("You dumb fuck, you need to specify a legal range")
         else:
             for x in range(0, len(self.range)):
-                filters.append(bandpass_matrix(data, range[0, 0], range[0, 1]))
+                filters.append(bandpass_matrix(data, self.range[0][0],
+                                               self.range[0][1]))
             return filters
 
     def get_range(self):
@@ -21,4 +22,4 @@ class Filter:
     def set_range(self, val):
         self._range = val
 
-    range = property(get_range(), set_range())
+    range = property(get_range, set_range)
