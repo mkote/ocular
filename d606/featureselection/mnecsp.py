@@ -7,9 +7,9 @@ from sklearn.svm import SVC  # noqa
 from sklearn.cross_validation import ShuffleSplit  # noqa
 
 
-def run_csp(matrix, trials, labels):
+def run_csp(run_data):
     # transform data
-    matrix, trials = extract_trials(matrix, trials)
+    matrix, trials, labels = run_data
     d3_data = d3_matrix_creator(matrix)
 
     # create data info object for rawArray
