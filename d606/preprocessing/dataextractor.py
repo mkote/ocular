@@ -133,10 +133,12 @@ def create_events(labels):
 
 def csp_label_reformat(label, type):
     label_list = []
+    classes = [1, 2, 3, 4]
+    classes.remove(type)
     for lab in label:
         if lab == type:
-            label_list.append(1)
+            label_list.append(int(type))
         else:
-            label_list.append(2)
+            label_list.append(int(''.join([str(x) for x in classes])))
 
     return label_list
