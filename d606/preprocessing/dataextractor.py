@@ -90,7 +90,7 @@ def extract_trials(matrix, trials):
                             axis=1)
 
     new_matrix = delete(new_matrix, s_[0:trials[0]], axis=1)
-    new_trials = [int(x) * TRIAL_LENGTH for x in range(0, 48)]
+    new_trials = [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
     return new_matrix, new_trials
 
 
@@ -142,3 +142,37 @@ def csp_label_reformat(label, type):
             label_list.append(int(''.join([str(x) for x in classes])))
 
     return label_list
+
+
+def run_combiner(run_list):
+    n_matrix, n_trials, n_labels, n_artifacts = empty([25, 0]), [], [], []
+    matrix_length = []
+    for i, run in enumerate(run_list):
+        # We don't want any runs with only eog data
+        if i in [0, 1, 2]:
+            continue
+        matrix, trials, labels, artifacts = run
+        matrix_length.append(matrix.shape[1])
+        n_matrix = concatenate((n_matrix, matrix), axis=1)
+        n_trials = concatenate((n_trials, trials), axis=1)
+        n_labels = concatenate((n_labels, labels), axis=1)
+        n_artifacts = concatenate((n_artifacts, artifacts), axis=1)
+
+    n_trials = map(int, trial_time_fixer(n_trials, matrix_length))
+    n_matrix = array(n_matrix)
+    return n_matrix, n_trials, n_labels, n_artifacts
+
+
+def trial_time_fixer(trial_list, matrix_length):
+    n_trial_list = []
+    trial_adder = 0
+    matrix_counter = 0
+    for i in range(1, len(trial_list)):
+        if trial_list[i] > trial_list[i - 1]:
+            n_trial_list.append(trial_list[i - 1] + trial_adder)
+        else:
+            n_trial_list.append(trial_list[i - 1] + trial_adder)
+            trial_adder += matrix_length[matrix_counter]
+            matrix_counter += 1
+    n_trial_list.append(trial_list[-1] + trial_adder)
+    return n_trial_list

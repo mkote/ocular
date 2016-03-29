@@ -1,4 +1,5 @@
-from d606.preprocessing.dataextractor import load_data, extract_trials
+from d606.preprocessing.dataextractor import load_data, run_combiner, \
+    extract_trials
 from d606.preprocessing.filter import Filter
 from d606.featureselection.mnecsp import d3_matrix_creator, csp_one_vs_all
 from d606.classification.svm import csv_one_versus_all
@@ -8,8 +9,8 @@ csp_list = []
 svc_list = []
 bands = []
 
-f = load_data(1, "T")
-data, trials, labels, artifacts = f[3]
+runs = load_data(1, "T")
+data, trials, labels, artifacts = run_combiner(runs)
 
 filt = Filter([[8, 12], [16, 24]])
 banks = filt.filter(data)
