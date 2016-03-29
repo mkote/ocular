@@ -6,8 +6,9 @@ from numpy import array
 
 
 filt = Filter([[8, 12], [12, 24]])
-f = load_data(1, "T")
-data, trials, labels, artifacts = f[3]
+runs = load_data(1, "T")
+data, trials, labels, artifacts = run_combiner(runs)
+
 banks = filt.filter(data)
 bands = []
 for eeg_signal in banks:
