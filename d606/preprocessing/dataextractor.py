@@ -122,10 +122,10 @@ def d3_matrix_creator(matrix):
     return d3_data
 
 
-def create_events(trials, labels):
+def create_events(labels):
     event_list = []
-    for trial, label in zip(trials, labels):
-        event_list.append([trial, 0, label])
+    for label in labels:
+        event_list.append([0, 0, label])
 
     event_data = array(event_list)
     return event_data
