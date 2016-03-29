@@ -1,13 +1,9 @@
 import mne
 from mne.decoding import CSP
 from d606.preprocessing.dataextractor import *
-from sklearn.pipeline import Pipeline  # noqa
-from sklearn.cross_validation import cross_val_score  # noqa
-from sklearn.svm import SVC  # noqa
-from sklearn.cross_validation import ShuffleSplit  # noqa
 
 
-def run_csp(run_data):
+def run_csp(run_data, label):
     # transform data
     matrix, trials, labels = run_data
     d3_data = d3_matrix_creator(matrix)
@@ -20,7 +16,7 @@ def run_csp(run_data):
     ch_types += ['eeg' for x in range(1, 23)]
 
     # Create label info
-    labels = csp_label_reformat(labels, 2)
+    labels = csp_label_reformat(labels, label)
 
     # Create data_info and event_info
     data_info = mne.create_info(ch_names, HERTZ, ch_types, None)
@@ -33,16 +29,17 @@ def run_csp(run_data):
 
     # Cross validation with sklearn
     labels = epochs_data.events[:, -1]
-    evoked = epochs_data.average()
 
     n_components = 3  # pick some components
-    svc = SVC(C=1, kernel='linear')
     csp = CSP(n_components=n_components)
+    csp = csp.fit(d3_data, labels)
+    return csp
 
-    # Define a monte-carlo cross-validation generator (reduce variance):
-    cv = ShuffleSplit(len(labels), 10, test_size=0.2, random_state=42)
-    epochs_extract_data = epochs_data.get_data()
 
-    clf = Pipeline([('CSP', csp), ('SVC', svc)])
-    scores = cross_val_score(clf, epochs_extract_data, labels, cv=cv, n_jobs=1)
-    return scores.mean()
+def csp_one_vs_all(band_data, num_labels):
+    csp_list = []
+    for n in range(1, num_labels + 1):
+        csp = run_csp(band_data, n)
+        csp_list.append(csp)
+
+    return csp_list
