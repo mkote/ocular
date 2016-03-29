@@ -114,7 +114,7 @@ def d3_matrix_creator(matrix):
     :return: 3d matrix with epochs as first index
     """
     slice_list = []
-    num_trials = 48
+    num_trials = 288
     for x in range(num_trials):
         slice_list.append(matrix[:, x*TRIAL_LENGTH:(x+1)*TRIAL_LENGTH])
 
@@ -154,9 +154,9 @@ def run_combiner(run_list):
         matrix, trials, labels, artifacts = run
         matrix_length.append(matrix.shape[1])
         n_matrix = concatenate((n_matrix, matrix), axis=1)
-        n_trials = concatenate((n_trials, trials), axis=1)
-        n_labels = concatenate((n_labels, labels), axis=1)
-        n_artifacts = concatenate((n_artifacts, artifacts), axis=1)
+        n_trials = concatenate((n_trials, trials), axis=0)
+        n_labels = concatenate((n_labels, labels), axis=0)
+        n_artifacts = concatenate((n_artifacts, artifacts), axis=0)
 
     n_trials = map(int, trial_time_fixer(n_trials, matrix_length))
     n_matrix = array(n_matrix)

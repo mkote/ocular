@@ -3,17 +3,29 @@ from d606.preprocessing.dataextractor import load_data, run_combiner, \
 from d606.preprocessing.filter import Filter
 from d606.featureselection.mnecsp import d3_matrix_creator, csp_one_vs_all
 from d606.classification.svm import csv_one_versus_all
-from numpy import array
+from numpy import array, empty
 
 csp_list = []
 svc_list = []
 bands = []
+banks = []
 
 runs = load_data(1, "T")
-data, trials, labels, artifacts = run_combiner(runs)
-
 filt = Filter([[8, 12], [16, 24]])
-banks = filt.filter(data)
+for run in runs:
+    matrix, trials, labels, artifacts = run
+    banks.append(filt.filter(matrix))
+
+mod_run = [[] for x in range(0, len(banks[0]))]
+
+for bank in banks:
+    mod_run[0].append(bank[0])
+    mod_run[1].append(bank[1])
+
+temp = (mod_run[0], trials, labels, artifacts)
+
+data, trials, labels, artifacts = run_combiner(temp)
+
 
 for eeg_signal in banks:
     matrix, new_trials = extract_trials(eeg_signal, trials)
