@@ -94,29 +94,87 @@ class TestOACLfunctions(unittest.TestCase):
         # Assert
         assert_array_almost_equal(actual, expected)
 
-    def test_find_time_indexes(self):
-        # Arrange
-        data = [79, 79, 20, 41, 41, 92, 92, 6, 53]
-        peak_range = (30,70)
-        expected = [3+1, 4+1, 8+1]
-
-        # Act
-        actual = find_time_indexes(data, peak_range)
-
-        # Assert
-        assert_array_almost_equal(expected, actual)
+    # def test_find_time_indexes(self):
+    #     # Arrange
+    #     data = [79, 79, 20, 41, 41, 92, 92, 6, 53]
+    #     peak_range = (30,70)
+    #     expected = [3+1, 4+1, 8+1]
+    #     m = 15
+    #     num_samples = len(data)
+    #     # Act
+    #     actual = find_time_indexes(data, peak_range, m, num_samples)
+    #
+    #     # Assert
+    #     assert_array_almost_equal(expected, actual)
 
     def test_artifact_signal(self):
         # TODO: How should we test this ?
         pass
-    def test_first_zero_point(self):
+
+
+    def test_is_cross_zero_false(self):
         # Arrange
-        data = [2.666,9.26344,0.00000,19.34186,-28.06994,5.0862,-47.2957,
-                14.43624,31.39732,0.00000,-28.49609,-11.87265,-33.10403,
-                -32.55213,-30.34204,47.66834,0.00000,34.43307,39.56648]
-        expected = 2+1
+        a = 48.02
+        b = 27.18
+        expected = False
+
         # Act
-        actual = first_zero_point(data)
+        actual = is_cross_zero(a, b)
+
         # Assert
         self.assertEqual(expected, actual)
 
+    def test_is_cross_zero_true(self):
+        # Arrange
+        a = 31.17
+        b = -25.5
+        expected = True
+
+        # Act
+        actual = is_cross_zero(a, b)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_nzp(self):
+        # Arrange
+        t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08, 3.94]
+        a = 0
+        b = 1
+        expected = 2  # here we expect index of -10.06 since it is closest to 0
+
+        # Act
+        actual = nzp(t_data, a, b)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+
+    def test_nzp_false(self):
+        # Arrange
+        t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08,
+                  3.94]
+        a = 9
+        b = 10  # 10 is out of range here.
+        expected = 9  # since b is out of range, we expect last sample in
+        # signal.
+
+        # Act
+        actual = nzp(t_data, a, b)
+
+        # Assert
+        self.assertEqual(expected, actual)
+
+    def test_find_artifact_range(self):
+        # Arrange
+        t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08,
+                  3.94]
+        t_data = [1.0, 2.0, 0.0, 3.0, 10.0, 2.0, -1.0, 0.0]
+        peak = 4
+        expected = (2,6)
+
+        # Act
+        actual = find_artifact_range(t_data, peak)
+
+        # Assert
+        self.assertEqual(expected, actual)

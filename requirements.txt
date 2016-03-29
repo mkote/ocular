@@ -1,4 +1,3 @@
-sklearn
 numpy
 ipython
 scipy
@@ -9,3 +8,4 @@ pylab
 matlab
 scikit-learn
 mne
+sklearn

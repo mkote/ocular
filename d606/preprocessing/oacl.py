@@ -63,12 +63,14 @@ def relative_height(smoothed_data, time):
     rel_height = max(diff1, diff2)
     return rel_height
 
+
 def find_relative_heights(smoothed_data):
     relative_heights = []
     for i in range(1, len(smoothed_data)-1):
         next_rel_height = relative_height(smoothed_data, i)
         relative_heights.append(next_rel_height)
     return relative_heights
+
 
 def find_time_indexes(relative_heights, peak_range, m_range, n_samples):
     """
@@ -92,6 +94,7 @@ def find_time_indexes(relative_heights, peak_range, m_range, n_samples):
             time_indexes_in_range.append(i+1)
     return time_indexes_in_range
 
+
 def artifact_ranges(signal_smooth, peak_indexes):
     artifact_ranges = []
     for peak in peak_indexes:
@@ -99,34 +102,40 @@ def artifact_ranges(signal_smooth, peak_indexes):
         artifact_ranges.append(artifact_range)
     return artifact_ranges
 
+
 def find_artifact_range(signal_smooth, peak):
     left = signal_smooth[0:peak]
-    left = left.reverse()
+    left.reverse()
     right = signal_smooth[peak+1:len(signal_smooth)]
-    before = nzp(left, 0, 1)
-    after = nzp(right, 0, 1)
+    before_i = nzp(left, 0, 1)
+    after_i = nzp(right, 0, 1)
+    before = (peak-1) - before_i
+    after = (peak+1) + after_i
     return (before, after)
+
 
 def artifact_signals(time_indexes, smoothed_data):
     artifact_signal = []
-    for t in range(0, smoothed_data):
-        if t in time_indexes:
-            artifact_signal.append(extract_artifact(smoothed_data, t))
-        else:
+    ranges = artifact_ranges(smoothed_data, time_indexes)
+    for t in range(0, len(smoothed_data)):
+        is_artifact = False
+        for r in ranges:
+            nzp_b = r[0]
+            nzp_a = r[1]
+            if nzp_b < t < nzp_a:
+                is_artifact = True
+                artifact = smoothed_data[t]
+                artifact_signal.append(artifact)
+                break
+        if not is_artifact:
             artifact_signal.append(0.0)
+    return artifact_signal
 
-def extract_artifact(smoothed_data, t):
-    b = nzp(smoothed_data[0:t].reverse(), 0, 1)
-    a = nzp(smoothed_data[t+1:len(smoothed_data)], 0, 1)
-    if b < t < a:
-        return smoothed_data[t]
-    else:
-        return 0.0
 
 def nzp(arr, a, b):
     if b >= len(arr):
-        # False indicates no polarity changes.
-        return False
+        # No polarity changes. So we just go with last element in the list.
+        return a
     x = arr[a]
     y = arr[b]
     if x == 0.0:
@@ -139,16 +148,20 @@ def nzp(arr, a, b):
     else:
         return nzp(arr, b, b+1)
 
+
 def is_cross_zero(a, b):
     if (a > 0 and b < 0) or (a < 0 and b > 0):
         return True
     else:
         return False
 
+
 def maf_example():
         eeg_data = load_data(1, 'T')
         raw_signal = eeg_data[5][0][4]
-        raw_signal = raw_signal[0:500]
+        raw_signal_eog = eeg_data[5][0][1]
+        raw_signal = raw_signal[0:5000]
+        raw_signal_eog = raw_signal_eog[0:5000]
         #min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0,100))
         #raw_signal = min_max_scaler.fit_transform(raw_signal)
         import matplotlib.pyplot as plt
@@ -160,19 +173,20 @@ def maf_example():
         plt.subplot(211)
         plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
         plt.subplot(211)
-        m = 15
+        m = 5
         num_samples = len(raw_signal)
         filtered_signal = moving_avg_filter(raw_signal, m)
         plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
 
         plt.subplot(211)
         rh = find_relative_heights(filtered_signal)
-        ti = find_time_indexes(rh, (0.70,1.50), m, num_samples)
-        artifact_signal = artifact_signals(ti, rh)
-        print max(filtered_signal)
-        print max(ti)
-        print max(rh)
+        ti = find_time_indexes(rh, (5,7), m, num_samples)
+        artifact_signal = artifact_signals(ti, filtered_signal)
         plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
+
+        plt.subplot(212)
+        plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
         plt.show()
 
-maf_example()
+
+#maf_example()
