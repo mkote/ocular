@@ -187,10 +187,11 @@ def logistic_function(z):
 
 def objective_function(theta, b):
     thetaT = theta.transpose()
-    z = [thetaT * np.cov(trial_artifact_signals[i]) * theta -
-         2 * thetaT * trial_artifact_signals[i] * trial_signals[
-             i].transpose() +
-         variance(trial_signals[i]) + b
+    Ra = trial_artifact_signals * trial_artifact_signals.transpose()
+    z = [thetaT * Ra * theta -
+         2 * thetaT * np.mat([trial_artifact_signals[j][i]
+                              for j in xrange(len(trial_artifact_signals))])
+         * trial_signals[i].transpose() + variance(trial_signals[i]) + b
          for i in xrange(n_trials)]
 
     y = labels
@@ -239,11 +240,13 @@ def plot_example():
 
 
 def extract_trials_array(signal, trials_start):
+    n_trials = len(trials_start)
     concat_trials, concat_trials_start = extract_trials_two(signal,
                                                        trials_start)
     trials = [concat_trials[concat_trials_start[i]:concat_trials_start[i+1]]
               for i in xrange(n_trials-1)]
     trials += [concat_trials[concat_trials_start[n_trials-1]:]]
+    return trials
 
 eeg_data = load_data(1, 'T')        # Everything
 channels, trials_start, labels, artifacts = eeg_data[5]
@@ -256,11 +259,11 @@ r2 = (7,15)                         # ... Define another range!
 range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
-trial_signals = extract_trials_array(raw_signals[0], trials_start)
-trial_artifact_signals = [extract_trials_array(artifact_signals[i],
-                                               trials_start)
+trial_signals = np.mat(extract_trials_array(raw_signals[0], trials_start))
+trial_artifact_signals = [np.mat(extract_trials_array(artifact_signals[i],
+                                               trials_start))
                           for i in xrange(len(range_list))]
 
-objective_function(np.asmatrix([0.5] * len(range_list)), 2)
+objective_function(np.mat([0.5] * len(range_list)), 2)
 
 i = 47
