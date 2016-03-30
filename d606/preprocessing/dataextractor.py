@@ -69,6 +69,16 @@ def load_data(files, type):
     return eeg_list
 
 
+def extract_trials_two(matrix, trials):
+    new_matrix = []
+    num_trials = len(trials)
+    for trial in trials:
+        new_matrix.extend(transpose(matrix[0:25,
+                                        trial+TRIAL_BEGINNING:trial+JUMP]))
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
+                                                                 num_trials)]
+
+
 def extract_trials(matrix, trials):
     """
     :param matrix: numpy matrix
