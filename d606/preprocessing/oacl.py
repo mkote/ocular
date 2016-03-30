@@ -4,7 +4,7 @@ from math import exp, log
 from scipy.ndimage import variance
 from scipy.optimize import minimize
 
-from d606.preprocessing.dataextractor import load_data
+from d606.preprocessing.dataextractor import load_data, extract_trials_two
 from numpy import transpose, ndarray
 import numpy as np
 
@@ -188,8 +188,9 @@ def logistic_function(z):
 def objective_function(theta, b):
     thetaT = theta.transpose()
     z = [thetaT * np.cov(trial_artifact_signals[i]) * theta -
-         2 * thetaT * trial_artifact_signals[i] * trials[i].transpose() +
-         variance(trials[i]) + b
+         2 * thetaT * trial_artifact_signals[i] * trial_signals[
+             i].transpose() +
+         variance(trial_signals[i]) + b
          for i in xrange(n_trials)]
 
     y = labels
@@ -236,15 +237,30 @@ def plot_example():
     plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
     plt.show()
 
+
+def extract_trials_array(signal, trials_start):
+    concat_trials, concat_trials_start = extract_trials_two(signal,
+                                                       trials_start)
+    trials = [concat_trials[concat_trials_start[i]:concat_trials_start[i+1]]
+              for i in xrange(n_trials-1)]
+    trials += [concat_trials[concat_trials_start[n_trials-1]:]]
+
 eeg_data = load_data(1, 'T')        # Everything
-raw_signals = eeg_data[5][0][3:25]  # EEG channels (raw)
-raw_signal = eeg_data[5][0][0]      # Arbitrary channel (x_0)
-labels = eeg_data[5][2]             # Labels
-n_trials = 48                       # Number of trials
+channels, trials_start, labels, artifacts = eeg_data[5]
+raw_signals = channels[0:22]        # EEG channels (raw)
+raw_signal = raw_signals[0]         # Arbitrary channel (x_0)
+n_trials = len(trials_start)              # Number of trials
 m = 11                              # Moving avg neighbor value
 r1 = (5,7)                          # Define a range
 r2 = (7,15)                         # ... Define another range!
 range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
-trial_artifact_signals = get_trials(artifact_signals)
-trials = get_trials(raw_signal)
+
+trial_signals = extract_trials_array(raw_signals[0], trials_start)
+trial_artifact_signals = [extract_trials_array(artifact_signals[i],
+                                               trials_start)
+                          for i in xrange(len(range_list))]
+
+objective_function(np.asmatrix([0.5] * len(range_list)), 2)
+
+i = 47
