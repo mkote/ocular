@@ -4,7 +4,7 @@ from scipy.optimize import minimize
 
 from d606.preprocessing.dataextractor import load_data
 from numpy import transpose, ndarray
-
+import numpy as np
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
@@ -39,7 +39,7 @@ def symmetric_moving_avg(chan_signal, m, t):
     return result
 
 
-def relative_height(smooth_signal, time):
+def find_relative_height(smooth_signal, time):
     """
     This function computes the relative height of points centered around
     point at param time.
@@ -67,12 +67,12 @@ def relative_height(smooth_signal, time):
 def find_relative_heights(smooth_signal):
     relative_heights = []
     for i in range(1, len(smooth_signal)-1):
-        next_rel_height = relative_height(smooth_signal, i)
+        next_rel_height = find_relative_height(smooth_signal, i)
         relative_heights.append(next_rel_height)
     return relative_heights
 
 
-def find_time_indexes(relative_heights, peak_range, m_range, n_samples):
+def find_peak_indexes(relative_heights, peak_range, m_range, n_samples):
     l = peak_range[0]
     u = peak_range[1]
     rh = relative_heights
@@ -86,7 +86,7 @@ def find_time_indexes(relative_heights, peak_range, m_range, n_samples):
     return time_indexes_in_range
 
 
-def artifact_ranges(smooth_signal, peak_indexes):
+def find_artifact_ranges(smooth_signal, peak_indexes):
     ranges = []
     for peak in peak_indexes:
         artifact_range = find_artifact_range(smooth_signal, peak)
@@ -105,9 +105,9 @@ def find_artifact_range(signal_smooth, peak):
     return before, after
 
 
-def artifact_signals(peak_indexes, smooth_signal):
+def find_artifact_signal(peak_indexes, smooth_signal):
     artifact_signal = []
-    ranges = artifact_ranges(smooth_signal, peak_indexes)
+    ranges = find_artifact_ranges(smooth_signal, peak_indexes)
     for t in range(0, len(smooth_signal)):
         is_artifact = False
         for r in ranges:
@@ -122,6 +122,16 @@ def artifact_signals(peak_indexes, smooth_signal):
             artifact_signal.append(0.0)
     return artifact_signal
 
+def find_artifact_signals(eeg, m, range):
+    artifact_signals = []
+    for raw_signal in eeg:
+        smooth_signal = moving_avg_filter(raw_signal, m)
+        rh = find_relative_heights(smooth_signal)
+        num_samples = len(raw_signal)
+        peaks = find_peak_indexes(rh, range, m, num_samples)
+        artifact_signal = find_artifact_signal(peaks, smooth_signal)
+        artifact_signals.append(artifact_signal)
+    return np.array(artifact_signals)
 
 def nearest_zero_point(arr, a, b):
     if b >= len(arr):
@@ -160,7 +170,7 @@ def correlation_vector(artifact_signals, signal):
 
 
 def latent_var(theta, matrix, signal, b):
-
+    pass
 
 def cov(matrix):
     return matrix*matrix.transpose()
@@ -171,43 +181,47 @@ def logistic_function(z):
 
 
 def objective_function(theta, b):
+    pass
 
 
-eeg_data = load_data(1, 'T')
-raw_signal = eeg_data[5][0][4]
-raw_signal_eog = eeg_data[5][0][1]
-raw_signal = raw_signal[0:2000]
-raw_signal_eog = raw_signal_eog[0:2000]
-labels = eeg_data[5][2]
-n_trials = 48
-m = 11
-signal = raw_signal
-matrix = cov(raw_signal)
+def plot_example():
+    eeg_data = load_data(1, 'T')
+    raw_signal = eeg_data[5][0][4]
+    raw_signal_eog = eeg_data[5][0][1]
+    raw_signal = raw_signal[0:2000]
+    raw_signal_eog = raw_signal_eog[0:2000]
+    labels = eeg_data[5][2]
+    n_trials = 48
+    m = 11
+    signal = raw_signal
+    matrix = cov(raw_signal)
 
+    import matplotlib.pyplot as plt
 
-import matplotlib.pyplot as plt
+    plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+    plt.ylabel('amplitude')
+    plt.xlabel('time point')
+    plt.figure(1)
+    plt.subplot(211)
+    plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
+    plt.subplot(211)
+    m = 11
+    num_samples = len(raw_signal)
+    filtered_signal = moving_avg_filter(raw_signal, m)
+    plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
 
-plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-plt.ylabel('amplitude')
-plt.xlabel('time point')
-plt.figure(1)
-plt.subplot(211)
-plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-plt.subplot(211)
-m = 11
-num_samples = len(raw_signal)
-filtered_signal = moving_avg_filter(raw_signal, m)
-plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
+    plt.subplot(211)
+    rh = find_relative_heights(filtered_signal)
+    ti = find_peak_indexes(rh, (8, 1.5), m, num_samples)
+    artifact_signal = find_artifact_signal(ti, filtered_signal)
+    plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
 
-plt.subplot(211)
-rh = find_relative_heights(filtered_signal)
-ti = find_time_indexes(rh, (8, 1.5 ), m, num_samples)
-artifact_signal = artifact_signals(ti, filtered_signal)
-plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
+    plt.subplot(212)
+    plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
+    plt.show()
 
-plt.subplot(212)
-plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
-plt.show()
-x0 = [1, 2]
-#  res = minimize(objective_function, x0, args=(-1.0,), method='SLSQP')
-#  print(res.x)
+eeg_data = load_data(1, 'T')        # Everything
+raw_signals = eeg_data[5][0][3:25]  # EEG channels (raw)
+m = 11                              # Moving avg range
+boundary = (7,15)                   # Ocular artifact range
+artifact_signals = find_artifact_signals(raw_signals, m, boundary)

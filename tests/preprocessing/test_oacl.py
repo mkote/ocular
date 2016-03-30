@@ -58,7 +58,7 @@ class TestOACLfunctions(unittest.TestCase):
         expected = 2
         index_t = 1  # 2nd element
         # Act
-        actual = relative_height(data, index_t)
+        actual = find_relative_height(data, index_t)
         # Assert
         err_msg = "Actual: ", str(actual), ". Expected: ", str(expected)
         self.assertEqual(actual, expected, err_msg)
@@ -70,7 +70,7 @@ class TestOACLfunctions(unittest.TestCase):
         index_t = 0  # first element, too low!
 
         # Act + Assert
-        self.assertRaises(ValueError, relative_height, data, index_t)
+        self.assertRaises(ValueError, find_relative_height, data, index_t)
 
     def test_relative_height_high_time(self):
         # Arrange
@@ -78,7 +78,7 @@ class TestOACLfunctions(unittest.TestCase):
         index_t = 2  # 2nd element
 
         # Act + Assert
-        self.assertRaises(ValueError, relative_height, data, index_t)
+        self.assertRaises(ValueError, find_relative_height, data, index_t)
 
     def test_find_relative_heights(self):
         # Arrange
