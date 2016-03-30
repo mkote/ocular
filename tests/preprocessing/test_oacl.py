@@ -123,7 +123,7 @@ class TestOACLfunctions(unittest.TestCase):
         # Assert
         self.assertEqual(expected, actual)
 
-    def test_nzp(self):
+    def test_nearest_zero_point(self):
         # Arrange
         t_data = [48.02, 27.18, -10.06, 5.27, 31.17, -25.5, -11.6, 27.3, -8.08,
                   3.94]

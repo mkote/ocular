@@ -1,6 +1,9 @@
 # This module contains implementation of ocular artifact detection and removal
+from math import exp, log
+from scipy.optimize import minimize
 
 from d606.preprocessing.dataextractor import load_data
+from numpy import transpose, ndarray
 
 
 def moving_avg_filter(chan_signal, m):
@@ -144,35 +147,89 @@ def is_cross_zero(a, b):
         return False
 
 
-def maf_example():
-        eeg_data = load_data(1, 'T')
-        raw_signal = eeg_data[5][0][4]
-        raw_signal_eog = eeg_data[5][0][1]
-        raw_signal = raw_signal
-        raw_signal_eog = raw_signal_eog
-        import matplotlib.pyplot as plt
-
-        plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-        plt.ylabel('amplitude')
-        plt.xlabel('time point')
-        plt.figure(1)
-        plt.subplot(211)
-        plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-        plt.subplot(211)
-        m = 11
-        num_samples = len(raw_signal)
-        filtered_signal = moving_avg_filter(raw_signal, m)
-        plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-
-        plt.subplot(211)
-        rh = find_relative_heights(filtered_signal)
-        ti = find_time_indexes(rh, (30, 80), m, num_samples)
-        artifact_signal = artifact_signals(ti, filtered_signal)
-        plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
-
-        plt.subplot(212)
-        plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
-        plt.show()
+def learn_filtering_parameter():
+    pass
 
 
-# maf_example()
+def covariance_matrix(artifact_signal, raw_signal):
+    return cov(m=artifact_signal, y=raw_signal)
+
+
+def variance():
+    pass
+
+
+def correlation_vector(artifact_signals, signal):
+    return artifact_signals * signal.transpose()
+
+
+def latent_var(theta, matrix, signal, b):
+    global artifact_signal
+    Ra = cov(matrix)
+    ra = correlation_vector(artifact_signal, signal)
+    r0 = variance(signal)
+    result = theta.transpose() * Ra * theta - 2*theta.transpose()* ra + r0 + b
+    return result
+
+def cov(matrix):
+    return matrix*matrix.transpose()
+
+
+def logistic_function(latent_variable):
+    return 1.0/(1.0+exp(-latent_variable))
+
+
+def objective_function(theta, b):
+    global labels
+    global matrix
+    global signal
+    global n_trials
+    y = labels
+    z = latent_var(theta, matrix, signal, b)
+    nt = n_trials
+    result = 0
+    for j in range(1, m):
+        h = logistic_function(z)
+        result += -y[j]*log(h, 2)-(1-y[j]*log(1-h, 2))
+    result *= (1.0/nt) * result
+    return result
+
+
+eeg_data = load_data(1, 'T')
+raw_signal = eeg_data[5][0][4]
+raw_signal_eog = eeg_data[5][0][1]
+raw_signal = raw_signal[0:2000]
+raw_signal_eog = raw_signal_eog[0:2000]
+labels = eeg_data[5][2]
+n_trials = 48
+m = 11
+signal = raw_signal
+matrix = cov(raw_signal)
+
+
+import matplotlib.pyplot as plt
+
+plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+plt.ylabel('amplitude')
+plt.xlabel('time point')
+plt.figure(1)
+plt.subplot(211)
+plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
+plt.subplot(211)
+m = 11
+num_samples = len(raw_signal)
+filtered_signal = moving_avg_filter(raw_signal, m)
+plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
+
+plt.subplot(211)
+rh = find_relative_heights(filtered_signal)
+ti = find_time_indexes(rh, (8, 1.5 ), m, num_samples)
+artifact_signal = artifact_signals(ti, filtered_signal)
+plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
+
+plt.subplot(212)
+plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
+plt.show()
+x0 = [1, 2]
+#  res = minimize(objective_function, x0, args=(-1.0,), method='SLSQP')
+#  print(res.x)
