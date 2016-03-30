@@ -155,44 +155,22 @@ def covariance_matrix(artifact_signal, raw_signal):
     return cov(m=artifact_signal, y=raw_signal)
 
 
-def variance():
-    pass
-
-
 def correlation_vector(artifact_signals, signal):
     return artifact_signals * signal.transpose()
 
 
 def latent_var(theta, matrix, signal, b):
-    global artifact_signal
-    Ra = cov(matrix)
-    ra = correlation_vector(artifact_signal, signal)
-    r0 = variance(signal)
-    result = theta.transpose() * Ra * theta - 2*theta.transpose()* ra + r0 + b
-    return result
+
 
 def cov(matrix):
     return matrix*matrix.transpose()
 
 
-def logistic_function(latent_variable):
-    return 1.0/(1.0+exp(-latent_variable))
+def logistic_function(z):
+    return 1.0/(1.0+exp(-z))
 
 
 def objective_function(theta, b):
-    global labels
-    global matrix
-    global signal
-    global n_trials
-    y = labels
-    z = latent_var(theta, matrix, signal, b)
-    nt = n_trials
-    result = 0
-    for j in range(1, m):
-        h = logistic_function(z)
-        result += -y[j]*log(h, 2)-(1-y[j]*log(1-h, 2))
-    result *= (1.0/nt) * result
-    return result
 
 
 eeg_data = load_data(1, 'T')
