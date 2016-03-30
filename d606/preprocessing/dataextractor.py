@@ -70,6 +70,16 @@ def load_data(files, type):
     return eeg_list
 
 
+def extract_trials_two(matrix, trials):
+    new_matrix = []
+    num_trials = len(trials)
+    for trial in trials:
+        new_matrix.extend(transpose(matrix[0:25,
+                                        trial+TRIAL_BEGINNING:trial+JUMP]))
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
+                                                                 num_trials)]
+
+
 def extract_trials(matrix, trials):
     """
     :param matrix: numpy matrix
@@ -77,14 +87,115 @@ def extract_trials(matrix, trials):
     :return: new matrix only containing motor imagery
              and a new trial start list
     """
-    nm = matrix
-    trials.append(len(matrix))  # Initialize trials with a end trial
+    new_matrix = matrix
+    trials.append(len(matrix[1]))  # Initialize trials with a end trial
     num_trials = len(trials) - 1
 
-    for i, trial in enumerate(reversed(trials[0:48])):
-        nm = delete(nm, s_[trial + JUMP: trials[num_trials - i]], axis=0)
-        nm = delete(nm, s_[trial:trial + TRIAL_BEGINNING], axis=0)
+    for i, trial in enumerate(reversed(trials[0:num_trials])):
+        new_matrix = delete(new_matrix,
+                            s_[trial + JUMP: trials[num_trials - i]],
+                            axis=1)
 
-    nm = delete(nm, s_[0:trials[0]], axis=0)
-    new_trials = [int(x) * 750 for x in range(0, 48)]
-    return nm, new_trials
+        new_matrix = delete(new_matrix,
+                            s_[trial:trial + TRIAL_BEGINNING],
+                            axis=1)
+
+    new_matrix = delete(new_matrix, s_[0:trials[0]], axis=1)
+    new_trials = [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
+    return new_matrix, new_trials
+
+
+def trial_splitter(matrix, trials):
+    """
+    :param matrix: numpy matrix
+    :param trials: list of trial start points
+    :return: an array of matrix, one matrix per trial
+    """
+    matrix_list = []
+    trials.append(len(matrix[1]))  # Initialize trials with a end trial
+    for i in range(0, len(trials) - 1):
+        matrix_list.append(np.transpose([matrix[:, trials[i]:trials[i + 1]]]))
+
+    return matrix_list
+
+
+def d3_matrix_creator(matrix):
+    """
+    :param matrix: 2d matrix
+    :return: 3d matrix with epochs as first index
+    """
+    slice_list = []
+    num_trials = 288
+    for x in range(num_trials):
+        slice_list.append(matrix[:, x*TRIAL_LENGTH:(x+1)*TRIAL_LENGTH])
+
+    d3_data = array(slice_list)
+    return d3_data
+
+
+def create_events(labels):
+    event_list = []
+    for label in labels:
+        event_list.append([0, 0, label])
+
+    event_data = array(event_list)
+    return event_data
+
+
+def csp_label_reformat(label, type):
+    label_list = []
+    classes = [1, 2, 3, 4]
+    classes.remove(type)
+    for lab in label:
+        if lab == type:
+            label_list.append(int(type))
+        else:
+            label_list.append(int(''.join([str(x) for x in classes])))
+
+    return label_list
+
+
+def run_combiner(run_list):
+    """
+    Combine runs
+    :param run_list: a list of runs to combine
+    :return: a new tuple containing a matrix, trials, labels and
+             artifacts for the combined runs
+    """
+    n_matrix, n_trials, n_labels, n_artifacts = empty([25, 0]), [], [], []
+    matrix_length = []
+    for i, run in enumerate(run_list):
+        # We don't want any runs with only eog data
+        if i in [0, 1, 2]:
+            continue
+        matrix, trials, labels, artifacts = run
+        matrix_length.append(matrix.shape[1])
+        n_matrix = concatenate((n_matrix, matrix), axis=1)
+        n_trials = concatenate((n_trials, trials), axis=0)
+        n_labels = concatenate((n_labels, labels), axis=0)
+        n_artifacts = concatenate((n_artifacts, artifacts), axis=0)
+
+    n_trials = map(int, trial_time_fixer(n_trials, matrix_length))
+    n_matrix = array(n_matrix)
+    return n_matrix, n_trials, n_labels, n_artifacts
+
+
+def trial_time_fixer(trial_list, matrix_length):
+    """
+    Used in Run combiner, to create a correct list of trial start points
+    :param trial_list: A list of Trial start times
+    :param matrix_length: list of matrix length for each run
+    :return: a new trial list
+    """
+    n_trial_list = []
+    trial_adder = 0
+    matrix_counter = 0
+    for i in range(1, len(trial_list)):
+        if trial_list[i] > trial_list[i - 1]:
+            n_trial_list.append(trial_list[i - 1] + trial_adder)
+        else:
+            n_trial_list.append(trial_list[i - 1] + trial_adder)
+            trial_adder += matrix_length[matrix_counter]
+            matrix_counter += 1
+    n_trial_list.append(trial_list[-1] + trial_adder)
+    return n_trial_list
