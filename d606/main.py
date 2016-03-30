@@ -15,7 +15,7 @@ data_list = []
 combined_data = []
 
 runs = load_data(1, "T")
-filters = Filter([[8, 12], [16, 24]])
+filters = Filter([[6, 10], [10, 14], [14, 18], [18, 22], [22, 26], [26, 30]])
 
 for run in runs:
     matrix, trials, labels, artifacts = run

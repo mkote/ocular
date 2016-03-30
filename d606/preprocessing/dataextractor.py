@@ -145,6 +145,12 @@ def csp_label_reformat(label, type):
 
 
 def run_combiner(run_list):
+    """
+    Combine runs
+    :param run_list: a list of runs to combine
+    :return: a new tuple containing a matrix, trials, labels and
+             artifacts for the combined runs
+    """
     n_matrix, n_trials, n_labels, n_artifacts = empty([25, 0]), [], [], []
     matrix_length = []
     for i, run in enumerate(run_list):
@@ -164,6 +170,12 @@ def run_combiner(run_list):
 
 
 def trial_time_fixer(trial_list, matrix_length):
+    """
+    Used in Run combiner, to create a correct list of trial start points
+    :param trial_list: A list of Trial start times
+    :param matrix_length: list of matrix length for each run
+    :return: a new trial list
+    """
     n_trial_list = []
     trial_adder = 0
     matrix_counter = 0
