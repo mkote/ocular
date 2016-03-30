@@ -1,5 +1,5 @@
 from d606.preprocessing.dataextractor import load_data, run_combiner, \
-    extract_trials
+    extract_trials_two
 from d606.preprocessing.filter import Filter
 from d606.featureselection.mnecsp import d3_matrix_creator, csp_one_vs_all
 from d606.classification.svm import csv_one_versus_all
@@ -43,7 +43,7 @@ for data in data_tuple_bands:
 # Trial Extraction before csp and svn
 for eeg_signal in combined_data:
     old_matrix, old_trials, labels, artifacts = eeg_signal
-    new_matrix, new_trials = extract_trials(old_matrix, old_trials)
+    new_matrix, new_trials = extract_trials_two(old_matrix, old_trials)
     bands.append((new_matrix, new_trials, labels))
 
 # CSP one VS all, give csp_one_cs_all num_different labels as input
@@ -70,4 +70,3 @@ for y in range(0, len(bands)):
 voting_results = csp_voting(resultss)
 score = scoring(voting_results, combined_data[0][2])
 print score
-print voting_results
