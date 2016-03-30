@@ -30,7 +30,7 @@ def run_csp(run_data, label):
     # Cross validation with sklearn
     labels = epochs_data.events[:, -1]
 
-    n_components = 3  # pick some components
+    n_components = 6  # pick some components
     csp = CSP(n_components=n_components)
     csp = csp.fit(d3_data, labels)
     return csp

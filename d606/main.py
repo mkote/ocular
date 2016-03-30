@@ -3,6 +3,7 @@ from d606.preprocessing.dataextractor import load_data, run_combiner, \
 from d606.preprocessing.filter import Filter
 from d606.featureselection.mnecsp import d3_matrix_creator, csp_one_vs_all
 from d606.classification.svm import csv_one_versus_all
+from d606.evaluation.voting import csp_voting
 from numpy import array
 
 csp_list = []
@@ -12,7 +13,7 @@ filter_bank = []
 data_list = []
 combined_data = []
 
-runs = load_data(2, "T")
+runs = load_data(1, "T")
 filters = Filter([[8, 12], [16, 24]])
 
 for run in runs:
@@ -60,9 +61,10 @@ for y in range(0, len(bands)):
     for x in d3_matrix:
         for svc, csp in zip(svc_list[y], csp_list[y]):
             transformed = csp.transform(array([x]))
-            result_list.append(svc.predict(transformed))
+            result_list.append(int(svc.predict(transformed)))
         results.append(result_list)
         result_list = []
     resultss.append(results)
     results = []
-print results
+voting_results = csp_voting(resultss)
+print voting_results
