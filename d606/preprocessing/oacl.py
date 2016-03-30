@@ -9,6 +9,7 @@ import numpy as np
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
     # TODO: paper just uses symmetric MAF, but this loses information at ends!
+    print "Applying moving average filter..."
     maf = []
     # We compute only so at each side of a point, we have (m-1)/2 elements.
     start = (m-1)/2
@@ -65,6 +66,7 @@ def find_relative_height(smooth_signal, time):
 
 
 def find_relative_heights(smooth_signal):
+    print "Finding relative heights..."
     relative_heights = []
     for i in range(1, len(smooth_signal)-1):
         next_rel_height = find_relative_height(smooth_signal, i)
@@ -73,6 +75,7 @@ def find_relative_heights(smooth_signal):
 
 
 def find_peak_indexes(relative_heights, peak_range, m_range, n_samples):
+    print "finding peak indexes..."
     l = peak_range[0]
     u = peak_range[1]
     rh = relative_heights
@@ -122,15 +125,18 @@ def find_artifact_signal(peak_indexes, smooth_signal):
             artifact_signal.append(0.0)
     return artifact_signal
 
-def find_artifact_signals(eeg, m, range):
+def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
-    for raw_signal in eeg:
-        smooth_signal = moving_avg_filter(raw_signal, m)
-        rh = find_relative_heights(smooth_signal)
-        num_samples = len(raw_signal)
+    smooth_signal = moving_avg_filter(raw_signal, m)
+    rh = find_relative_heights(smooth_signal)
+    num_samples = len(raw_signal)
+    i = 1
+    for range in range_list:
+        print "Processing signal for range: ", i
         peaks = find_peak_indexes(rh, range, m, num_samples)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
+        i += 1
     return np.array(artifact_signals)
 
 def nearest_zero_point(arr, a, b):
@@ -222,6 +228,10 @@ def plot_example():
 
 eeg_data = load_data(1, 'T')        # Everything
 raw_signals = eeg_data[5][0][3:25]  # EEG channels (raw)
-m = 11                              # Moving avg range
-boundary = (7,15)                   # Ocular artifact range
-artifact_signals = find_artifact_signals(raw_signals, m, boundary)
+raw_signal = eeg_data[5][0][0]      # Arbitrary channel (x_0)
+m = 11                              # Moving avg neighbor value
+r1 = (5,7)                          # Define a range
+r2 = (7,15)                         # ... Define another range!
+range_list = (r1,r2)
+artifact_signals = find_artifact_signals(raw_signal, m, range_list)
+i = 0
