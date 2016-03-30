@@ -1,5 +1,7 @@
 # This module contains implementation of ocular artifact detection and removal
 from math import exp, log
+
+from scipy.ndimage import variance
 from scipy.optimize import minimize
 
 from d606.preprocessing.dataextractor import load_data
@@ -168,7 +170,7 @@ def learn_filtering_parameter():
 
 
 def covariance_matrix(artifact_signal, raw_signal):
-    return cov(m=artifact_signal, y=raw_signal)
+    return np.cov(m=artifact_signal, y=raw_signal)
 
 
 def correlation_vector(artifact_signals, signal):
@@ -178,16 +180,24 @@ def correlation_vector(artifact_signals, signal):
 def latent_var(theta, matrix, signal, b):
     pass
 
-def cov(matrix):
-    return matrix*matrix.transpose()
-
 
 def logistic_function(z):
     return 1.0/(1.0+exp(-z))
 
 
 def objective_function(theta, b):
-    pass
+    thetaT = theta.transpose()
+    z = [thetaT * np.cov(trial_artifact_signals[i]) * theta -
+         2 * thetaT * trial_artifact_signals[i] * trials[i].transpose() +
+         variance(trials[i]) + b
+         for i in xrange(n_trials)]
+
+    y = labels
+    h = logistic_function
+    summa = sum([-y[i] * log(h(z[i]), 2) - (1 - y[i]) * log(1 - h(z[i], 2))
+            for i in xrange(n_trials)])
+
+    return summa / n_trials
 
 
 def plot_example():
@@ -200,7 +210,7 @@ def plot_example():
     n_trials = 48
     m = 11
     signal = raw_signal
-    matrix = cov(raw_signal)
+    matrix = np.cov(raw_signal)
 
     import matplotlib.pyplot as plt
 
@@ -229,9 +239,12 @@ def plot_example():
 eeg_data = load_data(1, 'T')        # Everything
 raw_signals = eeg_data[5][0][3:25]  # EEG channels (raw)
 raw_signal = eeg_data[5][0][0]      # Arbitrary channel (x_0)
+labels = eeg_data[5][2]             # Labels
+n_trials = 48                       # Number of trials
 m = 11                              # Moving avg neighbor value
 r1 = (5,7)                          # Define a range
 r2 = (7,15)                         # ... Define another range!
 range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
-i = 0
+trial_artifact_signals = get_trials(artifact_signals)
+trials = get_trials(raw_signal)
