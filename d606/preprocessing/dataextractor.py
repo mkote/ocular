@@ -165,7 +165,7 @@ def run_combiner(run_list):
     matrix_length = []
     for i, run in enumerate(run_list):
         # We don't want any runs with only eog data
-        if i in [0, 1, 2]:
+        if i in [int(x) for x in range(0, 3-(9-len(run_list)))]:
             continue
         matrix, trials, labels, artifacts = run
         matrix_length.append(matrix.shape[1])
