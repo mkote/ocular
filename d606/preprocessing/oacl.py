@@ -187,7 +187,8 @@ def logistic_function(z):
 
 def objective_function(theta, b):
     thetaT = theta.transpose()
-    Ra = trial_artifact_signals * trial_artifact_signals.transpose()
+    Ra = np.array(trial_artifact_signals) * np.array(
+        trial_artifact_signals).transpose()
     z = [thetaT * Ra * theta -
          2 * thetaT * np.mat([trial_artifact_signals[j][i]
                               for j in xrange(len(trial_artifact_signals))])
