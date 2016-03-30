@@ -4,6 +4,7 @@ from d606.preprocessing.filter import Filter
 from d606.featureselection.mnecsp import d3_matrix_creator, csp_one_vs_all
 from d606.classification.svm import csv_one_versus_all
 from d606.evaluation.voting import csp_voting
+from d606.evaluation.score import scoring
 from numpy import array
 
 csp_list = []
@@ -67,4 +68,6 @@ for y in range(0, len(bands)):
     resultss.append(results)
     results = []
 voting_results = csp_voting(resultss)
+score = scoring(voting_results, combined_data[0][2])
+print score
 print voting_results
