@@ -1,7 +1,8 @@
 from sklearn.svm import SVC
 from sklearn.cross_validation import ShuffleSplit
-from d606.preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
-from numpy import array, transpose
+from d606.preprocessing.dataextractor import d3_matrix_creator, \
+    csp_label_reformat
+from numpy import array
 
 
 def train_svc(shuffle, csp, data, labels):
