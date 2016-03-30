@@ -68,5 +68,5 @@ for y in range(0, len(bands)):
     resultss.append(results)
     results = []
 voting_results = csp_voting(resultss)
-score = scoring(voting_results, combined_data[0][2])
+score, wrong_list = scoring(voting_results, combined_data[0][2])
 print score
