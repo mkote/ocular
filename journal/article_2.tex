@@ -42,10 +42,10 @@
 \renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
 
 \usepackage{titlesec} % Allows customization of titles
-\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
-\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
-\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
-\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+%\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+%\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+\titleformat*{\section}{\large\centering\bfseries} % Change the look of the section titles
+\titleformat*{\subsection}{\large\bfseries} % Change the look of the section titles
 
 \usepackage{fancyhdr} % Headers and footers
 \pagestyle{fancy} % All pages have headers and footers
@@ -58,7 +58,7 @@
 %	TITLE SECTION
 %----------------------------------------------------------------------------------------
 
-\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Article Title}} % Article title
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Removal of EEG Ocular Artifacts}} % Article title
 
 \author{
 \large
@@ -102,7 +102,7 @@
 
 %------------------------------------------------
 
-\input{discussion}
+\input{conclusion}
 
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
