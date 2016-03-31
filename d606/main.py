@@ -21,7 +21,8 @@ for subject in [int(x) for x in range(1, 10)]:
     runs = load_data(subject, "T")
     evals = load_data(subject, "E")
 
-    filters = Filter([[6, 10], [10, 14], [14, 18], [18, 22], [22, 26], [26, 30]])
+    filters = Filter([[6, 10], [10, 14], [14, 18], 
+        [18, 22], [22, 26], [26, 30]])
     num_banks = len(filters.band_range)
 
     for run in runs:
@@ -32,7 +33,6 @@ for subject in [int(x) for x in range(1, 10)]:
 
     filt_tuples = [[] for x in range(0, len(filter_bank[0]))]
     data_tuple_bands = [[] for x in range(0, len(filter_bank[0]))]
-
 
     # Restructure matrices, and recreate data tuples
     for bank in filter_bank:
