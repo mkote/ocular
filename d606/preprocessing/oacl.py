@@ -185,14 +185,16 @@ def logistic_function(z):
     return 1.0/(1.0+exp(-z))
 
 
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
+
 def objective_function(theta, b):
     thetaT = theta.transpose()
-    Ra = np.array(trial_artifact_signals) * np.array(
-        trial_artifact_signals).transpose()
-    z = [thetaT * Ra * theta -
-         2 * thetaT * np.mat([trial_artifact_signals[j][i]
-                              for j in xrange(len(trial_artifact_signals))])
-         * trial_signals[i].transpose() + variance(trial_signals[i]) + b
+    Xa = [column(trial_artifact_signals, i) for i in xrange(n_trials)]
+    z = [thetaT * Xa[i] * Xa[i].transpose() * theta -
+         2 * thetaT * Xa[i] * trial_signals[i].transpose() +
+         variance(trial_signals[i]) + b
          for i in xrange(n_trials)]
 
     y = labels
@@ -261,10 +263,10 @@ range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
 trial_signals = np.mat(extract_trials_array(raw_signals[0], trials_start))
-trial_artifact_signals = [np.mat(extract_trials_array(artifact_signals[i],
-                                               trials_start))
+trial_artifact_signals = [extract_trials_array(artifact_signals[i],
+                                               trials_start)
                           for i in xrange(len(range_list))]
 
-objective_function(np.mat([0.5] * len(range_list)), 2)
+objective_function(np.mat([0.5] * len(range_list)).transpose(), 2)
 
 i = 47
