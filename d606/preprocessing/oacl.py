@@ -1,11 +1,8 @@
 # This module contains implementation of ocular artifact detection and removal
+
 from math import exp, log
-
-from scipy.ndimage import variance
-from scipy.optimize import minimize
-
+# from scipy.optimize import minimize
 from d606.preprocessing.dataextractor import load_data, extract_trials_two
-from numpy import transpose, ndarray
 import numpy as np
 
 def moving_avg_filter(chan_signal, m):
@@ -189,17 +186,24 @@ def column(matrix, i):
     return [row[i] for row in matrix]
 
 
+def variance(vector):
+    avg = np.mean(vector)
+    return sum([pow(val - avg, 2) for val in vector]) / len(vector)
+
+
 def objective_function(theta, b):
     thetaT = theta.transpose()
-    Xa = [column(trial_artifact_signals, i) for i in xrange(n_trials)]
-    z = [thetaT * Xa[i] * Xa[i].transpose() * theta -
+    Xa = [np.mat(column(trial_artifact_signals, i)) for i in xrange(n_trials)]
+    z = [int(thetaT * Xa[i] * Xa[i].transpose() * theta -
          2 * thetaT * Xa[i] * trial_signals[i].transpose() +
-         variance(trial_signals[i]) + b
+         variance(trial_signals[i].tolist()[0]) + b)
          for i in xrange(n_trials)]
 
     y = labels
     h = logistic_function
-    summa = sum([-y[i] * log(h(z[i]), 2) - (1 - y[i]) * log(1 - h(z[i], 2))
+
+    # TODO: fix log of negative number
+    summa = sum([-y[i] * log(h(z[i]), 2) - (1 - y[i]) * log(1 - h(z[i]), 2)
             for i in xrange(n_trials)])
 
     return summa / n_trials
