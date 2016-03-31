@@ -3,6 +3,7 @@ import numpy as np
 from numpy import *
 from collections import namedtuple
 import os
+from itertools import chain
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     '../../matfiles/'))  # Path to math files
@@ -161,22 +162,16 @@ def run_combiner(run_list):
     :return: a new tuple containing a matrix, trials, labels and
              artifacts for the combined runs
     """
-    n_matrix, n_trials, n_labels, n_artifacts = empty([25, 0]), [], [], []
-    matrix_length = []
-    for i, run in enumerate(run_list):
-        # We don't want any runs with only eog data
-        if i in [int(x) for x in range(0, 3-(9-len(run_list)))]:
-            continue
-        matrix, trials, labels, artifacts = run
-        matrix_length.append(matrix.shape[1])
-        n_matrix = concatenate((n_matrix, matrix), axis=1)
-        n_trials = concatenate((n_trials, trials), axis=0)
-        n_labels = concatenate((n_labels, labels), axis=0)
-        n_artifacts = concatenate((n_artifacts, artifacts), axis=0)
+    first_index = (run_list.index(x) for x in run_list if len(x[1]) > 0).next()
+    m_matrix = transpose(list(chain(*[transpose(x[0]) for x in run_list[
+                                                       first_index:]])))
+    m_trials = list(chain(*[x[1] for x in run_list[first_index:]]))
+    m_labels = list(chain(*[x[2] for x in run_list[first_index:]]))
+    m_artifacts = list(chain(*[x[3] for x in run_list[first_index:]]))
+    matrix_length = [x[0].shape[1] for x in run_list[first_index:]]
 
-    n_trials = map(int, trial_time_fixer(n_trials, matrix_length))
-    n_matrix = array(n_matrix)
-    return n_matrix, n_trials, n_labels, n_artifacts
+    m_trials = map(int, trial_time_fixer(m_trials, matrix_length))
+    return m_matrix, m_trials, m_labels, m_artifacts
 
 
 def trial_time_fixer(trial_list, matrix_length):
