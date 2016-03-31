@@ -7,7 +7,7 @@ from numpy import array
 
 def train_svc(shuffle, csp, data, labels):
     cv = shuffle
-    svc = SVC(C=1, kernel='linear')
+    svc = SVC(C=0.75, kernel='linear')
     for train_idx, test_idx in cv:
         y_train, y_test = labels[train_idx], labels[test_idx]
 
