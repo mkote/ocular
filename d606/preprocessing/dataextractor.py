@@ -4,6 +4,7 @@ from numpy import *
 from collections import namedtuple
 import os
 from itertools import chain
+import time
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     '../../matfiles/'))  # Path to math files
@@ -203,33 +204,34 @@ def dostuff(runs, filters):
     filter_bank = []
     num_banks = len(filters.band_range)
 
+    fb_s = time.time()
     for run in runs:
         matrix, trials, labels, artifacts = run
-        filter_bank.append(filters.filter(matrix))
-        data_list.append((trials, labels, artifacts))
+        filter_bank.append([(single_filter, trials, labels, artifacts) for
+                            single_filter in filters.filter(matrix)])
     del run, runs
-
-    filt_tuples = [[] for x in range(0, len(filter_bank[0]))]
+    fb_e = time.time()
+    print "\t\tCreating filterbank takes: ", fb_e-fb_s
     data_tuple_bands = [[] for x in range(0, len(filter_bank[0]))]
 
+    ro_s = time.time()
     # Restructure matrices, and recreate data tuples
     for bank in filter_bank:
         for x in range(0, num_banks):
-            filt_tuples[x].append(bank[x])
+            data_tuple_bands[x].append(bank[x])
     del bank, filter_bank
+    ro_e = time.time()
+    print "\t\tReorganizing takes: ", ro_e-ro_s
 
-    for i, data in enumerate(data_list):
-        for x in range(0, num_banks):
-            trials, labels, artifacts = data
-            matrix = filt_tuples[x][i]
-            data_tuple_bands[x].append((matrix, trials, labels, artifacts))
-    del data, trials, labels, artifacts, matrix, data_list, filt_tuples
-
+    co_s = time.time()
     # Call run_combiner with band from data_tuples
     for x in [0 for y in range(0, len(data_tuple_bands))]:
         combined_data.append(run_combiner(data_tuple_bands[x]))
         del data_tuple_bands[x]
+    co_e = time.time()
+    print "\t\tCombining takes: ", co_e-co_s
 
+    ex_s = time.time()
     # Trial Extraction before csp and svn
     for eeg_signal in combined_data:
         old_matrix, old_trials, labels, artifacts = eeg_signal
@@ -237,5 +239,7 @@ def dostuff(runs, filters):
         bands.append((new_matrix, new_trials, labels))
     combined_labels.extend(combined_data[0][2])
     del combined_data
+    ex_e = time.time()
+    print "\t\tExtracting takes: ", ex_e-ex_s
 
     return bands, combined_labels

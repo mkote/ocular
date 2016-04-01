@@ -23,7 +23,8 @@ def run_csp(run_data, label):
     event_info = create_events(labels)
 
     # Create mne structure
-    epochs_data = mne.EpochsArray(d3_data, data_info, event_info)
+    epochs_data = mne.EpochsArray(d3_data, data_info, event_info,
+                                  verbose=False)
 
     """ Do some crazy csp stuff """
 
