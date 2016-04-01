@@ -187,23 +187,25 @@ def column(matrix, i):
 
 
 def variance(vector):
-    avg = np.mean(vector)
+    avg = int(np.mean(vector))
     return sum([pow(val - avg, 2) for val in vector]) / len(vector)
 
 
 def objective_function(theta, b):
+    n = range(n_trials)
     thetaT = theta.transpose()
-    Xa = [np.mat(column(trial_artifact_signals, i)) for i in xrange(n_trials)]
-    z = [int(thetaT * Xa[i] * Xa[i].transpose() * theta -
-         2 * thetaT * Xa[i] * trial_signals[i].transpose() +
-         variance(trial_signals[i].tolist()[0]) + b)
-         for i in xrange(n_trials)]
+    Xa = [np.mat(column(trial_artifact_signals, i)) for i in n]
 
+    k1 = [thetaT * (Xa[i] * Xa[i].transpose()) * theta for i in n]
+    k2 = [2 * thetaT * (Xa[i] * trial_signals[i].transpose()) for i in n]
+
+    z = [k1[i] - k2[i] + variance(trial_signals[i].tolist()[0]) + b for i in n]
     y = labels
     h = logistic_function
 
-    # TODO: fix log of negative number
-    summa = sum([-y[i] * log(h(z[i]), 2) - (1 - y[i]) * log(1 - h(z[i]), 2)
+    # TODO: fix log of 0
+    summa = sum([-y[i] * log(h(z[i]), 2) -
+                 (1 - y[i]) * log(1 - min(h(z[i]), 0.9999999999999999), 2)
             for i in xrange(n_trials)])
 
     return summa / n_trials
@@ -271,6 +273,6 @@ trial_artifact_signals = [extract_trials_array(artifact_signals[i],
                                                trials_start)
                           for i in xrange(len(range_list))]
 
-objective_function(np.mat([0.5] * len(range_list)).transpose(), 2)
+print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
 
 i = 47
