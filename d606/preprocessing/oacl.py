@@ -1,12 +1,11 @@
 # This module contains implementation of ocular artifact detection and removal
 
 from math import exp, log
-# from scipy.optimize import minimize
 from decimal import Decimal, getcontext
 from scipy.optimize import minimize
-
 from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
+import matplotlib.pyplot as plt
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
@@ -244,8 +243,6 @@ def plot_example():
     signal = raw_signal
     matrix = np.cov(raw_signal)
 
-    import matplotlib.pyplot as plt
-
     plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
     plt.ylabel('amplitude')
     plt.xlabel('time point')
@@ -296,8 +293,6 @@ trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start
 getcontext().prec = 300
 
 # print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
-
-import matplotlib.pyplot as plt
 
 plt.axis([0, len(artifact_signals[1]), min(artifact_signals[1]), max(artifact_signals[1])])
 plt.ylabel('amplitude')
