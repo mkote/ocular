@@ -1,6 +1,7 @@
 import mne
 from mne.decoding import CSP
 from d606.preprocessing.dataextractor import *
+import d606.preprocessing.searchgrid as search
 
 
 def run_csp(run_data, label):
@@ -9,10 +10,10 @@ def run_csp(run_data, label):
     d3_data = d3_matrix_creator(matrix)
 
     # create data info object for rawArray
-    #ch_names = ['eog' + str(x) for x in range(1, 4)]
+    # ch_names = ['eog' + str(x) for x in range(1, 4)]
     ch_names = ['eeg' + str(x) for x in range(1, 23)]
 
-    #ch_types = ['eog' for x in range(0, 3)]
+    # ch_types = ['eog' for x in range(0, 3)]
     ch_types = ['eeg' for x in range(1, 23)]
 
     # Create label info
@@ -23,16 +24,15 @@ def run_csp(run_data, label):
     event_info = create_events(labels)
 
     # Create mne structure
-    epochs_data = mne.EpochsArray(d3_data, data_info, event_info,
-                                  verbose=False)
+    epochs_data = mne.EpochsArray(d3_data, data_info, event_info, verbose=False)
 
     """ Do some crazy csp stuff """
 
     # Cross validation with sklearn
     labels = epochs_data.events[:, -1]
 
-    n_components = 6  # pick some components
-    csp = CSP(n_components=n_components)
+    n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 6
+    csp = CSP(n_components=n_comp)
     csp = csp.fit(d3_data, labels)
     return csp
 

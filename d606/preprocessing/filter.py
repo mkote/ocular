@@ -1,13 +1,13 @@
 from d606.preprocessing.bandpass import bandpass_matrix
-from scipy.signal import iirfilter, filtfilt
+from scipy.signal import iirfilter
 
 
 class Filter:
     def __init__(self, range_spec):
         self._range = []
         self.band_range = range_spec
-        self.filters = []
-        self.create_filters()
+        # self.filters = []
+        # self.create_filters()
 
     def create_filters(self):
         nyq = 0.5 * 250
@@ -20,13 +20,13 @@ class Filter:
     def filter(self, data):
         filters = []
         if len(self.band_range) <= 0:
-            ValueError("You dumb fuck, you need to specify a legal range")
+            ValueError("You need to specify a legal range")
         else:
             for x in range(0, len(self.band_range)):
-                # filters.append(bandpass_matrix(data, self.band_range[x][0],
-                #                                 self.band_range[x][1]))
-                filters.append(filtfilt(self.filters[x][0], self.filters[x][
-                   1], data))
+                filters.append(bandpass_matrix(data, self.band_range[x][0],
+                                               self.band_range[x][1]))
+                # filters.append(filtfilt(self.filters[x][0], self.filters[x][
+                #  1], data))
             return filters
 
     def get_range(self):

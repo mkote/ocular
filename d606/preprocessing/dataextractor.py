@@ -4,6 +4,7 @@ from numpy import *
 from collections import namedtuple
 import os
 from itertools import chain
+from d606.evaluation.timing import timed_block
 import time
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -159,6 +160,7 @@ def csp_label_reformat(label, type):
 
 def run_combiner(run_list):
     """
+from sklearn.preprocessing import MinMaxScaler
     Combine runs
     :param run_list: a list of runs to combine
     :return: a new tuple containing a matrix, trials, labels and
@@ -196,50 +198,36 @@ def trial_time_fixer(trial_list, matrix_length):
     n_trial_list.append(trial_list[-1] + trial_adder)
     return n_trial_list
 
-def dostuff(runs, filters):
+
+def restructure_data(runs, filters):
     bands = []
     combined_data = []
     combined_labels = []
-    data_list = []
     filter_bank = []
     num_banks = len(filters.band_range)
 
-    fb_s = time.time()
     for run in runs:
         matrix, trials, labels, artifacts = run
         filter_bank.append([(single_filter, trials, labels, artifacts) for
                             single_filter in filters.filter(matrix)])
-    del run, runs
-    fb_e = time.time()
-    print "\t\tCreating filterbank takes: ", fb_e-fb_s
-    data_tuple_bands = [[] for x in range(0, len(filter_bank[0]))]
 
-    ro_s = time.time()
-    # Restructure matrices, and recreate data tuples
+    data_tuple_bands = [[] for x in range(0, len(filter_bank[0]))]
+    #  Restructure matrices, and recreate data tuples
     for bank in filter_bank:
         for x in range(0, num_banks):
             data_tuple_bands[x].append(bank[x])
-    del bank, filter_bank
-    ro_e = time.time()
-    print "\t\tReorganizing takes: ", ro_e-ro_s
+    del bank, filter_bank, runs
 
-    co_s = time.time()
     # Call run_combiner with band from data_tuples
     for x in [0 for y in range(0, len(data_tuple_bands))]:
         combined_data.append(run_combiner(data_tuple_bands[x]))
         del data_tuple_bands[x]
-    co_e = time.time()
-    print "\t\tCombining takes: ", co_e-co_s
 
-    ex_s = time.time()
     # Trial Extraction before csp and svn
     for eeg_signal in combined_data:
         old_matrix, old_trials, labels, artifacts = eeg_signal
         new_matrix, new_trials = extract_trials_two(old_matrix, old_trials)
         bands.append((new_matrix, new_trials, labels))
     combined_labels.extend(combined_data[0][2])
-    del combined_data
-    ex_e = time.time()
-    print "\t\tExtracting takes: ", ex_e-ex_s
 
     return bands, combined_labels
