@@ -281,8 +281,8 @@ raw_signals = channels[0:22]        # EEG channels (raw)
 raw_signal = raw_signals[0]         # Arbitrary channel (x_0)
 n_trials = len(trials_start)              # Number of trials
 m = 11                              # Moving avg neighbor value
-r1 = (5,7)                          # Define a range
-r2 = (7,15)                         # ... Define another range!
+r1 = (5,6)                          # Define a range
+r2 = (7,8)                         # ... Define another range!
 range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
@@ -292,31 +292,27 @@ trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start
 
 getcontext().prec = 300
 
-# print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
-
-plt.axis([0, len(artifact_signals[1]), min(artifact_signals[1]), max(artifact_signals[1])])
-plt.ylabel('amplitude')
-plt.xlabel('time point')
-plt.figure(1)
-plt.subplot(211)
-plt.plot([x for x in range(0, len(artifact_signals[1]))], artifact_signals[1])
-plt.subplot(212)
-m = 11
-num_samples = len(artifact_signals[1])
-filtered_signal = moving_avg_filter(raw_signal, m)
-plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-plt.show()
-
 print("Minimizing...")
-min_result = minimize(objective_function_aux, [0.5] * len(range_list) + [2])
+min_result = minimize(objective_function_aux,
+                      [0.7] * (len(range_list) + 1),
+                      bounds=[[0, 1]] * (len(range_list) + 1),
+                      method="L-BFGS-B")
+print(min_result.x)
+min_result = minimize(objective_function_aux,
+                      [0.7] * (len(range_list) + 1),
+                      bounds=[[0, 1]] * (len(range_list) + 1),
+                      method="TNC")
+print(min_result.x)
+min_result = minimize(objective_function_aux,
+                      [0.7] * (len(range_list) + 1),
+                      bounds=[[0, 1]] * (len(range_list) + 1),
+                      method="SLSQP")
 print(min_result.x)
 
 filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
 b = min_result.x[len(min_result.x) - 1]
-print(filtering_param, b)
 
 clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
-print(np.array(clean_signal).shape)
 
 plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
 plt.ylabel('amplitude')
