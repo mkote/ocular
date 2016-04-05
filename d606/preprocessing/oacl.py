@@ -221,9 +221,9 @@ def objective_function(theta, b):
 
 
 def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
-    A = theta * artifact_signals;
-    corrected_signal = [a_i - b_i for a_i,b_i in zip(raw_signal, artifact_signals)]
-    return corrected_signal
+    A = theta.transpose().dot(artifact_signals)
+    corrected_signal = [b_i - a_i for a_i, b_i in zip(raw_signal, A)]
+    return np.array(corrected_signal).transpose()
 
 
 def objective_function_aux(args):
@@ -319,5 +319,18 @@ print(min_result.x)
 filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
 b = min_result.x[len(min_result.x) - 1]
 print(filtering_param, b)
+
+clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
+print(np.array(clean_signal).shape)
+
+# plt.axis([0, len(clean_signal), min(clean_signal), max(clean_signal)])
+plt.ylabel('amplitude')
+plt.xlabel('time point')
+plt.figure(1)
+plt.subplot(211)
+plt.plot([x for x in range(0, len(clean_signal))], clean_signal)
+plt.subplot(212)
+plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
+plt.show()
 
 i = 47
