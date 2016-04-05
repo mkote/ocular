@@ -284,9 +284,10 @@ raw_signals = channels[0:22]        # EEG channels (raw)
 raw_signal = raw_signals[0]         # Arbitrary channel (x_0)
 n_trials = len(trials_start)              # Number of trials
 m = 11                              # Moving avg neighbor value
-r1 = (5,7)                          # Define a range
-r2 = (7,15)                         # ... Define another range!
-range_list = (r1,r2)
+#r1 = (1,30)                          # Define a range
+r2 = (7, 15)
+r3 = (2,6)                   # ... Define another range!
+range_list = (r2, r3)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
 trial_signals = np.mat(extract_trials_array(raw_signals[0], trials_start))
@@ -310,7 +311,7 @@ m = 11
 num_samples = len(artifact_signals[1])
 filtered_signal = moving_avg_filter(raw_signal, m)
 plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-plt.show()
+#plt.show()
 
 print("Minimizing...")
 min_result = minimize(objective_function_aux, [0.5] * len(range_list) + [2])
@@ -327,12 +328,15 @@ plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
 plt.ylabel('amplitude')
 plt.xlabel('time point')
 plt.figure(1)
-plt.subplot(211)
+plt.subplot(3,1,1)
 plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
 plt.plot([x for x in range(0, len(clean_signal))], clean_signal)
-plt.subplot(212)
+plt.subplot(3,1,2)
 plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
 plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-plt.show()
 
-i = 47
+plt.subplot(3,1,3)
+plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+#plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
+plt.plot([x for x in range(0, len(artifact_signals[1]))], artifact_signals[1])
+plt.plot([x for x in range(0, len(artifact_signals[1]))], artifact_signals[1])
