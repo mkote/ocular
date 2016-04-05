@@ -15,10 +15,12 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     y = lfilter(b, a, data)
     return y
 
+
 def butter_bandpass_matrix(data, lowcut, highcut, fs, order=5):
     b, a = butter_bandpass(lowcut, highcut, fs, order)
     y = filtfilt(b, a, data, axis=1)
     return y
+
 
 def bandpass_matrix(matrix, lowcut, highcut):
     """

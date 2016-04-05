@@ -11,5 +11,3 @@ kernel = ['rbf', 'linear']
 
 # num componants for csp
 n_components = [5, 6, 7]
-
-
