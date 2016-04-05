@@ -229,12 +229,10 @@ def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     return np.array(corrected_signal)
 
 
-def objective_function_aux(args, labels, n_trials, trial_artifact_signals,
-                           trial_signals):
+def objective_function_aux(args, args2):
     arg1 = np.array([[args[k]] for k in xrange(len(args)-1)])
     arg2 = args[len(args)-1]
-    return objective_function(arg1, arg2, labels, n_trials, trial_artifact_signals,
-                              trial_signals)
+    return objective_function(arg1, arg2, *args2)
 
 
 def plot_example():
@@ -311,3 +309,6 @@ def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
                                           range_list,
                                           m))
     return clean_signals
+
+eeg_data = load_data(1, 'T')
+clean_eeg(eeg_data)

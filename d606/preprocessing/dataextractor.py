@@ -4,9 +4,6 @@ from numpy import *
 from collections import namedtuple
 import os
 from itertools import chain
-from d606.evaluation.timing import timed_block
-import time
-from sklearn import preprocessing
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     '../../matfiles/'))  # Path to math files
