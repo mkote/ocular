@@ -206,32 +206,28 @@ def restructure_data(runs, filters):
     filter_bank = []
     num_banks = len(filters.band_range)
 
-    with timed_block("Creating filterbank"):
-        for run in runs:
-            matrix, trials, labels, artifacts = run
-            filter_bank.append([(single_filter, trials, labels, artifacts) for
-                                single_filter in filters.filter(matrix)])
+    for run in runs:
+        matrix, trials, labels, artifacts = run
+        filter_bank.append([(single_filter, trials, labels, artifacts) for
+                            single_filter in filters.filter(matrix)])
 
     data_tuple_bands = [[] for x in range(0, len(filter_bank[0]))]
-    with timed_block("Reorganizing takes: "):
-        #  Restructure matrices, and recreate data tuples
-        for bank in filter_bank:
-            for x in range(0, num_banks):
-                data_tuple_bands[x].append(bank[x])
-        del bank, filter_bank, runs
+    #  Restructure matrices, and recreate data tuples
+    for bank in filter_bank:
+        for x in range(0, num_banks):
+            data_tuple_bands[x].append(bank[x])
+    del bank, filter_bank, runs
 
-    with timed_block("Combining takes: "):
-        # Call run_combiner with band from data_tuples
-        for x in [0 for y in range(0, len(data_tuple_bands))]:
-            combined_data.append(run_combiner(data_tuple_bands[x]))
-            del data_tuple_bands[x]
+    # Call run_combiner with band from data_tuples
+    for x in [0 for y in range(0, len(data_tuple_bands))]:
+        combined_data.append(run_combiner(data_tuple_bands[x]))
+        del data_tuple_bands[x]
 
-    with timed_block("Extracting takes: "):
-        # Trial Extraction before csp and svn
-        for eeg_signal in combined_data:
-            old_matrix, old_trials, labels, artifacts = eeg_signal
-            new_matrix, new_trials = extract_trials_two(old_matrix, old_trials)
-            bands.append((new_matrix, new_trials, labels))
-        combined_labels.extend(combined_data[0][2])
+    # Trial Extraction before csp and svn
+    for eeg_signal in combined_data:
+        old_matrix, old_trials, labels, artifacts = eeg_signal
+        new_matrix, new_trials = extract_trials_two(old_matrix, old_trials)
+        bands.append((new_matrix, new_trials, labels))
+    combined_labels.extend(combined_data[0][2])
 
     return bands, combined_labels

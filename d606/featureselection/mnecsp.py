@@ -1,6 +1,7 @@
 import mne
 from mne.decoding import CSP
 from d606.preprocessing.dataextractor import *
+import d606.preprocessing.searchgrid as search
 
 
 def run_csp(run_data, label):
@@ -30,8 +31,8 @@ def run_csp(run_data, label):
     # Cross validation with sklearn
     labels = epochs_data.events[:, -1]
 
-    n_components = 6  # pick some components
-    csp = CSP(n_components=n_components)
+    n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 6
+    csp = CSP(n_components=n_comp)
     csp = csp.fit(d3_data, labels)
     return csp
 

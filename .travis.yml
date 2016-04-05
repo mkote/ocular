@@ -6,7 +6,6 @@ python:
 branches:
   only:
     - master
-    - OptBaselineResults
 
 # notifications
 notifications:
