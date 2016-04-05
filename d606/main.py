@@ -5,13 +5,14 @@ from d606.classification.svm import csv_one_versus_all, svm_prediction
 from d606.evaluation.timing import timed_block
 from d606.evaluation.voting import csp_voting
 from d606.evaluation.score import scoring
-from d606.preprocessing.searchgrid import grid_combinator, grid_parameters
+from d606.preprocessing.searchgrid import grid_combinator, grid_parameters, save_results
 import d606.preprocessing.searchgrid as search
 from collections import namedtuple
 from numpy import mean
 import warnings
 
 Grid = namedtuple('Grid', ['band_list'])
+best_result = [0, 0]
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 warnings.filterwarnings('ignore', category=RuntimeWarning)
@@ -52,7 +53,16 @@ for sample in grid_list:
             score, wrong_list = scoring(voting_results, test_combined_labels)
             subject_results.append(score)
 
+            # store result in txt file
+            save_results(score, search.grid)
+
+            if score > best_result[0]:
+                best_result[0] = score
+                best_result[1] = search.grid
+
     print subject_results
     print search.grid
     print '\n'
-    # print mean(subject_results)
+
+print "\t\tbest result: %s \n\t\tbest Parameters: %s" % (best_result[0], best_result[1])
+# print mean(subject_results)

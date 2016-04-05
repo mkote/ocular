@@ -14,16 +14,17 @@ kernel = ['rbf', 'linear']
 n_comp = [5, 6, 7]
 
 # ranges for bandpassing
-band_list = [[[4, 8], [12, 16]],
-             [[4, 8], [12, 16], [17, 30]]]
+band_list = [[[4, 8], [8, 12], [12, 16], [16, 20], [20, 24], [24, 30], [30, 36]],
+             [[16, 20], [20, 24], [24, 30], [30, 36]]]
 
 ''' Set parameters for the Grid search '''
 grid_parameters = [band_list]
 grid = ()
 
 
-def save_results():
-    pass
+def save_results(result, parameters):
+    with open("results.txt", "a") as result_file:
+        result_file.write(str(result) + str('\n') + str(parameters))
 
 
 def grid_combinator(grid_search):
