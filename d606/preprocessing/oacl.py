@@ -1,12 +1,11 @@
 # This module contains implementation of ocular artifact detection and removal
 
 from math import exp, log
-# from scipy.optimize import minimize
 from decimal import Decimal, getcontext
 from scipy.optimize import minimize
-
 from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
+import matplotlib.pyplot as plt
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
@@ -244,8 +243,6 @@ def plot_example():
     signal = raw_signal
     matrix = np.cov(raw_signal)
 
-    import matplotlib.pyplot as plt
-
     plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
     plt.ylabel('amplitude')
     plt.xlabel('time point')
@@ -296,33 +293,30 @@ trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start
 
 getcontext().prec = 300
 
+
 # print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
 
-import matplotlib.pyplot as plt
-
-plt.axis([0, len(artifact_signals[1]), min(artifact_signals[1]), max(artifact_signals[1])])
-plt.ylabel('amplitude')
-plt.xlabel('time point')
-plt.figure(1)
-plt.subplot(211)
-plt.plot([x for x in range(0, len(artifact_signals[1]))], artifact_signals[1])
-plt.subplot(212)
-m = 11
-num_samples = len(artifact_signals[1])
-filtered_signal = moving_avg_filter(raw_signal, m)
-plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-#plt.show()
-
 print("Minimizing...")
-min_result = minimize(objective_function_aux, [0.5] * len(range_list) + [2])
+min_result = minimize(objective_function_aux,
+                      [0.7] * (len(range_list) + 1),
+                      bounds=[[0, 1]] * (len(range_list) + 1),
+                      method="L-BFGS-B")
+print(min_result.x)
+min_result = minimize(objective_function_aux,
+                      [0.7] * (len(range_list) + 1),
+                      bounds=[[0, 1]] * (len(range_list) + 1),
+                      method="TNC")
+print(min_result.x)
+min_result = minimize(objective_function_aux,
+                      [0.7] * (len(range_list) + 1),
+                      bounds=[[0, 1]] * (len(range_list) + 1),
+                      method="SLSQP")
 print(min_result.x)
 
 filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
 b = min_result.x[len(min_result.x) - 1]
-print(filtering_param, b)
 
 clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
-print(np.array(clean_signal).shape)
 
 plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
 plt.ylabel('amplitude')
