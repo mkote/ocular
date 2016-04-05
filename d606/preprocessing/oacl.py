@@ -309,6 +309,3 @@ def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
                                           range_list,
                                           m))
     return clean_signals
-
-eeg_data = load_data(1, 'T')
-clean_eeg(eeg_data)
