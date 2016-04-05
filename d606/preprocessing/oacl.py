@@ -7,6 +7,9 @@ from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
 import matplotlib.pyplot as plt
 
+getcontext().prec = 300
+
+
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
     # TODO: paper just uses symmetric MAF, but this loses information at ends!
@@ -195,7 +198,8 @@ def variance(vector):
     return sum([pow(val - avg, 2) for val in vector]) / len(vector)
 
 
-def objective_function(theta, b):
+def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
+                       trial_signals):
     summa = 0
     thetaT = theta.transpose()
     y = labels
@@ -225,10 +229,12 @@ def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     return np.array(corrected_signal)
 
 
-def objective_function_aux(args):
+def objective_function_aux(args, labels, n_trials, trial_artifact_signals,
+                           trial_signals):
     arg1 = np.array([[args[k]] for k in xrange(len(args)-1)])
     arg2 = args[len(args)-1]
-    return objective_function(arg1, arg2)
+    return objective_function(arg1, arg2, labels, n_trials, trial_artifact_signals,
+                              trial_signals)
 
 
 def plot_example():
@@ -275,62 +281,33 @@ def extract_trials_array(signal, trials_start):
     trials += [concat_trials[concat_trials_start[n_trials-1]:]]
     return trials
 
-eeg_data = load_data(1, 'T')        # Everything
-channels, trials_start, labels, artifacts = eeg_data[5]
-raw_signals = channels[0:22]        # EEG channels (raw)
-raw_signal = raw_signals[0]         # Arbitrary channel (x_0)
-n_trials = len(trials_start)              # Number of trials
-m = 11                              # Moving avg neighbor value
-#r1 = (1,30)                          # Define a range
-r2 = (7, 15)
-r3 = (2,6)                   # ... Define another range!
-range_list = (r2, r3)
-artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
-trial_signals = np.mat(extract_trials_array(raw_signals[0], trials_start))
-trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
-                          for i in xrange(len(range_list))]
+def clean_signal(raw_signal, trials_start, labels, range_list, m):
+    n_trials = len(trials_start)              # Number of trials
+    artifact_signals = find_artifact_signals(raw_signal, m, range_list)
+    trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
+    trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
+                              for i in xrange(len(range_list))]
+    print("Minimizing...")
+    min_result = minimize(objective_function_aux,
+                          [0.5] * (len(range_list) + 1),
+                          bounds=[[0, 1]] * (len(range_list) + 1),
+                          method="L-BFGS-B",
+                          args=[labels, n_trials, trial_artifact_signals,
+                                trial_signals])
+    filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
+    b = min_result.x[len(min_result.x) - 1]
+    clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
+    return clean_signal
 
-getcontext().prec = 300
-
-
-# print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
-
-print("Minimizing...")
-min_result = minimize(objective_function_aux,
-                      [0.7] * (len(range_list) + 1),
-                      bounds=[[0, 1]] * (len(range_list) + 1),
-                      method="L-BFGS-B")
-print(min_result.x)
-min_result = minimize(objective_function_aux,
-                      [0.7] * (len(range_list) + 1),
-                      bounds=[[0, 1]] * (len(range_list) + 1),
-                      method="TNC")
-print(min_result.x)
-min_result = minimize(objective_function_aux,
-                      [0.7] * (len(range_list) + 1),
-                      bounds=[[0, 1]] * (len(range_list) + 1),
-                      method="SLSQP")
-print(min_result.x)
-
-filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
-b = min_result.x[len(min_result.x) - 1]
-
-clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
-
-plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-plt.ylabel('amplitude')
-plt.xlabel('time point')
-plt.figure(1)
-plt.subplot(3,1,1)
-plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-plt.plot([x for x in range(0, len(clean_signal))], clean_signal)
-plt.subplot(3,1,2)
-plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-
-plt.subplot(3,1,3)
-plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-#plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-plt.plot([x for x in range(0, len(artifact_signals[1]))], artifact_signals[1])
-plt.plot([x for x in range(0, len(artifact_signals[1]))], artifact_signals[1])
+def clean_eeg(eeg_data, subject_index=5, m = 11):
+    channels, trials_start, labels, artifacts = eeg_data[subject_index]
+    raw_signals = channels[0:22]        # EEG channels (raw)
+    clean_signals = []
+    for raw_signal in raw_signals:
+        clean_signals.append(clean_signal(raw_signal,
+                                          trials_start,
+                                          labels,
+                                          ((4, 6), (8, 15)),
+                                          m))
+    return clean_signals
