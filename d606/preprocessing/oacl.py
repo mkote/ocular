@@ -2,6 +2,9 @@
 
 from math import exp, log
 # from scipy.optimize import minimize
+from decimal import Decimal, getcontext
+from scipy.optimize import minimize
+
 from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
 
@@ -179,7 +182,9 @@ def latent_var(theta, matrix, signal, b):
 
 
 def logistic_function(z):
-    return 1.0/(1.0+exp(-z))
+    if(z < -700):
+        return 1
+    return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
 
 
 def column(matrix, i):
@@ -192,23 +197,33 @@ def variance(vector):
 
 
 def objective_function(theta, b):
-    n = range(n_trials)
+    summa = 0
     thetaT = theta.transpose()
-    Xa = [np.mat(column(trial_artifact_signals, i)) for i in n]
-
-    k1 = [thetaT * (Xa[i] * Xa[i].transpose()) * theta for i in n]
-    k2 = [2 * thetaT * (Xa[i] * trial_signals[i].transpose()) for i in n]
-
-    z = [k1[i] - k2[i] + variance(trial_signals[i].tolist()[0]) + b for i in n]
     y = labels
-    h = logistic_function
 
-    # TODO: fix log of 0
-    summa = sum([-y[i] * log(h(z[i]), 2) -
-                 (1 - y[i]) * log(1 - min(h(z[i]), 0.9999999999999999), 2)
-            for i in xrange(n_trials)])
+    for i in range(n_trials):
+        Xa = np.mat(column(trial_artifact_signals, i))
+        x0 = trial_signals[i]
+
+        k1 = thetaT * (Xa * Xa.transpose()) * theta
+        k2 = 2 * thetaT * (Xa * x0.transpose())
+
+        z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
+        h = logistic_function(z)
+
+        # hack
+        if(h == 1):
+            h -= Decimal(10)**(-300)
+
+        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2);
 
     return summa / n_trials
+
+
+def objective_function_aux(args):
+    arg1 = np.array([[args[k]] for k in xrange(len(args)-1)])
+    arg2 = args[len(args)-1]
+    return objective_function(arg1, arg2)
 
 
 def plot_example():
@@ -269,10 +284,17 @@ range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
 trial_signals = np.mat(extract_trials_array(raw_signals[0], trials_start))
-trial_artifact_signals = [extract_trials_array(artifact_signals[i],
-                                               trials_start)
+trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                           for i in xrange(len(range_list))]
 
+getcontext().prec = 300
+
 print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
+
+print("Minimizing...")
+min_result = minimize(objective_function_aux, [0.5] * len(range_list) + [2])
+
+print(min_result)
+
 
 i = 47
