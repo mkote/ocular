@@ -24,7 +24,7 @@ grid = ()
 
 def save_results(result, parameters):
     with open("results.txt", "a") as result_file:
-        result_file.write(str(result) + str('\n') + str(parameters))
+        result_file.write(str(result) + str('\n') + str(parameters) + str('\n'))
 
 
 def grid_combinator(grid_search):
