@@ -1,20 +1,20 @@
 from sklearn.svm import SVC
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.cross_validation import ShuffleSplit
 from d606.preprocessing.dataextractor import d3_matrix_creator, \
     csp_label_reformat
 from numpy import array
 
 
-def train_svc(shuffle, csp, data, labels):
-    cv = shuffle
-    svc = SVC(C=0.75, kernel='linear')
-    for train_idx, test_idx in cv:
-        y_train, y_test = labels[train_idx], labels[test_idx]
+def train_svc(csp, data, labels):
+    svc = SVC(C=1, kernel='rbf', gamma='auto')
 
-        X_train = csp.transform(data[train_idx])
+    y = labels
+    min_max = MinMaxScaler()
+    x = csp.transform(data)
 
-        # fit classifier
-        svc.fit(X_train, y_train)
+    # fit classifier
+    svc.fit(x, y)
 
     return svc
 
@@ -23,8 +23,7 @@ def csv_one_versus_all(csp_list, band):
     data, trials, labels = band
     d3_data = d3_matrix_creator(data)
     svc_list = []
-    cv = ShuffleSplit(len(labels), 10, test_size=0.2, random_state=42)
     for i, csp in enumerate(csp_list):
         formatted_labels = array(csp_label_reformat(labels, i+1))
-        svc_list.append(train_svc(cv, csp, d3_data, formatted_labels))
+        svc_list.append(train_svc(csp, d3_data, formatted_labels))
     return svc_list

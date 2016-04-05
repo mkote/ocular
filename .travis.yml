@@ -6,6 +6,7 @@ python:
 branches:
   only:
     - master
+    - OptBaselineResults
 
 # notifications
 notifications:
@@ -25,5 +26,5 @@ install:
 
 # command to run tests
 script:
-  - pep8 .
+  - pep8 --max-line-length=160
 # - python -m unittest discover
