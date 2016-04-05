@@ -1,11 +1,11 @@
 # This module contains implementation of ocular artifact detection and removal
-from math import exp, log
 
-from scipy.ndimage import variance
+from math import exp, log
+# from scipy.optimize import minimize
+from decimal import Decimal, getcontext
 from scipy.optimize import minimize
 
 from d606.preprocessing.dataextractor import load_data, extract_trials_two
-from numpy import transpose, ndarray
 import numpy as np
 
 def moving_avg_filter(chan_signal, m):
@@ -182,25 +182,40 @@ def latent_var(theta, matrix, signal, b):
 
 
 def logistic_function(z):
-    return 1.0/(1.0+exp(-z))
+    if(z < -700):
+        return 1
+    return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
 
 
 def column(matrix, i):
     return [row[i] for row in matrix]
 
 
-def objective_function(theta, b):
-    thetaT = theta.transpose()
-    Xa = [column(trial_artifact_signals, i) for i in xrange(n_trials)]
-    z = [thetaT * Xa[i] * Xa[i].transpose() * theta -
-         2 * thetaT * Xa[i] * trial_signals[i].transpose() +
-         variance(trial_signals[i]) + b
-         for i in xrange(n_trials)]
+def variance(vector):
+    avg = int(np.mean(vector))
+    return sum([pow(val - avg, 2) for val in vector]) / len(vector)
 
+
+def objective_function(theta, b):
+    summa = 0
+    thetaT = theta.transpose()
     y = labels
-    h = logistic_function
-    summa = sum([-y[i] * log(h(z[i]), 2) - (1 - y[i]) * log(1 - h(z[i], 2))
-            for i in xrange(n_trials)])
+
+    for i in range(n_trials):
+        Xa = np.mat(column(trial_artifact_signals, i))
+        x0 = trial_signals[i]
+
+        k1 = thetaT * (Xa * Xa.transpose()) * theta
+        k2 = 2 * thetaT * (Xa * x0.transpose())
+
+        z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
+        h = logistic_function(z)
+
+        # hack
+        if(h == 1):
+            h -= Decimal(10)**(-300)
+
+        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2);
 
     return summa / n_trials
 
@@ -209,6 +224,12 @@ def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta * artifact_signals;
     corrected_signal = [a_i - b_i for a_i,b_i in zip(raw_signal, artifact_signals)]
     return corrected_signal
+
+
+def objective_function_aux(args):
+    arg1 = np.array([[args[k]] for k in xrange(len(args)-1)])
+    arg2 = args[len(args)-1]
+    return objective_function(arg1, arg2)
 
 
 def plot_example():
@@ -269,10 +290,17 @@ range_list = (r1,r2)
 artifact_signals = find_artifact_signals(raw_signal, m, range_list)
 
 trial_signals = np.mat(extract_trials_array(raw_signals[0], trials_start))
-trial_artifact_signals = [extract_trials_array(artifact_signals[i],
-                                               trials_start)
+trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                           for i in xrange(len(range_list))]
 
-objective_function(np.mat([0.5] * len(range_list)).transpose(), 2)
+getcontext().prec = 300
+
+print(objective_function(np.array([[0.5] * len(range_list)]).transpose(), 2))
+
+print("Minimizing...")
+min_result = minimize(objective_function_aux, [0.5] * len(range_list) + [2])
+
+print(min_result)
+
 
 i = 47
