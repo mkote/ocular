@@ -300,8 +300,8 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
     return clean_signal
 
-def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), subject_index = 5, m = 11):
-    channels, trials_start, labels, artifacts = eeg_data[subject_index]
+def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
+    channels, trials_start, labels, artifacts = eeg_data[run_index]
     raw_signals = channels[0:22]        # EEG channels (raw)
     clean_signals = []
     for raw_signal in raw_signals:
