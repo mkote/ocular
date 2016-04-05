@@ -294,9 +294,9 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
                           args=[labels, n_trials, trial_artifact_signals,
                                 trial_signals])
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
-    b = min_result.x[len(min_result.x) - 1]
-    clean_signal = remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
-    return clean_signal
+    # b = min_result.x[len(min_result.x) - 1]
+
+    return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
 def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
     channels, trials_start, labels, artifacts = eeg_data[run_index]
