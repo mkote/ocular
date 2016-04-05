@@ -6,6 +6,7 @@ import os
 from itertools import chain
 from d606.evaluation.timing import timed_block
 import time
+from sklearn import preprocessing
 
 PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                     '../../matfiles/'))  # Path to math files
@@ -76,11 +77,10 @@ def extract_trials_two(matrix, trials):
     new_matrix = []
     num_trials = len(trials)
     for trial in trials:
-        new_matrix.extend(transpose(matrix[0:22,
+        new_matrix.extend(transpose(matrix[0:len(matrix)][
                                     trial+TRIAL_BEGINNING:trial+JUMP]))
-
-    new_trials = [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
-    return transpose(new_matrix), new_trials
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
+                                                                 num_trials)]
 
 
 def extract_trials(matrix, trials):

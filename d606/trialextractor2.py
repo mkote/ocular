@@ -5,39 +5,40 @@ import numpy as np
 
 
 class Run:
-    def __init__(self, argv):
+    def __init__(self, argv, band_range):
         self._epochs = []
         self._events = []
         self._nr_epochs = 0
         self._freq = 0
-        self.initialize_self(argv)
+        self.initialize_self(argv, band_range)
 
     def initialize_epochs(self, arr):
-        epochs = FilterBank.initialize_banks(arr, n_banks=4,
-                                             bank_range=[4, 40])
-        extracted_epoch = []
         for k in np.arange(0, len(arr["trial"][0][0]), 1):
             start = arr["trial"][0][0][k][0]
             end = start + 1875
-            for y in range(0, len(epochs)):
-                extracted_epoch.append(epochs[y][0:22, start-1:end-1].copy())
-            self.append(extracted_epoch.copy())
-            extracted_epoch.clear()
+            self.append(np.transpose(arr["X"][0][0][start-1:end-1, 0:22]))
 
     def initialize_events(self, arr):
         self.events = np.empty([self.nr_epochs, 3], dtype=int)
-        temp_arr = np.empty([3])
+        array = np.empty([3])
         for k in np.arange(0, len(arr["trial"][0][0]), 1):
-            temp_arr[0] = 0
-            temp_arr[1] = (self.freq * 3)
-            temp_arr[2] = arr["y"][0][0][k][0]
-            self.set_row(k, temp_arr)
+            array[0] = 0
+            array[1] = (self.freq * 3)
+            array[2] = arr["y"][0][0][k][0]
+            self.set_row(k, array)
 
-    def initialize_self(self, argv):
+    def initialize_self(self, argv, band_range):
         self.freq = argv["fs"][0][0][0][0]
         self.initialize_epochs(argv)
         self.nr_epochs = len(self.epochs)
         self.initialize_events(argv)
+        if band_range:
+            self.bandpass(band_range)
+
+    def bandpass(self, band_range):
+        for x in range(0, self.nr_epochs):
+            self.epochs[x] = bandpass_matrix(self.epochs[x], band_range[0],
+                                             band_range[1])
 
     @property
     def nr_epochs(self):
@@ -78,24 +79,10 @@ class Run:
         self._events[row_nr] = val
 
 
-class FilterBank:
-    @classmethod
-    def initialize_banks(cls, run, n_banks=2, bank_range=[8, 16]):
-        filter_banks = []
-        jump_size = bank_range[0] / n_banks
-        for y in range(0, n_banks):
-            start = bank_range[0] + y * jump_size
-            end = start + jump_size
-            filter_banks.append(bandpass_matrix(np.transpose(run["X"][0][0][:,
-                                                0:22]),
-                                                start, end))
-        return filter_banks
-
-
 class Subject:
     path = "matfiles/"
 
-    def __init__(self, sub_num, suffix):
+    def __init__(self, sub_num, suffix, band_range):
         self._runs = []
         self._file_name = sub_num
         self._full_file_name = None
@@ -103,9 +90,9 @@ class Subject:
             self._full_file_name = "A0" + sub_num + suffix + ".mat"
         else:
             self._full_file_name = "A0" + sub_num + "T" + ".mat"
-        self.initialize_self()
+        self.initialize_self(band_range)
 
-    def initialize_self(self):
+    def initialize_self(self, band_range):
         mat = sio.loadmat(self.path + self._full_file_name)
         end = len(mat["data"][0])
         start = None
@@ -114,7 +101,25 @@ class Subject:
                 start = x
                 break
         for x in range(start, end):
-            self.append(Run(mat["data"][0, x]))
+            self.append(Run(mat["data"][0, x], band_range))
+
+    def convert_subject_to_file(self, path):
+        f = open(path + self._file_name + "_X.txt", "w")
+        for x in self.runs:
+            for y in x.epochs:
+                for z in y:
+                    for w in z:
+                        f.write("%.7e " % w)
+                    f.write("\n")
+        f.close()
+
+        r = open(path + self._file_name + "_Y.txt", "w")
+        for x in self.runs:
+            for y in x.events:
+                for z in range(0, 1875):
+                    r.write(str(y[2]))
+                    r.write("\n")
+        r.close()
 
     @property
     def runs(self):
