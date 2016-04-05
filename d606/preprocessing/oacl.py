@@ -205,6 +205,12 @@ def objective_function(theta, b):
     return summa / n_trials
 
 
+def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
+    A = theta * artifact_signals;
+    corrected_signal = [a_i - b_i for a_i,b_i in zip(raw_signal, artifact_signals)]
+    return corrected_signal
+
+
 def plot_example():
     eeg_data = load_data(1, 'T')
     raw_signal = eeg_data[5][0][4]
