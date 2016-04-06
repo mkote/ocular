@@ -18,7 +18,7 @@ band_list = [[[4, 8], [8, 12], [12, 16], [16, 20], [20, 24], [24, 30], [30, 36]]
              [[16, 20], [20, 24], [24, 30], [30, 36]]]
 
 ''' Set parameters for the Grid search '''
-grid_parameters = [band_list]
+grid_parameters = []
 grid = ()
 
 

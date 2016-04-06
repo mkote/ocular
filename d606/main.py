@@ -5,17 +5,17 @@ from d606.classification.svm import csv_one_versus_all, svm_prediction
 from d606.evaluation.timing import timed_block
 from d606.evaluation.voting import csp_voting
 from d606.evaluation.score import scoring
+from d606.preprocessing.oacl import clean_eeg, clean_run_combiner
 from d606.preprocessing.searchgrid import grid_combinator, grid_parameters, save_results
 import d606.preprocessing.searchgrid as search
 from collections import namedtuple
 from numpy import mean
 import warnings
 
-Grid = namedtuple('Grid', ['band_list'])
+Grid = namedtuple('Grid', [])
 best_result = [0, 0]
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
-warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 grid_list = grid_combinator(grid_parameters)
 
@@ -24,15 +24,18 @@ for sample in grid_list:
     subject_results = []
 
     with timed_block('All Time'):
-        for subject in [int(x) for x in range(1, 2)]:
+        for subject in [int(x) for x in range(2, 3)]:
             csp_list = []
             svc_list = []
             filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
             filters = Filter(filt)
 
-            runs = load_data(subject, "T")
-
-            evals = load_data(subject, "E")
+            uc_runs = load_data(subject, "T")
+            runs = clean_run_combiner(uc_runs)
+            del uc_runs
+            uc_evals = load_data(subject, "E")
+            evals = clean_run_combiner(uc_evals)
+            del uc_evals
 
             train_bands, train_combined_labels = restructure_data(runs, filters)
 

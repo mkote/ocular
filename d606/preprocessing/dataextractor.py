@@ -76,11 +76,19 @@ def extract_trials_two(matrix, trials):
     for trial in trials:
         new_matrix.extend(transpose(matrix[0:len(matrix)][
                                     trial+TRIAL_BEGINNING:trial+JUMP]))
-    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
-                                                                 num_trials)]
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
 
 
 def extract_trials(matrix, trials):
+    new_matrix = []
+    num_trials = len(trials)
+    for trial in trials:
+        new_matrix.extend(transpose(matrix[0:len(matrix),
+                                    trial+TRIAL_BEGINNING:trial+JUMP]))
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
+
+
+def extract_trials_old(matrix, trials):
     """
     :param matrix: numpy matrix
     :param trials: list of trial start points
@@ -172,6 +180,7 @@ from sklearn.preprocessing import MinMaxScaler
     matrix_length = [x[0].shape[1] for x in run_list[first_index:]]
 
     m_trials = map(int, trial_time_fixer(m_trials, matrix_length))
+    m_matrix = m_matrix[0:22]
     return m_matrix, m_trials, m_labels, m_artifacts
 
 
@@ -223,7 +232,7 @@ def restructure_data(runs, filters):
     # Trial Extraction before csp and svn
     for eeg_signal in combined_data:
         old_matrix, old_trials, labels, artifacts = eeg_signal
-        new_matrix, new_trials = extract_trials_two(old_matrix, old_trials)
+        new_matrix, new_trials = extract_trials(old_matrix, old_trials)
         bands.append((new_matrix, new_trials, labels))
     combined_labels.extend(combined_data[0][2])
 

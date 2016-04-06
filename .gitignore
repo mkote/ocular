@@ -125,3 +125,6 @@ fabric.properties
 ### Pycharm
 *.pyc
 *.rar
+
+### Music Files
+/d606/music/*

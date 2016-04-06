@@ -6,6 +6,7 @@ from scipy.optimize import minimize
 from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import namedtuple
 
 getcontext().prec = 300
 
@@ -13,7 +14,7 @@ getcontext().prec = 300
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
     # TODO: paper just uses symmetric MAF, but this loses information at ends!
-    print "Applying moving average filter..."
+    # print "Applying moving average filter..."
     maf = []
     # We compute only so at each side of a point, we have (m-1)/2 elements.
     start = (m-1)/2
@@ -70,7 +71,7 @@ def find_relative_height(smooth_signal, time):
 
 
 def find_relative_heights(smooth_signal):
-    print "Finding relative heights..."
+    # print "Finding relative heights..."
     relative_heights = []
     for i in range(1, len(smooth_signal)-1):
         next_rel_height = find_relative_height(smooth_signal, i)
@@ -79,7 +80,7 @@ def find_relative_heights(smooth_signal):
 
 
 def find_peak_indexes(relative_heights, peak_range, m_range, n_samples):
-    print "finding peak indexes..."
+    # print "finding peak indexes..."
     l = peak_range[0]
     u = peak_range[1]
     rh = relative_heights
@@ -129,6 +130,7 @@ def find_artifact_signal(peak_indexes, smooth_signal):
             artifact_signal.append(0.0)
     return artifact_signal
 
+
 def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
@@ -136,12 +138,13 @@ def find_artifact_signals(raw_signal, m, range_list):
     num_samples = len(raw_signal)
     i = 1
     for range in range_list:
-        print "Processing signal for range: ", i
+        # print "Processing signal for range: ", i
         peaks = find_peak_indexes(rh, range, m, num_samples)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
         i += 1
     return np.array(artifact_signals)
+
 
 def nearest_zero_point(arr, a, b):
     if b >= len(arr):
@@ -286,7 +289,7 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
-    print("Minimizing...")
+    #print("Minimizing...")
     min_result = minimize(objective_function_aux,
                           [0.5] * (len(range_list) + 1),
                           bounds=[[0, 1]] * (len(range_list) + 1),
@@ -298,14 +301,43 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
 
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
-def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
-    channels, trials_start, labels, artifacts = eeg_data[run_index]
+
+def clean_eeg(eeg_data, range_list=((4, 6), (8, 15)), m=11):
+    channels, trials_start, labels, artifacts = eeg_data
     raw_signals = channels[0:22]        # EEG channels (raw)
     clean_signals = []
-    for raw_signal in raw_signals:
+    for i, raw_signal in enumerate(raw_signals):
+        print 'cleaning for signal %d' % (i + 1)
         clean_signals.append(clean_signal(raw_signal,
                                           trials_start,
                                           labels,
                                           range_list,
                                           m))
     return clean_signals
+
+
+def clean_run_combiner(runs):
+    trial = namedtuple('EEG', ['matrix', 'trials', 'labels', 'artifacts'])
+    run_list = []
+
+    for i, run in enumerate(runs):
+        print '\t\tcleaning run %d' % (i + 1)
+        if i in [0, 1, 2]:
+            run_list.append(run)
+        else:
+            channels, trials, labels, artifacts = run
+            c_channels = clean_eeg(run, range_list=[(8, 15)])
+            cn_channels = []
+
+            for chan in c_channels:
+                chan = np.append([0, 0, 0, 0, 0], chan)
+                chan = np.append(chan, [0, 0, 0, 0, 0]).tolist()
+                cn_channels.append(np.array(chan))
+
+            for eog in run[0][22:25]:
+                cn_channels.append(eog)
+
+            cn_channels = np.array(cn_channels)
+            c_run = trial(matrix=cn_channels, trials=trials, labels=labels, artifacts=artifacts)
+            run_list.append(c_run)
+    return run_list
