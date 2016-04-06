@@ -104,8 +104,16 @@ class TestOACLfunctions(unittest.TestCase):
         assert_array_almost_equal(actual, expected)
 
     def test_find_artifact_signal(self):
-        # TODO: How should we test this ?
-        pass
+        # Arrange
+        smooth_signal = [1.0, 2.0, 0.0, 3.0, 10.0, 2.0, -1.0, 0.0]
+        peak_indexes = [4]
+        expected = [0.0, 0.0, 0.0, 3.0, 10.0, 2.0, 0.0, 0.0]
+
+        # Act
+        actual = find_artifact_signal(peak_indexes, smooth_signal)
+
+        #Assert
+        assert_array_almost_equal(actual, expected)
 
     def test_is_cross_zero_false(self):
         # Arrange
