@@ -7,6 +7,7 @@ from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import namedtuple
+from d606.evaluation.timing import timed_block, timeit
 
 getcontext().prec = 300
 
@@ -221,7 +222,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
         if(h == 1):
             h -= Decimal(10)**(-300)
 
-        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2);
+        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2)
 
     return summa / n_trials
 
@@ -307,12 +308,13 @@ def clean_eeg(eeg_data, range_list=((4, 6), (8, 15)), m=11):
     raw_signals = channels[0:22]        # EEG channels (raw)
     clean_signals = []
     for i, raw_signal in enumerate(raw_signals):
-        print 'cleaning for signal %d' % (i + 1)
-        clean_signals.append(clean_signal(raw_signal,
-                                          trials_start,
-                                          labels,
-                                          range_list,
-                                          m))
+        with timed_block('Cleaning signal ' + str(i)):
+            print 'cleaning for signal %d' % (i + 1)
+            clean_signals.append(clean_signal(raw_signal,
+                                              trials_start,
+                                              labels,
+                                              range_list,
+                                              m))
     return clean_signals
 
 
@@ -321,20 +323,21 @@ def clean_run_combiner(runs):
     run_list = []
 
     for i, run in enumerate(runs):
-        print '\t\tcleaning run %d' % (i + 1)
-        if i in [0, 1, 2]:
-            run_list.append(run)
-        else:
-            channels, trials, labels, artifacts = run
-            c_channels = clean_eeg(run, range_list=[(8, 15)])
-            cn_channels = []
+        with timed_block("timed block " + str(i + 1)):
+            print '\t\tcleaning run %d' % (i + 1)
+            if i in [0, 1, 2]:
+                run_list.append(run)
+            else:
+                channels, trials, labels, artifacts = run
+                c_channels = clean_eeg(run, range_list=[(3, 5), (7, 15)])
+                cn_channels = []
 
-            for chan in c_channels:
-                chan = np.append([0, 0, 0, 0, 0], chan)
-                chan = np.append(chan, [0, 0, 0, 0, 0]).tolist()
-                cn_channels.append(np.array(chan))
+                for chan in c_channels:
+                    chan = np.append([0, 0, 0, 0, 0], chan)
+                    chan = np.append(chan, [0, 0, 0, 0, 0]).tolist()
+                    cn_channels.append(np.array(chan))
 
-            cn_channels = np.array(cn_channels)
-            c_run = trial(matrix=cn_channels, trials=trials, labels=labels, artifacts=artifacts)
-            run_list.append(c_run)
+                cn_channels = np.array(cn_channels)
+                c_run = trial(matrix=cn_channels, trials=trials, labels=labels, artifacts=artifacts)
+                run_list.append(c_run)
     return run_list
