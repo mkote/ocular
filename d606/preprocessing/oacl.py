@@ -7,8 +7,6 @@ from d606.preprocessing.dataextractor import load_data, extract_trials_two
 import numpy as np
 import matplotlib.pyplot as plt
 
-getcontext().prec = 300
-
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
@@ -126,6 +124,7 @@ def find_artifact_signal(peak_indexes, smooth_signal):
             artifact_signal.append(0.0)
     return artifact_signal
 
+
 def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
@@ -139,6 +138,7 @@ def find_artifact_signals(raw_signal, m, range_list):
         artifact_signals.append(artifact_signal)
         i += 1
     return np.array(artifact_signals)
+
 
 def nearest_zero_point(arr, a, b):
     if b >= len(arr):
@@ -164,10 +164,6 @@ def is_cross_zero(a, b):
         return False
 
 
-def learn_filtering_parameter():
-    pass
-
-
 def covariance_matrix(artifact_signal, raw_signal):
     return np.cov(m=artifact_signal, y=raw_signal)
 
@@ -176,12 +172,8 @@ def correlation_vector(artifact_signals, signal):
     return artifact_signals * signal.transpose()
 
 
-def latent_var(theta, matrix, signal, b):
-    pass
-
-
 def logistic_function(z):
-    if(z < -700):
+    if z < -700:
         return 1
     return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
 
@@ -213,7 +205,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
         # hack
         if(h == 1):
-            h -= Decimal(10)**(-300)
+            h -= Decimal(10)**(-getcontext().prec)
 
         summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2);
 
@@ -238,11 +230,6 @@ def plot_example():
     raw_signal_eog = eeg_data[5][0][23]
     raw_signal = raw_signal[0:2000]
     raw_signal_eog = raw_signal_eog[0:2000]
-    labels = eeg_data[5][2]
-    n_trials = 48
-    m = 11
-    signal = raw_signal
-    matrix = np.cov(raw_signal)
 
     plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
     plt.ylabel('amplitude')
@@ -252,7 +239,6 @@ def plot_example():
     plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
     plt.subplot(211)
     m = 11
-    num_samples = len(raw_signal)
     filtered_signal = moving_avg_filter(raw_signal, m)
     plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
 
@@ -295,9 +281,11 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
 
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
-def clean_eeg(eeg_data, range_list = [(4, 6), (8, 15)], run_index = 5, m = 11):
-    channels, trials_start, labels, artifacts = eeg_data[run_index]
-    raw_signals = channels[0:22]        # EEG channels (raw)
+
+def clean_eeg(eeg_data, range_list = [(4, 6), (8, 15)], run_index = 5, m = 11, decimal_precision = 300):
+    getcontext().prec = decimal_precision
+    raw_signals, trials_start, labels, artifacts = eeg_data[run_index]
+
     clean_signals = []
     for raw_signal in raw_signals:
         clean_signals.append(clean_signal(raw_signal,
