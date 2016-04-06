@@ -289,7 +289,7 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
-    #print("Minimizing...")
+    # print("Minimizing...")
     min_result = minimize(objective_function_aux,
                           [0.5] * (len(range_list) + 1),
                           bounds=[[0, 1]] * (len(range_list) + 1),
@@ -333,9 +333,6 @@ def clean_run_combiner(runs):
                 chan = np.append([0, 0, 0, 0, 0], chan)
                 chan = np.append(chan, [0, 0, 0, 0, 0]).tolist()
                 cn_channels.append(np.array(chan))
-
-            for eog in run[0][22:25]:
-                cn_channels.append(eog)
 
             cn_channels = np.array(cn_channels)
             c_run = trial(matrix=cn_channels, trials=trials, labels=labels, artifacts=artifacts)

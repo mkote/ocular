@@ -180,7 +180,6 @@ from sklearn.preprocessing import MinMaxScaler
     matrix_length = [x[0].shape[1] for x in run_list[first_index:]]
 
     m_trials = map(int, trial_time_fixer(m_trials, matrix_length))
-    m_matrix = m_matrix[0:22]
     return m_matrix, m_trials, m_labels, m_artifacts
 
 

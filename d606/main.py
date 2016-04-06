@@ -30,7 +30,6 @@ for sample in grid_list:
             filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
             filters = Filter(filt)
 
-            # just a test
             uc_runs = load_data(subject, "T")
             runs = clean_run_combiner(uc_runs)
             del uc_runs
