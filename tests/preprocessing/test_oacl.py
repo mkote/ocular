@@ -112,7 +112,7 @@ class TestOACLfunctions(unittest.TestCase):
         # Act
         actual = find_artifact_signal(peak_indexes, smooth_signal)
 
-        #Assert
+        # Assert
         assert_array_almost_equal(actual, expected)
 
     def test_is_cross_zero_false(self):
