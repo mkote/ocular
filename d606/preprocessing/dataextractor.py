@@ -76,8 +76,7 @@ def extract_trials_two(matrix, trials):
     for trial in trials:
         new_matrix.extend(transpose(matrix[0:len(matrix)][
                                     trial+TRIAL_BEGINNING:trial+JUMP]))
-    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
-                                                                 num_trials)]
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
 
 
 def extract_trials(matrix, trials):

@@ -207,7 +207,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
         if(h == 1):
             h -= Decimal(10)**(-getcontext().prec)
 
-        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2);
+        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2)
 
     return summa / n_trials
 
@@ -255,8 +255,7 @@ def plot_example():
 
 def extract_trials_array(signal, trials_start):
     n_trials = len(trials_start)
-    concat_trials, concat_trials_start = extract_trials_two(signal,
-                                                       trials_start)
+    concat_trials, concat_trials_start = extract_trials_two(signal, trials_start)
     trials = [concat_trials[concat_trials_start[i]:concat_trials_start[i+1]]
               for i in xrange(n_trials-1)]
     trials += [concat_trials[concat_trials_start[n_trials-1]:]]
@@ -282,7 +281,7 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
 
-def clean_eeg(eeg_data, range_list = [(4, 6), (8, 15)], run_index = 5, m = 11, decimal_precision = 300):
+def clean_eeg(eeg_data, range_list=[(4, 6), (8, 15)], run_index=5, m=11, decimal_precision=300):
     getcontext().prec = decimal_precision
     raw_signals, trials_start, labels, artifacts = eeg_data[run_index]
 
