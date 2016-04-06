@@ -91,9 +91,17 @@ class TestOACLfunctions(unittest.TestCase):
         # Assert
         assert_array_almost_equal(actual, expected)
 
-    def test_find_time_indexes(self):
-        # TODO: Write test
-        pass
+    def test_find_peak_indexes(self):
+        # Arrange
+        relative_heights = [0, 3, 4, 7, 9, 10, 11, 12]
+        peak_range = (2.9, 3.1)
+        expected = [1, 2, 3, 4]
+
+        # Act
+        actual = find_peak_indexes(relative_heights, peak_range)
+
+        # Assert
+        assert_array_almost_equal(actual, expected)
 
     def test_artifact_signal(self):
         # TODO: How should we test this ?

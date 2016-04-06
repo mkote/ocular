@@ -78,19 +78,16 @@ def find_relative_heights(smooth_signal):
     return relative_heights
 
 
-def find_peak_indexes(relative_heights, peak_range, m_range, n_samples):
+def find_peak_indexes(relative_heights, peak_range):
     print "finding peak indexes..."
     l = peak_range[0]
     u = peak_range[1]
     rh = relative_heights
-    time_indexes_in_range = []
 
-    for i in range(0, len(relative_heights)):
-        if m_range/2 < i < n_samples-(m_range/2) and l < rh[i] < u:
-            # Add 1 because index of rel heights list is one less than the
-            # index of the smoothed data.
-            time_indexes_in_range.append(i+1)
-    return time_indexes_in_range
+    # Add 1 because index of rel heights list is one less than the
+    # index of the smoothed data.
+    Pt = [i+1 for i in range(0, len(rh)) if l < rh[i] < u]
+    return Pt
 
 
 def find_artifact_ranges(smooth_signal, peak_indexes):
@@ -137,7 +134,7 @@ def find_artifact_signals(raw_signal, m, range_list):
     i = 1
     for range in range_list:
         print "Processing signal for range: ", i
-        peaks = find_peak_indexes(rh, range, m, num_samples)
+        peaks = find_peak_indexes(rh, range)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
         i += 1
@@ -238,7 +235,7 @@ def objective_function_aux(args, args2):
 def plot_example():
     eeg_data = load_data(1, 'T')
     raw_signal = eeg_data[5][0][4]
-    raw_signal_eog = eeg_data[5][0][1]
+    raw_signal_eog = eeg_data[5][0][23]
     raw_signal = raw_signal[0:2000]
     raw_signal_eog = raw_signal_eog[0:2000]
     labels = eeg_data[5][2]
@@ -261,7 +258,7 @@ def plot_example():
 
     plt.subplot(211)
     rh = find_relative_heights(filtered_signal)
-    ti = find_peak_indexes(rh, (8, 1.5), m, num_samples)
+    ti = find_peak_indexes(rh, (8, 1.5))
     artifact_signal = find_artifact_signal(ti, filtered_signal)
     plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
 
@@ -298,7 +295,7 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
 
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
-def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
+def clean_eeg(eeg_data, range_list = [(4, 6), (8, 15)], run_index = 5, m = 11):
     channels, trials_start, labels, artifacts = eeg_data[run_index]
     raw_signals = channels[0:22]        # EEG channels (raw)
     clean_signals = []
