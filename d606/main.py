@@ -1,4 +1,4 @@
-from d606.preprocessing.dataextractor import load_data, restructure_data
+from d606.preprocessing.dataextractor import load_data, restructure_data, extract_eog
 from d606.preprocessing.filter import Filter
 from d606.featureselection.mnecsp import csp_one_vs_all
 from d606.classification.svm import csv_one_versus_all, svm_prediction
@@ -21,12 +21,13 @@ def main():
     warnings.filterwarnings('ignore', category=DeprecationWarning)
     warnings.filterwarnings('ignore', category=RuntimeWarning)
 
-    runs = load_data(1, "T")
+    runs = load_data(5, "T")
+    eog_test, runs = extract_eog(runs)
     runs = remake_trial(runs)
 
-    evals = load_data(1, "E")
+    evals = load_data(5, "E")
+    eog_eval, evals = extract_eog(runs)
     evals = remake_trial(evals)
-
 
     grid_list = grid_combinator(grid_parameters)
 

@@ -239,3 +239,16 @@ def restructure_data(runs, filters):
     combined_labels.extend(combined_data[0][2])
 
     return bands, combined_labels
+
+
+def extract_eog(runs):
+    n_runs = []
+    n_eog = []
+    for run in runs:
+        matrix, trials, labels, artifacts = run
+        eog = matrix[22:25]
+        eeg = matrix[0:22]
+        n_runs.append((eeg, trials, labels, artifacts))
+        n_eog.append(eog)
+
+    return n_eog, n_runs

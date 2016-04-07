@@ -288,9 +288,8 @@ def clean_eeg(input_q, output_q, range_list=((4, 6), (8, 15)), m=11):
     eeg_data, index = input_q.get()
     print "Process " + str(index) + " is running"
     channels, trials_start, labels, artifacts = eeg_data
-    raw_signals = channels[0:22]        # EEG channels (raw)
     clean_signals = []
-    for raw_signal in raw_signals:
+    for raw_signal in channels:
         clean_signals.append(clean_signal(raw_signal,
                                           trials_start,
                                           labels,
