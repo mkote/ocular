@@ -108,20 +108,12 @@ def find_artifact_range(signal_smooth, peak):
 
 
 def find_artifact_signal(peak_indexes, smooth_signal):
-    artifact_signal = []
-    ranges = find_artifact_ranges(smooth_signal, peak_indexes)
-    for t in range(0, len(smooth_signal)):
-        is_artifact = False
-        for r in ranges:
-            nzp_b = r[0]
-            nzp_a = r[1]
-            if nzp_b < t < nzp_a:
-                is_artifact = True
-                artifact = smooth_signal[t]
-                artifact_signal.append(artifact)
-                break
-        if not is_artifact:
-            artifact_signal.append(0.0)
+    artifact_signal = [0.0 for x in range(0, len(smooth_signal))]
+    ranges = sorted(list(set(find_artifact_ranges(smooth_signal, peak_indexes))), key=lambda z: z[0])
+    for r in ranges:
+        nzp_b = r[0]+1
+        nzp_a = r[1]
+        artifact_signal[nzp_b:nzp_a] = smooth_signal[nzp_b:nzp_a]
     return artifact_signal
 
 
