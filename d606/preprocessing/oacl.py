@@ -8,8 +8,6 @@ from d606.preprocessing.dataextractor import load_data, \
 import numpy as np
 import matplotlib.pyplot as plt
 
-getcontext().prec = 300
-
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
@@ -79,19 +77,16 @@ def find_relative_heights(smooth_signal):
     return relative_heights
 
 
-def find_peak_indexes(relative_heights, peak_range, m_range, n_samples):
+def find_peak_indexes(relative_heights, peak_range):
     print "finding peak indexes..."
     l = peak_range[0]
     u = peak_range[1]
     rh = relative_heights
-    time_indexes_in_range = []
 
-    for i in range(0, len(relative_heights)):
-        if m_range/2 < i < n_samples-(m_range/2) and l < rh[i] < u:
-            # Add 1 because index of rel heights list is one less than the
-            # index of the smoothed data.
-            time_indexes_in_range.append(i+1)
-    return time_indexes_in_range
+    # Add 1 because index of rel heights list is one less than the
+    # index of the smoothed data.
+    Pt = [i+1 for i in range(0, len(rh)) if l < rh[i] < u]
+    return Pt
 
 
 def find_artifact_ranges(smooth_signal, peak_indexes):
@@ -130,6 +125,7 @@ def find_artifact_signal(peak_indexes, smooth_signal):
             artifact_signal.append(0.0)
     return artifact_signal
 
+
 def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
@@ -138,11 +134,12 @@ def find_artifact_signals(raw_signal, m, range_list):
     i = 1
     for range in range_list:
         print "Processing signal for range: ", i
-        peaks = find_peak_indexes(rh, range, m, num_samples)
+        peaks = find_peak_indexes(rh, range)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
         i += 1
     return np.array(artifact_signals)
+
 
 def nearest_zero_point(arr, a, b):
     if b >= len(arr):
@@ -168,10 +165,6 @@ def is_cross_zero(a, b):
         return False
 
 
-def learn_filtering_parameter():
-    pass
-
-
 def covariance_matrix(artifact_signal, raw_signal):
     return np.cov(m=artifact_signal, y=raw_signal)
 
@@ -180,12 +173,8 @@ def correlation_vector(artifact_signals, signal):
     return artifact_signals * signal.transpose()
 
 
-def latent_var(theta, matrix, signal, b):
-    pass
-
-
 def logistic_function(z):
-    if(z < -700):
+    if z < -700:
         return 1
     return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
 
@@ -217,9 +206,9 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
         # hack
         if(h == 1):
-            h -= Decimal(10)**(-300)
+            h -= Decimal(10)**(-getcontext().prec)
 
-        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2);
+        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2)
 
     return summa / n_trials
 
@@ -240,14 +229,9 @@ def objective_function_aux(args, args2):
 def plot_example():
     eeg_data = load_data(1, 'T')
     raw_signal = eeg_data[5][0][4]
-    raw_signal_eog = eeg_data[5][0][1]
+    raw_signal_eog = eeg_data[5][0][23]
     raw_signal = raw_signal[0:2000]
     raw_signal_eog = raw_signal_eog[0:2000]
-    labels = eeg_data[5][2]
-    n_trials = 48
-    m = 11
-    signal = raw_signal
-    matrix = np.cov(raw_signal)
 
     plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
     plt.ylabel('amplitude')
@@ -257,13 +241,12 @@ def plot_example():
     plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
     plt.subplot(211)
     m = 11
-    num_samples = len(raw_signal)
     filtered_signal = moving_avg_filter(raw_signal, m)
     plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
 
     plt.subplot(211)
     rh = find_relative_heights(filtered_signal)
-    ti = find_peak_indexes(rh, (8, 1.5), m, num_samples)
+    ti = find_peak_indexes(rh, (8, 1.5))
     artifact_signal = find_artifact_signal(ti, filtered_signal)
     plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
 
