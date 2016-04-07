@@ -90,31 +90,6 @@ def extract_trials_two(matrix, trials):
     return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
 
 
-def extract_trials(matrix, trials):
-    """
-    :param matrix: numpy matrix
-    :param trials: list of trial start points
-    :return: new matrix only containing motor imagery
-             and a new trial start list
-    """
-    new_matrix = matrix
-    trials.append(len(matrix[1]))  # Initialize trials with a end trial
-    num_trials = len(trials) - 1
-
-    for i, trial in enumerate(reversed(trials[0:num_trials])):
-        new_matrix = delete(new_matrix,
-                            s_[trial + JUMP: trials[num_trials - i]],
-                            axis=1)
-
-        new_matrix = delete(new_matrix,
-                            s_[trial:trial + TRIAL_BEGINNING],
-                            axis=1)
-
-    new_matrix = delete(new_matrix, s_[0:trials[0]], axis=1)
-    new_trials = [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
-    return new_matrix, new_trials
-
-
 def trial_splitter(matrix, trials):
     """
     :param matrix: numpy matrix

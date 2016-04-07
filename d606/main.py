@@ -10,7 +10,6 @@ import d606.preprocessing.searchgrid as search
 from d606.preprocessing.trial_remaker import remake_trial
 from collections import namedtuple
 from multiprocessing import freeze_support
-from numpy import mean
 import warnings
 
 
