@@ -2,7 +2,7 @@
 
 from math import exp, log
 from decimal import Decimal, getcontext
-from scipy.optimize import minimize
+from scipy.optimize import basinhopping
 from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
@@ -270,14 +270,17 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
     print("Minimizing...")
-    min_result = minimize(objective_function_aux,
+    min_result = basinhopping(objective_function_aux,
                           [0.5] * (len(range_list) + 1),
-                          bounds=[[0, 1]] * (len(range_list) + 1),
-                          method="L-BFGS-B",
-                          args=[labels, n_trials, trial_artifact_signals,
-                                trial_signals])
+                          minimizer_kwargs={
+                              "bounds":[[0, 1]] * (len(range_list) + 1),
+                              "method":"L-BFGS-B",
+                              "args":[labels, n_trials, trial_artifact_signals, trial_signals]
+                          })
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
+
+    print(filtering_param)
 
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
