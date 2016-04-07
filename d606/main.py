@@ -7,32 +7,39 @@ from d606.evaluation.voting import csp_voting
 from d606.evaluation.score import scoring
 from d606.preprocessing.searchgrid import grid_combinator, grid_parameters, save_results
 import d606.preprocessing.searchgrid as search
+from d606.preprocessing.trial_remaker import remake_trial
 from collections import namedtuple
+from multiprocessing import freeze_support
 from numpy import mean
 import warnings
 
-Grid = namedtuple('Grid', ['band_list'])
-best_result = [0, 0]
 
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-warnings.filterwarnings('ignore', category=RuntimeWarning)
+def main():
+    Grid = namedtuple('Grid', ['band_list', 'n_comp', 'kernel', 'C'])
+    best_result = [0, 0]
 
-grid_list = grid_combinator(grid_parameters)
+    warnings.filterwarnings('ignore', category=DeprecationWarning)
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
 
-for sample in grid_list:
-    search.grid = Grid(*sample)
-    subject_results = []
+    runs = load_data(1, "T")
+    runs = remake_trial(runs)
 
-    with timed_block('All Time'):
-        for subject in [int(x) for x in range(1, 2)]:
+    evals = load_data(1, "E")
+    evals = remake_trial(evals)
+
+
+    grid_list = grid_combinator(grid_parameters)
+
+    for sample in grid_list:
+        search.grid = Grid(*sample)
+        subject_results = []
+
+        with timed_block('All Time'):
+            # for subject in [int(x) for x in range(1, 2)]:
             csp_list = []
             svc_list = []
             filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
             filters = Filter(filt)
-
-            runs = load_data(subject, "T")
-
-            evals = load_data(subject, "E")
 
             train_bands, train_combined_labels = restructure_data(runs, filters)
 
@@ -60,9 +67,13 @@ for sample in grid_list:
                 best_result[0] = score
                 best_result[1] = search.grid
 
-    print subject_results
-    print search.grid
-    print '\n'
+        print subject_results
+        print search.grid
+        print '\n'
 
-print "\t\tbest result: %s \n\t\tbest Parameters: %s" % (best_result[0], best_result[1])
-# print mean(subject_results)
+    print "\t\tbest result: %s \n\t\tbest Parameters: %s" % (best_result[0], best_result[1])
+    # print mean(subject_results)
+
+if __name__ == '__main__':
+    freeze_support()
+    main()

@@ -11,6 +11,7 @@ HERTZ = 250  # Frequency of obtained data
 TRIAL_BEGINNING = 700  # 2.8s * 250Hz
 TRIAL_LENGTH = 750  # 3s * 250Hz
 JUMP = TRIAL_BEGINNING + TRIAL_LENGTH  # The indices to skip
+EEG = namedtuple('EEG', ['matrix', 'trials', 'labels', 'artifacts'])
 
 
 def load_data(files, type):
@@ -60,21 +61,31 @@ def load_data(files, type):
             for j in artifacts:
                 artifact_list.append(j[0])
 
-            t = trial(matrix=data_matrix,
-                      trials=trial_list,
-                      labels=label_list,
-                      artifacts=artifact_list)
+            # t = trial(matrix=data_matrix,
+            #           trials=trial_list,
+            #           labels=label_list,
+            #           artifacts=artifact_list)
 
-            eeg_list.append(t)
+            eeg_list.append((data_matrix,trial_list, label_list,
+                             artifact_list))
 
     return eeg_list
+
+
+def extract_trials_single_channel(matrix, trials):
+    new_matrix = []
+    num_trials = len(trials)
+    for trial in trials:
+        new_matrix.extend(transpose(matrix[trial+TRIAL_BEGINNING:trial+JUMP]))
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
+                                                                num_trials)]
 
 
 def extract_trials_two(matrix, trials):
     new_matrix = []
     num_trials = len(trials)
     for trial in trials:
-        new_matrix.extend(transpose(matrix[0:len(matrix)][
+        new_matrix.extend(transpose(matrix[0:len(matrix),
                                     trial+TRIAL_BEGINNING:trial+JUMP]))
     return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
                                                                  num_trials)]
@@ -223,7 +234,8 @@ def restructure_data(runs, filters):
     # Trial Extraction before csp and svn
     for eeg_signal in combined_data:
         old_matrix, old_trials, labels, artifacts = eeg_signal
-        new_matrix, new_trials = extract_trials_two(old_matrix, old_trials)
+        new_matrix, new_trials = extract_trials_two(old_matrix[0:22],
+                                                    old_trials)
         bands.append((new_matrix, new_trials, labels))
     combined_labels.extend(combined_data[0][2])
 

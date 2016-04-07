@@ -3,7 +3,8 @@
 from math import exp, log
 from decimal import Decimal, getcontext
 from scipy.optimize import minimize
-from d606.preprocessing.dataextractor import load_data, extract_trials_two
+from d606.preprocessing.dataextractor import load_data, \
+                                            extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -225,6 +226,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
 def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
+    A = [x[0] for x in A]
     corrected_signal = [a_i - b_i for a_i, b_i in zip(raw_signal, A)]
     return np.array(corrected_signal)
 
@@ -272,7 +274,7 @@ def plot_example():
 
 def extract_trials_array(signal, trials_start):
     n_trials = len(trials_start)
-    concat_trials, concat_trials_start = extract_trials_two(signal,
+    concat_trials, concat_trials_start = extract_trials_single_channel(signal,
                                                        trials_start)
     trials = [concat_trials[concat_trials_start[i]:concat_trials_start[i+1]]
               for i in xrange(n_trials-1)]
@@ -298,8 +300,11 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
 
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
-def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
-    channels, trials_start, labels, artifacts = eeg_data[run_index]
+
+def clean_eeg(input_q, output_q, range_list=((4, 6), (8, 15)), m=11):
+    eeg_data, index = input_q.get()
+    print "Process " + str(index) + " is running"
+    channels, trials_start, labels, artifacts = eeg_data
     raw_signals = channels[0:22]        # EEG channels (raw)
     clean_signals = []
     for raw_signal in raw_signals:
@@ -308,4 +313,10 @@ def clean_eeg(eeg_data, range_list = ((4, 6), (8, 15)), run_index = 5, m = 11):
                                           labels,
                                           range_list,
                                           m))
-    return clean_signals
+    if not output_q.full():
+        output_q.put((clean_signals, index))
+        output_q.close()
+        output_q.join_thread()
+    else:
+        print "QUEUE IS FULL ????"
+    print "Process " + str(index) + " exiting!!"
