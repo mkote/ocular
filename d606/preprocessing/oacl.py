@@ -257,8 +257,7 @@ def plot_example():
 
 def extract_trials_array(signal, trials_start):
     n_trials = len(trials_start)
-    concat_trials, concat_trials_start = extract_trials_single_channel(signal,
-                                                       trials_start)
+    concat_trials, concat_trials_start = extract_trials_single_channel(signal, trials_start)
     trials = [concat_trials[concat_trials_start[i]:concat_trials_start[i+1]]
               for i in xrange(n_trials-1)]
     trials += [concat_trials[concat_trials_start[n_trials-1]:]]
@@ -284,7 +283,8 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
 
 
-def clean_eeg(input_q, output_q, range_list=((4, 6), (8, 15)), m=11):
+def clean_eeg(input_q, output_q, range_list=((3, 7), (7, 15)), m=11, decimal_precision=300):
+    getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
     print "Process " + str(index) + " is running"
     channels, trials_start, labels, artifacts = eeg_data
