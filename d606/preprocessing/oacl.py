@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
     # TODO: paper just uses symmetric MAF, but this loses information at ends!
-    print "Applying moving average filter..."
     maf = []
     # We compute only so at each side of a point, we have (m-1)/2 elements.
     start = (m-1)/2
@@ -68,7 +67,6 @@ def find_relative_height(smooth_signal, time):
 
 
 def find_relative_heights(smooth_signal):
-    print "Finding relative heights..."
     relative_heights = []
     for i in range(1, len(smooth_signal)-1):
         next_rel_height = find_relative_height(smooth_signal, i)
@@ -77,7 +75,6 @@ def find_relative_heights(smooth_signal):
 
 
 def find_peak_indexes(relative_heights, peak_range):
-    print "finding peak indexes..."
     l = peak_range[0]
     u = peak_range[1]
     rh = relative_heights
@@ -124,7 +121,6 @@ def find_artifact_signals(raw_signal, m, range_list):
     num_samples = len(raw_signal)
     i = 1
     for range in range_list:
-        print "Processing signal for range: ", i
         peaks = find_peak_indexes(rh, range)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
@@ -261,7 +257,7 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
-    print("Minimizing...")
+
     min_result = minimize(objective_function_aux,
                           [0.5] * (len(range_list) + 1),
                           bounds=[[0, 1]] * (len(range_list) + 1),
@@ -277,10 +273,10 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
 def clean_eeg(input_q, output_q, range_list=((3, 7), (7, 15)), m=11, decimal_precision=300):
     getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
-    print "Process " + str(index) + " is running"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
-    for raw_signal in channels:
+    for i, raw_signal in enumerate(channels):
+        print "Process " + str(index) + " is running channel " + str(i)
         clean_signals.append(clean_signal(raw_signal,
                                           trials_start,
                                           labels,

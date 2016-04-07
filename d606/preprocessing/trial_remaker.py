@@ -21,7 +21,7 @@ def remake_trial(raw_data):
         result.append(trial(*temp_trial))
         temp_trial = []
     for x in range(first_index, len(raw_data)):
-        input_q.put((raw_data[x], x))
+        input_q.put((raw_data[x], x - 3))
         temp_trial.append([])
         temp_trial.append(raw_data[x][1])
         temp_trial.append(raw_data[x][2])
@@ -42,7 +42,7 @@ def remake_trial(raw_data):
         p.join()
 
     for x in range(0, len(temp_part_run)):
-        temp_part_run[temp[x][1]-3][0].extend(np.array(temp[x][0]))
+        temp_part_run[temp[x][1]][0].extend(np.array(temp[x][0]))
 
     for x in range(0, len(temp_part_run)):
         result.append(trial(*temp_part_run[x]))
