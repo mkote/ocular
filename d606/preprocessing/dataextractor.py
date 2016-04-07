@@ -5,8 +5,7 @@ from collections import namedtuple
 import os
 from itertools import chain
 
-PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                    '../../matfiles/'))  # Path to math files
+PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../matfiles/'))  # Path to math files
 HERTZ = 250  # Frequency of obtained data
 TRIAL_BEGINNING = 700  # 2.8s * 250Hz
 TRIAL_LENGTH = 750  # 3s * 250Hz
@@ -66,8 +65,7 @@ def load_data(files, type):
             #           labels=label_list,
             #           artifacts=artifact_list)
 
-            eeg_list.append((data_matrix,trial_list, label_list,
-                             artifact_list))
+            eeg_list.append((data_matrix,trial_list, label_list, artifact_list))
 
     return eeg_list
 
@@ -77,8 +75,7 @@ def extract_trials_single_channel(matrix, trials):
     num_trials = len(trials)
     for trial in trials:
         new_matrix.extend(transpose(matrix[trial+TRIAL_BEGINNING:trial+JUMP]))
-    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0,
-                                                                num_trials)]
+    return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
 
 
 def extract_trials_two(matrix, trials):
@@ -88,20 +85,6 @@ def extract_trials_two(matrix, trials):
         new_matrix.extend(transpose(matrix[0:len(matrix),
                                     trial+TRIAL_BEGINNING:trial+JUMP]))
     return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
-
-
-def trial_splitter(matrix, trials):
-    """
-    :param matrix: numpy matrix
-    :param trials: list of trial start points
-    :return: an array of matrix, one matrix per trial
-    """
-    matrix_list = []
-    trials.append(len(matrix[1]))  # Initialize trials with a end trial
-    for i in range(0, len(trials) - 1):
-        matrix_list.append(np.transpose([matrix[:, trials[i]:trials[i + 1]]]))
-
-    return matrix_list
 
 
 def d3_matrix_creator(matrix):
@@ -142,15 +125,13 @@ def csp_label_reformat(label, type):
 
 def run_combiner(run_list):
     """
-from sklearn.preprocessing import MinMaxScaler
     Combine runs
     :param run_list: a list of runs to combine
     :return: a new tuple containing a matrix, trials, labels and
              artifacts for the combined runs
     """
     first_index = (run_list.index(x) for x in run_list if len(x[1]) > 0).next()
-    m_matrix = transpose(list(chain(*[transpose(x[0]) for x in run_list[
-                                                       first_index:]])))
+    m_matrix = transpose(list(chain(*[transpose(x[0]) for x in run_list[first_index:]])))
     m_trials = list(chain(*[x[1] for x in run_list[first_index:]]))
     m_labels = list(chain(*[x[2] for x in run_list[first_index:]]))
     m_artifacts = list(chain(*[x[3] for x in run_list[first_index:]]))
@@ -190,8 +171,7 @@ def restructure_data(runs, filters):
 
     for run in runs:
         matrix, trials, labels, artifacts = run
-        filter_bank.append([(single_filter, trials, labels, artifacts) for
-                            single_filter in filters.filter(matrix)])
+        filter_bank.append([(single_filter, trials, labels, artifacts) for single_filter in filters.filter(matrix)])
 
     data_tuple_bands = [[] for x in range(0, len(filter_bank[0]))]
     #  Restructure matrices, and recreate data tuples
@@ -208,8 +188,7 @@ def restructure_data(runs, filters):
     # Trial Extraction before csp and svn
     for eeg_signal in combined_data:
         old_matrix, old_trials, labels, artifacts = eeg_signal
-        new_matrix, new_trials = extract_trials_two(old_matrix[0:22],
-                                                    old_trials)
+        new_matrix, new_trials = extract_trials_two(old_matrix[0:22], old_trials)
         bands.append((new_matrix, new_trials, labels))
     combined_labels.extend(combined_data[0][2])
 

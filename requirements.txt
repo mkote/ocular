@@ -9,3 +9,4 @@ matlab
 scikit-learn
 mne
 sklearn
+matplotlib

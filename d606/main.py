@@ -25,7 +25,7 @@ def main():
     runs = remake_trial(runs)
 
     evals = load_data(5, "E")
-    eog_eval, evals = extract_eog(runs)
+    eog_eval, evals = extract_eog(evals)
     evals = remake_trial(evals)
 
     grid_list = grid_combinator(grid_parameters)
