@@ -3,12 +3,23 @@
 from math import exp, log
 from decimal import Decimal, getcontext
 from scipy.optimize import basinhopping
+from scipy.optimize._basinhopping import Metropolis
 from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
 
 NUM_CLASSES = 4
 
+
+def _fixed_accept_reject(self, energy_new, energy_old):
+    z = (energy_new - energy_old) * self.beta
+    if z < -700:
+        z = -700
+    w = min(1.0, np.exp(-z))
+    rand = np.random.rand()
+    return w >= rand
+
+Metropolis.accept_reject = _fixed_accept_reject
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
