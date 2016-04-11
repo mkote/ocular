@@ -125,3 +125,6 @@ fabric.properties
 ### Pycharm
 *.pyc
 *.rar
+
+### Misc
+/d606/result.txt
