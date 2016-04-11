@@ -9,7 +9,7 @@ def remake_trial(raw_data, arg_oacl=None):
     result = []
 
     if arg_oacl is None:
-        oacl = OACL(multi_run=True, ranges=((3, 7),(7, 15)))
+        oacl = OACL(multi_run=True, ranges=((3, 7), (7, 15)))
     else:
         oacl = arg_oacl
 

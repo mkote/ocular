@@ -5,7 +5,7 @@ from multiprocessing import Queue, Process
 
 class OACL(TransformerMixin):
 
-    def __init__(self, ranges=((30, 70), (70, 150)), m=11, decimal_precision=300, multi_run=False):
+    def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False):
         self.theta = None
         self.ranges = ranges
         self.m = m
@@ -59,7 +59,8 @@ class OACL(TransformerMixin):
         if self.multi_run is False:
             cleaned_signal = (clean_signal(x, self.theta, self.get_params()))
         else:
-            for run in x:
+            for i, run in enumerate(x):
+                print "Cleaning for run " + str(i)
                 cleaned_signal.append(clean_signal(run, self.theta, self.get_params()))
 
         return cleaned_signal

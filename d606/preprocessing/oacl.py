@@ -285,6 +285,7 @@ def estimate_theta_multiproc(input_q, output_q, params):
     range_list, m, decimal_precision = params
     getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
+    print "Process " + str(index) + " is starting"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
     for raw_signal in channels:
