@@ -1,18 +1,20 @@
 from collections import namedtuple
-from multiprocessing import Process, Queue
-from d606.preprocessing.oacl import clean_eeg
-import numpy as np
+from d606.preprocessing.oaclbase import OACL
+from numpy import array
 
 
-def remake_trial(raw_data):
+def remake_trial(raw_data, arg_oacl=None):
     trial = namedtuple('EEG', ['matrix', 'trials', 'labels', 'artifacts'])
     temp_trial = []
-    temp_part_run = []
-    processes = []
     result = []
+
+    if arg_oacl is None:
+        oacl = OACL(multi_run=True, ranges=((3, 7), (7, 15)))
+    else:
+        oacl = arg_oacl
+
     first_index = (raw_data.index(x) for x in raw_data if len(x[1]) > 0).next()
-    input_q = Queue(len(raw_data) - first_index)
-    output_q = Queue(len(raw_data) - first_index)
+
     for x in range(0, first_index):
         temp_trial.append(raw_data[x][0])
         temp_trial.append(raw_data[x][1])
@@ -20,31 +22,39 @@ def remake_trial(raw_data):
         temp_trial.append(raw_data[x][3])
         result.append(trial(*temp_trial))
         temp_trial = []
+
+    if arg_oacl is None:
+        cleaned_signal = oacl.fit_transform(raw_data[first_index:], raw_data[first_index:][2])
+
+    else:
+        cleaned_signal = oacl.transform(raw_data[first_index:])
+
     for x in range(first_index, len(raw_data)):
-        input_q.put((raw_data[x], x-first_index))
-        temp_trial.append([])
+        temp_trial.append(array(cleaned_signal[x - first_index]))
         temp_trial.append(raw_data[x][1])
         temp_trial.append(raw_data[x][2])
         temp_trial.append(raw_data[x][3])
-        temp_part_run.append(temp_trial)
+        result.append(trial(*temp_trial))
         temp_trial = []
-    for x in range(first_index, len(raw_data)):
-        p = Process(target=clean_eeg, args=(input_q, output_q,
-                                            ((4, 6), (8, 15)), 11))
-        p.start()
-        processes.append(p)
 
-    temp = []
-    for x in range(0, 6):
-        temp.append(output_q.get())
+    return result, oacl
 
-    for p in processes:
-        p.join()
 
-    for x in range(0, len(temp_part_run)):
-        temp_part_run[temp[x][1]][0].extend(np.array(temp[x][0]))
+def remake_single_trial(raw_data):
+    trial = namedtuple('EEG', ['matrix', 'trials', 'labels', 'artifacts'])
+    temp_trial = []
+    result = []
 
-    for x in range(0, len(temp_part_run)):
-        result.append(trial(*temp_part_run[x]))
+    oacl = OACL()
 
-    return result
+    cleaned_signal = oacl.fit_transform(raw_data, raw_data[2])
+
+
+    temp_trial.append(cleaned_signal)
+    temp_trial.append(raw_data[1])
+    temp_trial.append(raw_data[2])
+    temp_trial.append(raw_data[3])
+    result.append(trial(*temp_trial))
+    temp_trial = []
+
+    return result, oacl

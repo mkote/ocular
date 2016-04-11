@@ -526,3 +526,151 @@ Grid(band_list=[[16, 20], [20, 24], [24, 30], [30, 36]], n_comp=7, kernel='linea
 Grid(band_list=[[16, 20], [20, 24], [24, 30], [30, 36]], n_comp=7, kernel='linear', C=1)
 34.375
 Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.25)
+25.6944444444
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.25)
+31.25
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.5)
+31.25
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.75)
+31.25
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=1)
+31.5972222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=0.25)
+28.8194444444
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=0.5)
+33.6805555556
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=0.75)
+33.3333333333
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=1)
+26.3888888889
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=0.25)
+31.5972222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=0.5)
+30.5555555556
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=0.75)
+31.5972222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=1)
+32.2916666667
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=0.25)
+32.2916666667
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=0.5)
+30.9027777778
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=0.75)
+30.5555555556
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=1)
+26.0416666667
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=0.25)
+29.1666666667
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=0.5)
+28.4722222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=0.75)
+31.5972222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=1)
+32.9861111111
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=0.25)
+32.9861111111
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=0.5)
+33.3333333333
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=0.75)
+34.0277777778
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=1)
+25.6944444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=0.25)
+25.0
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=0.5)
+29.5138888889
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=0.75)
+28.8194444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=1)
+29.1666666667
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=0.25)
+30.9027777778
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=0.5)
+28.8194444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=0.75)
+29.1666666667
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=1)
+26.3888888889
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=0.25)
+27.4305555556
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=0.5)
+27.0833333333
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=0.75)
+29.1666666667
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=1)
+26.7361111111
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.25)
+35.0694444444
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.5)
+39.9305555556
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=0.75)
+37.8472222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='rbf', C=1)
+38.8888888889
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=0.25)
+39.9305555556
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=0.5)
+40.625
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=0.75)
+39.5833333333
+Grid(band_list=[[10, 16], [16, 28]], n_comp=5, kernel='linear', C=1)
+25.3472222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=0.25)
+31.5972222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=0.5)
+38.1944444444
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=0.75)
+39.2361111111
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='rbf', C=1)
+40.625
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=0.25)
+39.9305555556
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=0.5)
+35.7638888889
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=0.75)
+35.4166666667
+Grid(band_list=[[10, 16], [16, 28]], n_comp=6, kernel='linear', C=1)
+25.0
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=0.25)
+32.6388888889
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=0.5)
+37.5
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=0.75)
+37.8472222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='rbf', C=1)
+36.4583333333
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=0.25)
+37.8472222222
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=0.5)
+35.4166666667
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=0.75)
+35.7638888889
+Grid(band_list=[[10, 16], [16, 28]], n_comp=7, kernel='linear', C=1)
+25.6944444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=0.25)
+28.125
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=0.5)
+30.5555555556
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=0.75)
+30.2083333333
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='rbf', C=1)
+28.8194444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=0.25)
+29.1666666667
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=0.5)
+28.8194444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=0.75)
+29.1666666667
+Grid(band_list=[[8, 12], [16, 24]], n_comp=5, kernel='linear', C=1)
+25.6944444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=0.25)
+26.7361111111
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=0.5)
+25.6944444444
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=0.75)
+29.8611111111
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='rbf', C=1)
+27.4305555556
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='linear', C=0.25)
+29.5138888889
+Grid(band_list=[[8, 12], [16, 24]], n_comp=6, kernel='linear', C=0.5)
