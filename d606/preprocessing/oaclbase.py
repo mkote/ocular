@@ -68,5 +68,6 @@ class OACL(TransformerMixin):
 
     def generalize_thetas(self, thetas):
         print "Not done yet"
+        print([t[0][0][0][0] for t in thetas])
         return thetas[0][0]
         # Find a good way to generalize over thetas for each channel for several runs
