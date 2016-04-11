@@ -196,7 +196,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
         h = logistic_function(z)
 
         # hack
-        if(h == 1):
+        if h == 1:
             h -= Decimal(10)**(-getcontext().prec)
 
         summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2)
@@ -255,7 +255,7 @@ def extract_trials_array(signal, trials_start):
     return trials
 
 
-def clean_signal(raw_signal, trials_start, labels, range_list, m):
+def get_theta(raw_signal, trials_start, labels, range_list, m):
     n_trials = len(trials_start)              # Number of trials
     artifact_signals = find_artifact_signals(raw_signal, m, range_list)
     trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
@@ -271,21 +271,28 @@ def clean_signal(raw_signal, trials_start, labels, range_list, m):
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
-    return remove_ocular_artifacts(raw_signal, filtering_param, artifact_signals)
+    return filtering_param
 
 
-def clean_eeg(input_q, output_q, range_list=((3, 7), (7, 15)), m=11, decimal_precision=300):
+def clean_signal(data, thetas, params):
+    range_list, m, decimal_precision = params
+    getcontext().prec = decimal_precision
+    channels, trials, labels, artifacts = data
+    cleaned_signal = []
+    for channel, theta in zip(channels, thetas):
+        artifacts_signals = find_artifact_signals(channel, m, range_list)
+        cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
+    return cleaned_signal
+
+
+def estimate_theta_multiproc(input_q, output_q, params):
+    range_list, m, decimal_precision = params
     getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
-    print "Process " + str(index) + " is running"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
     for raw_signal in channels:
-        clean_signals.append(clean_signal(raw_signal,
-                                          trials_start,
-                                          labels,
-                                          range_list,
-                                          m))
+        clean_signals.append(get_theta(raw_signal, trials_start, labels, range_list, m))
     if not output_q.full():
         output_q.put((clean_signals, index))
         output_q.close()
@@ -293,3 +300,13 @@ def clean_eeg(input_q, output_q, range_list=((3, 7), (7, 15)), m=11, decimal_pre
     else:
         print "QUEUE IS FULL ????"
     print "Process " + str(index) + " exiting!!"
+
+
+def estimate_theta(data, params):
+    range_list, m, decimal_precision = params
+    getcontext().prec = decimal_precision
+    channels, trials, labels, artifacts = data
+    run_thetas = []
+    for channel in channels:
+        run_thetas.append(get_theta(channel, trials, labels, range_list, m))
+    return run_thetas

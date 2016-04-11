@@ -7,7 +7,7 @@ from d606.evaluation.voting import csp_voting
 from d606.evaluation.score import scoring
 from d606.preprocessing.searchgrid import grid_combinator, grid_parameters, save_results
 import d606.preprocessing.searchgrid as search
-from d606.preprocessing.trial_remaker import remake_trial
+from d606.preprocessing.trial_remaker import remake_trial, remake_single_trial
 from collections import namedtuple
 from multiprocessing import freeze_support
 import warnings
@@ -16,17 +16,16 @@ import warnings
 def main():
     Grid = namedtuple('Grid', ['band_list', 'n_comp', 'kernel', 'C'])
     best_result = [0, 0]
-
     warnings.filterwarnings('ignore', category=DeprecationWarning)
     warnings.filterwarnings('ignore', category=RuntimeWarning)
 
     runs = load_data(5, "T")
     eog_test, runs = extract_eog(runs)
-    runs = remake_trial(runs)
+    runs, train_oacl = remake_trial(runs)
 
     evals = load_data(5, "E")
     eog_eval, evals = extract_eog(evals)
-    evals = remake_trial(evals)
+    evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
     grid_list = grid_combinator(grid_parameters)
 
