@@ -7,6 +7,8 @@ from d606.preprocessing.dataextractor import load_data, extract_trials_single_ch
 import numpy as np
 import matplotlib.pyplot as plt
 
+NUM_CLASSES = 4
+
 
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
@@ -162,7 +164,7 @@ def correlation_vector(artifact_signals, signal):
 
 def logistic_function(z):
     if z < -700:
-        return 1
+        return NUM_CLASSES-1
     return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
 
 
@@ -192,10 +194,10 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
         h = logistic_function(z)
 
         # hack
-        if h == 1:
-            h -= Decimal(10)**(-getcontext().prec)
+        if h == NUM_CLASSES-1:
+            h -= (NUM_CLASSES-1) * Decimal(10)**(-getcontext().prec + 1)
 
-        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2)
+        summa += -y[i] * log(h, 2) - (NUM_CLASSES-1 - y[i]) * log(NUM_CLASSES-1 - h, 2)
 
     return summa / n_trials
 
@@ -271,8 +273,9 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
 
 
 def clean_signal(data, thetas, params):
-    range_list, m, decimal_precision = params
+    range_list, m, decimal_precision, num_classes = params
     getcontext().prec = decimal_precision
+    NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
@@ -282,8 +285,9 @@ def clean_signal(data, thetas, params):
 
 
 def estimate_theta_multiproc(input_q, output_q, params):
-    range_list, m, decimal_precision = params
+    range_list, m, decimal_precision, num_classes = params
     getcontext().prec = decimal_precision
+    NUM_CLASSES = num_classes
     eeg_data, index = input_q.get()
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
@@ -300,8 +304,9 @@ def estimate_theta_multiproc(input_q, output_q, params):
 
 
 def estimate_theta(data, params):
-    range_list, m, decimal_precision = params
+    range_list, m, decimal_precision, num_classes = params
     getcontext().prec = decimal_precision
+    NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
     run_thetas = []
     for channel in channels:

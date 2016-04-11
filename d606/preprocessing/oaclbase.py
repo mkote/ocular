@@ -5,15 +5,16 @@ from multiprocessing import Queue, Process
 
 class OACL(TransformerMixin):
 
-    def __init__(self, ranges=((30, 70), (70, 150)), m=11, decimal_precision=300, multi_run=False):
+    def __init__(self, ranges=((30, 70), (70, 150)), m=11, decimal_precision=300, multi_run=False, num_classes=4):
         self.theta = None
         self.ranges = ranges
         self.m = m
         self.decimal_precision = decimal_precision
         self.multi_run = multi_run
+        self.num_classes = num_classes
 
     def get_params(self):
-        params = (self.ranges, self.m, self.decimal_precision)
+        params = (self.ranges, self.m, self.decimal_precision, self.num_classes)
         return params
 
     def fit(self, x, y):
