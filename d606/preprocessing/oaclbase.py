@@ -1,5 +1,5 @@
 from sklearn.base import TransformerMixin
-from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal
+from preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal
 from multiprocessing import Queue, Process
 
 

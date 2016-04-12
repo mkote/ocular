@@ -1,5 +1,5 @@
 from collections import namedtuple
-from d606.preprocessing.oaclbase import OACL
+from preprocessing.oaclbase import OACL
 from numpy import array
 
 

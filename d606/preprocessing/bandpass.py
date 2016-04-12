@@ -1,5 +1,5 @@
 from scipy.signal import butter, lfilter, filtfilt
-from d606.preprocessing.dataextractor import *
+from preprocessing.dataextractor import *
 
 
 def butter_bandpass(lowcut, highcut, fs, order=5):

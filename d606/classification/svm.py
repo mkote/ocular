@@ -1,7 +1,7 @@
 from sklearn.svm import SVC
 from sklearn.preprocessing import MinMaxScaler
-from d606.preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
-import d606.preprocessing.searchgrid as search
+from preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
+import preprocessing.searchgrid as search
 from numpy import array
 
 

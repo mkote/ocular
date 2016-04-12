@@ -128,3 +128,8 @@ fabric.properties
 
 ### Misc
 d606/result.txt
+d606/best_job_and_results.txt
+d606/expt-grid.pkl
+d606/output/*
+d606/trace.csv
+d606/jobs/*

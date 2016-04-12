@@ -1,5 +1,5 @@
 from sklearn.decomposition import FastICA
-from d606.preprocessing.dataextractor import load_data
+from preprocessing.dataextractor import load_data
 
 numComponents = 25
 
