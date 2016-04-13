@@ -9,20 +9,43 @@ import preprocessing.searchgrid as search
 from preprocessing.trial_remaker import remake_trial
 from collections import namedtuple
 from multiprocessing import freeze_support
+import cPickle
+import os
+
+run_oacl = True
 
 
 def main(*args):
-    named_grid = namedtuple('Grid', ['n_comp', 'C'])
+    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges'])
+    search.grid = named_grid(*args)
+    runs, evals = '', ''
 
-    runs = load_data(5, "T")
-    eog_test, runs = extract_eog(runs)
-    runs, train_oacl = remake_trial(runs)
+    old_path = os.getcwd()
+    os.chdir('../../../d606')
 
-    evals = load_data(5, "E")
-    eog_eval, evals = extract_eog(evals)
-    evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
+    if not os.path.isfile('runs.dump') and not os.path.isfile('evals.dump') or run_oacl is True:
+        runs = load_data(1, "T")
+        eog_test, runs = extract_eog(runs)
+        runs, train_oacl = remake_trial(runs)
 
-    search.grid = named_grid(*[args])
+        # Save data, could be a method instead
+        with open("runs.dump", "wb") as output:
+            cPickle.dump(runs, output, cPickle.HIGHEST_PROTOCOL)
+
+        evals = load_data(1, "E")
+        eog_eval, evals = extract_eog(evals)
+        evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
+
+        with open("evals.dump", "wb") as output:
+            cPickle.dump(evals, output, cPickle.HIGHEST_PROTOCOL)
+    else:
+        with open("runs.dump", "rb") as input:
+            runs = cPickle.load(input)
+
+        with open("evals.dump", "rb") as input:
+            evals = cPickle.load(input)
+
+    os.chdir(old_path)
 
     with timed_block('All Time'):
         # for subject in [int(x) for x in range(1, 2)]:
@@ -51,8 +74,9 @@ def main(*args):
 
     print search.grid
     print '\n'
+    print score
     return score
 
 if __name__ == '__main__':
     freeze_support()
-    main()
+    main(2, 0.1, 'rbf', [[10, 20], [12, 14]])
