@@ -28,14 +28,18 @@ def main(*args):
         eog_test, runs = extract_eog(runs)
         runs, train_oacl = remake_trial(runs)
 
-        # Save data, could be a method instead
-        with open("runs.dump", "wb") as output:
-            cPickle.dump(runs, output, cPickle.HIGHEST_PROTOCOL)
-
         evals = load_data(1, "E")
         eog_eval, evals = extract_eog(evals)
         evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
+        # Save data, could be a method instead
+        if os.path.isfile('runs.dump'):
+            os.remove('runs.dump')
+        with open("runs.dump", "wb") as output:
+            cPickle.dump(runs, output, cPickle.HIGHEST_PROTOCOL)
+
+        if os.path.isfile('evals.dump'):
+            os.remove('evals.dump')
         with open("evals.dump", "wb") as output:
             cPickle.dump(evals, output, cPickle.HIGHEST_PROTOCOL)
     else:
