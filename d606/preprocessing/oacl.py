@@ -13,8 +13,8 @@ NUM_CLASSES = 4
 
 def _fixed_accept_reject(self, energy_new, energy_old):
     z = (energy_new - energy_old) * self.beta
-    if z < -700:
-        z = -700
+    if z < -1:
+        z = -1
     w = min(1.0, np.exp(-z))
     rand = np.random.rand()
     return w >= rand
@@ -174,9 +174,10 @@ def correlation_vector(artifact_signals, signal):
 
 
 def logistic_function(z):
+    # hack
     if z < -700:
-        return NUM_CLASSES-1
-    return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
+        z = -700
+    return Decimal(1.0)/(Decimal(1.0)+Decimal(np.e**(-float(z))))
 
 
 def column(matrix, i):
@@ -203,10 +204,6 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
         z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
         h = logistic_function(z)
-
-        # hack
-        if h == NUM_CLASSES-1:
-            h -= (NUM_CLASSES-1) * Decimal(10)**(-getcontext().prec + 1)
 
         summa += -y[i] * log(h, 2) - (NUM_CLASSES-1 - y[i]) * log(NUM_CLASSES-1 - h, 2)
 
@@ -263,24 +260,6 @@ def extract_trials_array(signal, trials_start):
     trials += [concat_trials[concat_trials_start[n_trials-1]:]]
     return trials
 
-class MyStepper():
-    def __init__(self, stepsize=0.2):
-        self.stepsize = stepsize
-
-    def __call__(self, x):
-        bounds = [[0, 1], [0, 1], [-1000, 1000]]
-        x_old = np.copy(x)
-        s = self.stepsize
-        while 1:
-            x[:2] += np.random.uniform(-s, s, np.shape(x[:2]))
-            x[2] += np.random.uniform(-s * np.random.rand(), s * np.random.rand(), 1)
-            test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
-            if all(test):
-                break
-            else:
-                x = x_old
-        return x
-
 
 def get_theta(raw_signal, trials_start, labels, range_list, m):
     n_trials = len(trials_start)              # Number of trials
@@ -288,14 +267,13 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
     trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
-    mystep = MyStepper()
-    min_result = basinhopping(objective_function_aux, [0.5] * (len(range_list) + 1), take_step=mystep,
+    min_result = basinhopping(objective_function_aux,
+                          [0.5] * (len(range_list) + 1),
                           minimizer_kwargs={
-                              "bounds":[[0, 1], [0, 1], [-1000, 1000]],
+                              "bounds":[[0, 1]] * (len(range_list) + 1),
                               "method":"SLSQP",
-                              "args":[labels, n_trials, trial_artifact_signals, trial_signals],
-                              "options": {"disp": True}
-                          }, disp=True)
+                              "args":[labels, n_trials, trial_artifact_signals, trial_signals]
+                          })
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
