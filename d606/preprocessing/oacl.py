@@ -13,8 +13,8 @@ NUM_CLASSES = 4
 
 def _fixed_accept_reject(self, energy_new, energy_old):
     z = (energy_new - energy_old) * self.beta
-    if z < -700:
-        z = -700
+    if z < -1:
+        z = -1
     w = min(1.0, np.exp(-z))
     rand = np.random.rand()
     return w >= rand
@@ -174,9 +174,10 @@ def correlation_vector(artifact_signals, signal):
 
 
 def logistic_function(z):
+    # hack
     if z < -700:
-        return NUM_CLASSES-1
-    return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
+        z = -700
+    return Decimal(1.0)/(Decimal(1.0)+Decimal(np.e**(-float(z))))
 
 
 def column(matrix, i):
@@ -203,10 +204,6 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
         z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
         h = logistic_function(z)
-
-        # hack
-        if h == NUM_CLASSES-1:
-            h -= (NUM_CLASSES-1) * Decimal(10)**(-getcontext().prec + 1)
 
         summa += -y[i] * log(h, 2) - (NUM_CLASSES-1 - y[i]) * log(NUM_CLASSES-1 - h, 2)
 
@@ -274,7 +271,7 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
                           [0.5] * (len(range_list) + 1),
                           minimizer_kwargs={
                               "bounds":[[0, 1]] * (len(range_list) + 1),
-                              "method":"L-BFGS-B",
+                              "method":"SLSQP",
                               "args":[labels, n_trials, trial_artifact_signals, trial_signals]
                           })
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
