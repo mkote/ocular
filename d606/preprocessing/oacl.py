@@ -266,12 +266,12 @@ class MyStepper():
         self.stepsize = stepsize
 
     def __call__(self, x):
-        bounds = [[0, 1], [0, 1], [-1000, 1000]]
-        x_old = np.copy(x)
+        bounds = [[0, 1], [0, 1], [-np.inf, 0]]
         s = self.stepsize
         while 1:
+            x_old = np.copy(x)
             x[:2] += np.random.uniform(-s, s, np.shape(x[:2]))
-            x[2] += np.random.uniform(-s * np.random.rand(), s * np.random.rand(), 1)
+            x[2] += np.random.uniform(-s * 10, s * 10, 1)
             test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
             if all(test):
                 break
@@ -289,13 +289,19 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
     mystepper = MyStepper()
-    min_result = basinhopping(objective_function_aux, [0.5] * (len(range_list) + 1), take_step=mystepper,
-                          minimizer_kwargs={
-                              "bounds":[[0, 1]] * (len(range_list) + 1),
-                              "method":"SLSQP",
-                              "args":[labels, n_trials, trial_artifact_signals, trial_signals],
-                              "options": {"disp": True}
-                          }, disp=True)
+    min_result = basinhopping(objective_function_aux,
+                              [0.5] * (len(range_list)) + [0],
+                              take_step=mystepper,
+                              minimizer_kwargs={
+                                  "bounds":[[0, 1]] * (len(range_list)) + [[-np.inf, 0]],
+                                  "method":"SLSQP",
+                                  "args":[labels, n_trials, trial_artifact_signals, trial_signals],
+                              #    "options": {"disp": True}
+                              },
+                              interval=7,
+                              niter_success=25,
+                              # disp=True
+                              )
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
