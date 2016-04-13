@@ -6,6 +6,8 @@ from scipy.optimize import minimize
 from preprocessing.dataextractor import load_data, extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
+import datetime as clock
+from d606.evaluation.timing import timed_block
 
 NUM_CLASSES = 4
 
@@ -164,7 +166,7 @@ def correlation_vector(artifact_signals, signal):
 
 def logistic_function(z):
     if z < -700:
-        return NUM_CLASSES-1
+        z = -700
     return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
 
 
@@ -192,10 +194,6 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
         z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
         h = logistic_function(z)
-
-        # hack
-        if h == NUM_CLASSES-1:
-            h -= (NUM_CLASSES-1) * Decimal(10)**(-getcontext().prec + 1)
 
         summa += -y[i] * log(h, 2) - (NUM_CLASSES-1 - y[i]) * log(NUM_CLASSES-1 - h, 2)
 
@@ -279,8 +277,9 @@ def clean_signal(data, thetas, params):
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
-        artifacts_signals = find_artifact_signals(channel, m, range_list)
-        cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
+        with timed_block('signal cleaned'):
+            artifacts_signals = find_artifact_signals(channel, m, range_list)
+            cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
     return cleaned_signal
 
 
@@ -289,20 +288,21 @@ def estimate_theta_multiproc(input_q, output_q, params):
     getcontext().prec = decimal_precision
     NUM_CLASSES = num_classes
     eeg_data, index = input_q.get()
-    print "Process " + str(index) + " is starting"
-    channels, trials_start, labels, artifacts = eeg_data
-    clean_signals = []
-    for i, raw_signal in enumerate(channels):
-        print "Process " + str(index) + " is processing channel " + str(i)
-        clean_signals.append(get_theta(raw_signal, trials_start, labels, range_list, m))
+    with timed_block('process' + str(index)):
+        print "Process " + str(index) + " is starting"
+        channels, trials_start, labels, artifacts = eeg_data
+        clean_signals = []
+        for i, raw_signal in enumerate(channels):
+            print "Process " + str(index) + " is processing channel " + str(i)
+            clean_signals.append(get_theta(raw_signal, trials_start, labels, range_list, m))
 
-    if not output_q.full():
-        output_q.put((clean_signals, index))
-        output_q.close()
-        output_q.join_thread()
-    else:
-        print "QUEUE IS FULL ????"
-    print "Process " + str(index) + " exiting!!"
+        if not output_q.full():
+            output_q.put((clean_signals, index))
+            output_q.close()
+            output_q.join_thread()
+        else:
+            print "QUEUE IS FULL ????"
+        print "Process " + str(index) + " exiting!!"
 
 
 def estimate_theta(data, params):
