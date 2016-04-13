@@ -292,7 +292,8 @@ def estimate_theta_multiproc(input_q, output_q, params):
     print "Process " + str(index) + " is starting"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
-    for raw_signal in channels:
+    for i, raw_signal in enumerate(channels):
+        print "Process " + str(index) + " is processing channel " + str(i)
         clean_signals.append(get_theta(raw_signal, trials_start, labels, range_list, m))
 
     if not output_q.full():

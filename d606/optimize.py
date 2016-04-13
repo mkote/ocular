@@ -17,6 +17,8 @@ def main(job_id, params):
     kernel = str(params['kernel'][0])
     band_list = ast.literal_eval(params['band_list'][0])
     oacl_ranges = ast.literal_eval(params['oacl_ranges'][0])
+    print oacl_ranges
+    print type(oacl_ranges)
     print 'Anything printed here will end up in the output directory for job #:', str(job_id)
     print params
     return branin(n_comp, c, kernel, band_list, oacl_ranges)

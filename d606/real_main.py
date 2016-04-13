@@ -21,7 +21,8 @@ def main(*args):
     runs, evals = '', ''
 
     old_path = os.getcwd()
-    os.chdir('../../../d606')
+    if 'd606' not in old_path:
+        os.chdir('../../../d606')
 
     if not os.path.isfile('runs.dump') and not os.path.isfile('evals.dump') or run_oacl is True:
         runs = load_data(1, "T")
@@ -83,4 +84,4 @@ def main(*args):
 
 if __name__ == '__main__':
     freeze_support()
-    main(2, 0.1, 'rbf', [[10, 20], [12, 14]])
+    main(2, 0.1, 'rbf', [[10, 20], [12, 14]], ((3, 7), (7, 15)))
