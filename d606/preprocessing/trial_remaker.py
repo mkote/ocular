@@ -12,10 +12,12 @@ def remake_trial(raw_data, arg_oacl=None):
     result = []
 
     if arg_oacl is None:
+
         ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
-        oacl = OACL(multi_run=True, ranges=ranges)
+        oacl = OACL(multi_run=True, ranges=ranges, trials=True)
     else:
         oacl = arg_oacl
+        oacl.trials = False
 
     first_index = (raw_data.index(x) for x in raw_data if len(x[1]) > 0).next()
 
@@ -44,7 +46,6 @@ def remake_single_trial(raw_data):
     oacl = OACL()
 
     cleaned_signal = oacl.fit_transform(raw_data, raw_data[2])
-
 
     temp_trial.append(cleaned_signal)
     temp_trial.append(raw_data[1])
