@@ -1,7 +1,7 @@
 from sklearn.base import TransformerMixin
 from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal, clean_signal_multiproc
 from multiprocessing import Queue, Process
-from numpy import average, array
+from numpy import average, array, median
 
 
 class OACL(TransformerMixin):
@@ -99,8 +99,8 @@ class OACL(TransformerMixin):
         generalized_thetas = []
         t = []
         for x in zip(*thetas):
-            t.append([average([z[0] for z in x])])
-            t.append([average([z[1] for z in x])])
+            t.append([median([z[0] for z in x])])
+            t.append([median([z[1] for z in x])])
             generalized_thetas.append(array(t))
             t = []
         return generalized_thetas
