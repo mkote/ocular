@@ -21,7 +21,7 @@ def main():
 
     runs = load_data(5, "T")
     eog_test, runs = extract_eog(runs)
-    runs, train_oacl = remake_single_trial(runs[3])
+    runs, train_oacl = remake_trial(runs)
 
     evals = load_data(5, "E")
     eog_eval, evals = extract_eog(evals)
