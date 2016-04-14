@@ -4,10 +4,11 @@ from math import exp, log
 from decimal import Decimal, getcontext
 from scipy.optimize import basinhopping
 from scipy.optimize._basinhopping import Metropolis
-from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
+from preprocessing.dataextractor import load_data, extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
-from d606.evaluation.timing import timed_block
+from evaluation.timing import timed_block
+from evaluation.timing import timed_block
 
 NUM_CLASSES = 4
 
