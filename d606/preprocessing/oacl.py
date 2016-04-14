@@ -2,10 +2,24 @@
 
 from math import exp, log
 from decimal import Decimal, getcontext
-from scipy.optimize import minimize
+from scipy.optimize import basinhopping
+from scipy.optimize._basinhopping import Metropolis
 from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
+
+NUM_CLASSES = 4
+
+
+def _fixed_accept_reject(self, energy_new, energy_old):
+    z = (energy_new - energy_old) * self.beta
+    if z < -1:
+        z = -1
+    w = min(1.0, np.exp(-z))
+    rand = np.random.rand()
+    return w >= rand
+
+Metropolis.accept_reject = _fixed_accept_reject
 
 
 def moving_avg_filter(chan_signal, m):
@@ -161,9 +175,10 @@ def correlation_vector(artifact_signals, signal):
 
 
 def logistic_function(z):
+    # hack
     if z < -700:
-        return 1
-    return Decimal(1.0)/(Decimal(1.0)+Decimal(exp(-z)))
+        z = -700
+    return Decimal(1.0)/(Decimal(1.0)+Decimal(np.e**(-z)))
 
 
 def column(matrix, i):
@@ -191,11 +206,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
         z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
         h = logistic_function(z)
 
-        # hack
-        if h == 1:
-            h -= Decimal(10)**(-getcontext().prec)
-
-        summa += -y[i] * log(h, 2) - (1 - y[i]) * log(1 - h, 2)
+        summa += -y[i] * log(h, 2) - (NUM_CLASSES-1 - y[i]) * log(NUM_CLASSES-1 - h, 2)
 
     return summa / n_trials
 
@@ -251,19 +262,47 @@ def extract_trials_array(signal, trials_start):
     return trials
 
 
+class MyStepper:
+    def __init__(self, stepsize=0.2):
+        self.stepsize = stepsize
+
+    def __call__(self, x):
+        bounds = [[0, 1], [0, 1], [-np.inf, 0]]
+        s = self.stepsize
+        while 1:
+            x_old = np.copy(x)
+            x[:2] += np.random.uniform(-s, s, np.shape(x[:2]))
+            x[2] += np.random.uniform(-s * 10, s * 10, 1)
+            test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
+            if all(test):
+                break
+            else:
+                x = x_old
+        return x
+
+
+
+
 def get_theta(raw_signal, trials_start, labels, range_list, m):
     n_trials = len(trials_start)              # Number of trials
     artifact_signals = find_artifact_signals(raw_signal, m, range_list)
     trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
-
-    min_result = minimize(objective_function_aux,
-                          [0.5] * (len(range_list) + 1),
-                          bounds=[[0, 1]] * (len(range_list) + 1),
-                          method="L-BFGS-B",
-                          args=[labels, n_trials, trial_artifact_signals,
-                                trial_signals])
+    mystepper = MyStepper()
+    min_result = basinhopping(objective_function_aux,
+                              [0.5] * (len(range_list)) + [0],
+                              take_step=mystepper,
+                              minimizer_kwargs={
+                                  "bounds":[[0, 1]] * (len(range_list)) + [[-np.inf, 0]],
+                                  "method":"SLSQP",
+                                  "args":[labels, n_trials, trial_artifact_signals, trial_signals],
+                              #    "options": {"disp": True}
+                              },
+                              interval=7,
+                              niter_success=25,
+                              # disp=True
+                              )
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
@@ -271,8 +310,9 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
 
 
 def clean_signal(data, thetas, params):
-    range_list, m, decimal_precision = params
+    range_list, m, decimal_precision, _, num_classes = params
     getcontext().prec = decimal_precision
+    NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
@@ -282,8 +322,9 @@ def clean_signal(data, thetas, params):
 
 
 def clean_signal_multiproc(input_q, output_q, thetas, params):
-    range_list, m, decimal_precision, trials = params
+    range_list, m, decimal_precision, trials, num_classes = params
     getcontext().prec = decimal_precision
+    NUM_CLASSES = num_classes
     if trials is True:
         data, artifacts_signals, index = input_q.get()
     else:
@@ -307,9 +348,10 @@ def clean_signal_multiproc(input_q, output_q, thetas, params):
 
 
 def estimate_theta_multiproc(input_q, output_q, params):
-    range_list, m, decimal_precision, trials = params
+    range_list, m, decimal_precision, trials, num_classes = params
     getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
+    NUM_CLASSES = num_classes
     print "Process " + str(index) + " is starting"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
@@ -330,8 +372,9 @@ def estimate_theta_multiproc(input_q, output_q, params):
 
 
 def estimate_theta(data, params):
-    range_list, m, decimal_precision = params
+    range_list, m, decimal_precision, _, num_classes = params
     getcontext().prec = decimal_precision
+    NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
     run_thetas = []
     for channel in channels:

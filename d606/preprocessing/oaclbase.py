@@ -1,21 +1,24 @@
 from sklearn.base import TransformerMixin
 from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal, clean_signal_multiproc
 from multiprocessing import Queue, Process
-from numpy import average, array
+from numpy import average, array, median
+
 
 class OACL(TransformerMixin):
 
-    def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False, trials=False):
+    def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False, num_classes=4,
+                 trials=False):
         self.theta = None
         self.ranges = ranges
         self.m = m
         self.decimal_precision = decimal_precision
         self.multi_run = multi_run
+        self.num_classes = num_classes
         self.trials = trials
         self.artifacts = []
 
     def get_params(self):
-        params = (self.ranges, self.m, self.decimal_precision, self.trials)
+        params = (self.ranges, self.m, self.decimal_precision, self.trials, self.num_classes)
         return params
 
     def fit(self, x, y):
@@ -93,13 +96,11 @@ class OACL(TransformerMixin):
         return cleaned_signal
 
     def generalize_thetas(self, thetas):
-        print "Not done yet"
         generalized_thetas = []
         t = []
         for x in zip(*thetas):
-            t.append([average([z[0] for z in x])])
-            t.append([average([z[1] for z in x])])
+            t.append([median([z[0] for z in x])])
+            t.append([median([z[1] for z in x])])
             generalized_thetas.append(array(t))
             t = []
         return generalized_thetas
-        # Find a good way to generalize over thetas for each channel for several runs
