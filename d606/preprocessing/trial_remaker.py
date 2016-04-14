@@ -9,9 +9,10 @@ def remake_trial(raw_data, arg_oacl=None):
     result = []
 
     if arg_oacl is None:
-        oacl = OACL(multi_run=True, ranges=((3, 7), (7, 15)))
+        oacl = OACL(multi_run=True, ranges=((3, 7), (7, 15)), trials=True)
     else:
         oacl = arg_oacl
+        oacl.trials = False
 
     first_index = (raw_data.index(x) for x in raw_data if len(x[1]) > 0).next()
 

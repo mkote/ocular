@@ -21,6 +21,7 @@ def _fixed_accept_reject(self, energy_new, energy_old):
 
 Metropolis.accept_reject = _fixed_accept_reject
 
+
 def moving_avg_filter(chan_signal, m):
     # This function calculates the moving average filter of a single signal.
     # TODO: paper just uses symmetric MAF, but this loses information at ends!
@@ -177,7 +178,7 @@ def logistic_function(z):
     # hack
     if z < -700:
         z = -700
-    return Decimal(1.0)/(Decimal(1.0)+Decimal(np.e**(-float(z))))
+    return Decimal(1.0)/(Decimal(1.0)+Decimal(np.e**(-z)))
 
 
 def column(matrix, i):
@@ -261,7 +262,7 @@ def extract_trials_array(signal, trials_start):
     return trials
 
 
-class MyStepper():
+class MyStepper:
     def __init__(self, stepsize=0.2):
         self.stepsize = stepsize
 
@@ -305,11 +306,11 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
-    return filtering_param
+    return filtering_param, artifact_signals
 
 
 def clean_signal(data, thetas, params):
-    range_list, m, decimal_precision, num_classes = params
+    range_list, m, decimal_precision, _, num_classes = params
     getcontext().prec = decimal_precision
     NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
@@ -320,19 +321,48 @@ def clean_signal(data, thetas, params):
     return cleaned_signal
 
 
-def estimate_theta_multiproc(input_q, output_q, params):
-    range_list, m, decimal_precision, num_classes = params
+def clean_signal_multiproc(input_q, output_q, thetas, params):
+    range_list, m, decimal_precision, trials, num_classes = params
     getcontext().prec = decimal_precision
     NUM_CLASSES = num_classes
+    if trials is True:
+        data, artifacts_signals, index = input_q.get()
+    else:
+        data, index = input_q.get()
+    channels, trials, labels, artifacts = data
+    cleaned_signal = []
+    for i, (channel, theta) in enumerate(zip(channels, thetas)):
+        print "Process " + str(index) + " is cleaning " + str(i)
+        if trials is True:
+            artifact_signal = artifacts_signals[i]
+        else:
+            artifact_signal = find_artifact_signals(channel, m, range_list)
+        cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifact_signal))
+    if not output_q.full():
+        output_q.put((cleaned_signal, index))
+        output_q.close()
+        output_q.join_thread()
+    else:
+        print "QUEUE IS FULL ????"
+    print "Process " + str(index) + " exiting!!"
+
+
+def estimate_theta_multiproc(input_q, output_q, params):
+    range_list, m, decimal_precision, trials = params
+    getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
     print "Process " + str(index) + " is starting"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
-    for raw_signal in channels:
-        clean_signals.append(get_theta(raw_signal, trials_start, labels, range_list, m))
+    artifact_signals = []
+    for i, raw_signal in enumerate(channels):
+        print "Process " + str(index) + " is estimating channel " + str(i)
+        theta, artifact_signal = get_theta(raw_signal, trials_start, labels, range_list, m)
+        clean_signals.append(theta)
+        artifact_signals.append(artifact_signal)
 
     if not output_q.full():
-        output_q.put((clean_signals, index))
+        output_q.put((clean_signals, artifact_signals, index))
         output_q.close()
         output_q.join_thread()
     else:
@@ -341,7 +371,7 @@ def estimate_theta_multiproc(input_q, output_q, params):
 
 
 def estimate_theta(data, params):
-    range_list, m, decimal_precision, num_classes = params
+    range_list, m, decimal_precision, _, num_classes = params
     getcontext().prec = decimal_precision
     NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
