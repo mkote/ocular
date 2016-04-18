@@ -290,7 +290,6 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
     mystepper = MyStepper()
-    la = [0.5] * (len(range_list)) + [0]
     min_result = basinhopping(objective_function_aux,
                               [0.5] * (len(range_list)) + [0],
                               take_step=mystepper,
