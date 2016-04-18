@@ -268,12 +268,13 @@ class MyStepper:
         self.stepsize = stepsize
 
     def __call__(self, x):
-        bounds = [[0, 1], [0, 1], [-np.inf, 0]]
+        num_tethas = len(x) - 1
+        bounds = [[0, 1] for x in range(0, num_tethas)] + [[-np.inf, 0]]
         s = self.stepsize
         while 1:
             x_old = np.copy(x)
-            x[:2] += np.random.uniform(-s, s, np.shape(x[:2]))
-            x[2] += np.random.uniform(-s * 10, s * 10, 1)
+            x[:num_tethas] += np.random.uniform(-s, s, np.shape(x[:num_tethas]))
+            x[num_tethas+1] += np.random.uniform(-s * 10, s * 10, 1)
             test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
             if all(test):
                 break
