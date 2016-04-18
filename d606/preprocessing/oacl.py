@@ -268,13 +268,13 @@ class MyStepper:
         self.stepsize = stepsize
 
     def __call__(self, x):
-        num_tethas = len(x) - 1
-        bounds = [[0, 1] for x in range(0, num_tethas)] + [[-np.inf, 0]]
+        num_tethas = x.size - 1
+        bounds = [[0, 1] for y in range(0, num_tethas)] + [[-np.inf, 0]]
         s = self.stepsize
         while 1:
             x_old = np.copy(x)
             x[:num_tethas] += np.random.uniform(-s, s, np.shape(x[:num_tethas]))
-            x[num_tethas+1] += np.random.uniform(-s * 10, s * 10, 1)
+            x[num_tethas] += np.random.uniform(-s * 10, s * 10, 1)
             test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
             if all(test):
                 break
@@ -290,6 +290,7 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
     mystepper = MyStepper()
+    la = [0.5] * (len(range_list)) + [0]
     min_result = basinhopping(objective_function_aux,
                               [0.5] * (len(range_list)) + [0],
                               take_step=mystepper,
