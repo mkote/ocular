@@ -21,10 +21,6 @@ def main(*args):
     search.grid = named_grid(*args)
     runs, evals = '', ''
 
-    old_path = os.getcwd()
-    if 'd606' not in old_path:
-        os.chdir('../../../d606')
-
     if not os.path.isfile('runs.dump') and not os.path.isfile('evals.dump') or run_oacl is True:
         runs = load_data(1, "T")
         eog_test, runs = extract_eog(runs)
@@ -50,8 +46,6 @@ def main(*args):
 
         with open("evals.dump", "rb") as input:
             evals = cPickle.load(input)
-
-    os.chdir(old_path)
 
     with timed_block('All Time'):
         # for subject in [int(x) for x in range(1, 2)]:
