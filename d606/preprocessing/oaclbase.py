@@ -6,19 +6,18 @@ from numpy import average, array, median
 
 class OACL(TransformerMixin):
 
-    def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False, num_classes=4,
+    def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False,
                  trials=False):
         self.theta = None
         self.ranges = ranges
         self.m = m
         self.decimal_precision = decimal_precision
         self.multi_run = multi_run
-        self.num_classes = num_classes
         self.trials = trials
         self.artifacts = []
 
     def get_params(self):
-        params = (self.ranges, self.m, self.decimal_precision, self.trials, self.num_classes)
+        params = (self.ranges, self.m, self.decimal_precision, self.trials)
         return params
 
     def fit(self, x, y):

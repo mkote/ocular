@@ -19,11 +19,11 @@ def main():
     warnings.filterwarnings('ignore', category=DeprecationWarning)
     warnings.filterwarnings('ignore', category=RuntimeWarning)
 
-    runs = load_data(5, "T")
+    runs = load_data(1, "T")
     eog_test, runs = extract_eog(runs)
     runs, train_oacl = remake_trial(runs)
 
-    evals = load_data(5, "E")
+    evals = load_data(1, "E")
     eog_eval, evals = extract_eog(evals)
     evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 

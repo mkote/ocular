@@ -4,11 +4,12 @@ from math import exp, log
 from decimal import Decimal, getcontext
 from scipy.optimize import basinhopping
 from scipy.optimize._basinhopping import Metropolis
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import log_loss
+
 from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
 import numpy as np
 import matplotlib.pyplot as plt
-
-NUM_CLASSES = 4
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
@@ -132,7 +133,6 @@ def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
     rh = find_relative_heights(smooth_signal)
-    num_samples = len(raw_signal)
     i = 1
     for range in range_list:
         peaks = find_peak_indexes(rh, range)
@@ -174,13 +174,6 @@ def correlation_vector(artifact_signals, signal):
     return artifact_signals * signal.transpose()
 
 
-def logistic_function(z):
-    # hack
-    if z < -700:
-        z = -700
-    return Decimal(1.0)/(Decimal(1.0)+Decimal(np.e**(-z)))
-
-
 def column(matrix, i):
     return [row[i] for row in matrix]
 
@@ -192,9 +185,9 @@ def variance(vector):
 
 def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
                        trial_signals):
-    summa = 0
     thetaT = theta.transpose()
     y = labels
+    z = []
 
     for i in range(n_trials):
         Xa = np.mat(column(trial_artifact_signals, i))
@@ -203,12 +196,18 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
         k1 = thetaT * (Xa * Xa.transpose()) * theta
         k2 = 2 * thetaT * (Xa * x0.transpose())
 
-        z = float(k1 - k2 + variance(x0.tolist()[0]) + b)
-        h = logistic_function(z)
+        z.append([float(k1 - k2 + variance(x0.tolist()[0]) + b)])
 
-        summa += -y[i] * log(h, 2) - (NUM_CLASSES-1 - y[i]) * log(NUM_CLASSES-1 - h, 2)
+    # TODO: find out if LR's C parameter should be optimized with Bayesian Optimization
+    lr = LogisticRegression()
+    lr.fit(z, labels)
+    # Ignore OverflowWarnings that occur for exp(inf). The result is still correct.
+    np.seterr(over='ignore')
+    h = lr.predict_proba(z)
+    np.seterr(over='warn')
+    score = log_loss(y, h)
 
-    return summa / n_trials
+    return score
 
 
 def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
@@ -301,7 +300,7 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
                               },
                               interval=7,
                               niter_success=25,
-                              # disp=True
+                              # disp=True,
                               )
     filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
@@ -310,9 +309,8 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
 
 
 def clean_signal(data, thetas, params):
-    range_list, m, decimal_precision, _, num_classes = params
+    range_list, m, decimal_precision, _ = params
     getcontext().prec = decimal_precision
-    NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
@@ -322,9 +320,8 @@ def clean_signal(data, thetas, params):
 
 
 def clean_signal_multiproc(input_q, output_q, thetas, params):
-    range_list, m, decimal_precision, trials, num_classes = params
+    range_list, m, decimal_precision, trials = params
     getcontext().prec = decimal_precision
-    NUM_CLASSES = num_classes
     if trials is True:
         data, artifacts_signals, index = input_q.get()
     else:
@@ -348,10 +345,9 @@ def clean_signal_multiproc(input_q, output_q, thetas, params):
 
 
 def estimate_theta_multiproc(input_q, output_q, params):
-    range_list, m, decimal_precision, trials, num_classes = params
+    range_list, m, decimal_precision, trials = params
     getcontext().prec = decimal_precision
     eeg_data, index = input_q.get()
-    NUM_CLASSES = num_classes
     print "Process " + str(index) + " is starting"
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
@@ -372,9 +368,8 @@ def estimate_theta_multiproc(input_q, output_q, params):
 
 
 def estimate_theta(data, params):
-    range_list, m, decimal_precision, _, num_classes = params
+    range_list, m, decimal_precision, _ = params
     getcontext().prec = decimal_precision
-    NUM_CLASSES = num_classes
     channels, trials, labels, artifacts = data
     run_thetas = []
     for channel in channels:
