@@ -103,9 +103,12 @@ def find_peak_indexes(relative_heights, peak_range):
 
 def find_artifact_ranges(smooth_signal, peak_indexes):
     ranges = []
+    latest_range = 0
     for peak in peak_indexes:
-        artifact_range = find_artifact_range(smooth_signal, peak)
-        ranges.append(artifact_range)
+        if peak >= latest_range:
+            artifact_range = find_artifact_range(smooth_signal, peak)
+            latest_range = artifact_range[1]
+            ranges.append(artifact_range)
     return ranges
 
 
@@ -122,7 +125,7 @@ def find_artifact_range(signal_smooth, peak):
 
 def find_artifact_signal(peak_indexes, smooth_signal):
     artifact_signal = [0.0 for x in range(0, len(smooth_signal))]
-    ranges = sorted(list(set(find_artifact_ranges(smooth_signal, peak_indexes))), key=lambda z: z[0])
+    ranges = sorted(find_artifact_ranges(smooth_signal, peak_indexes), key=lambda z: z[0])
     for r in ranges:
         nzp_b = r[0]+1
         nzp_a = r[1]
@@ -134,13 +137,10 @@ def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
     rh = find_relative_heights(smooth_signal)
-    num_samples = len(raw_signal)
-    i = 1
     for range in range_list:
         peaks = find_peak_indexes(rh, range)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
-        i += 1
     return np.array(artifact_signals)
 
 
@@ -162,7 +162,7 @@ def nearest_zero_point(arr, a, b):
 
 
 def is_cross_zero(a, b):
-    if (a > 0 and b < 0) or (a < 0 and b > 0):
+    if a > 0 > b or a < 0 < b:
         return True
     else:
         return False

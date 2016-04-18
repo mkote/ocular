@@ -1,10 +1,11 @@
 import real_main
 import ast
-import os
+from evaluation.timing import timed_block
 
 
-def branin(n_comp, c, kernel, band_list, oacl_ranges):
-    result = real_main.main(n_comp, c, kernel, band_list, oacl_ranges)
+def branin(n_comp, c, kernel, band_list, oacl_ranges, m):
+    with timed_block('Iteration '):
+        result = real_main.main(n_comp, c, kernel, band_list, oacl_ranges, m)
 
     print result
     return 100 - result
@@ -16,13 +17,12 @@ def main(job_id, params):
     c = params['C'][0]
     kernel = str(params['kernel'][0])
     band_list = ast.literal_eval(params['band_list'][0])
-    oacl_ranges = ast.literal_eval(params['oacl_ranges'][0])
-    print oacl_ranges
-    print type(oacl_ranges)
+    r1 = params['r1'][0]
+    r2 = params['r2'][0]
+    r3 = params['r3'][0]
+    r4 = params['r4'][0]
+    oacl_ranges = ((r1, r2),)
+    m = params['m'][0]
     print 'Anything printed here will end up in the output directory for job #:', str(job_id)
     print params
-    return branin(n_comp, c, kernel, band_list, oacl_ranges)
-
-os.system('cd ../lib/spearmint/bin && '
-          './spearmint ../../../d606/config.pb --driver=local '
-          '--method=GPEIOptChooser -w --method-args=noiseless=1')
+    return branin(n_comp, c, kernel, band_list, oacl_ranges, m)

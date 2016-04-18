@@ -12,9 +12,11 @@ def remake_trial(raw_data, arg_oacl=None):
     result = []
 
     if arg_oacl is None:
-
+        m = search.grid.m if 'm' in search.grid._fields else 11
+        if m % 2 == 0:
+            m += 1
         ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
-        oacl = OACL(multi_run=True, ranges=ranges, trials=True)
+        oacl = OACL(multi_run=True, ranges=ranges, trials=True, m=m)
     else:
         oacl = arg_oacl
         oacl.trials = False

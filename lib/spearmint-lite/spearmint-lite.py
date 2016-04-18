@@ -73,7 +73,7 @@ def main():
                       type="int", default=1)
     parser.add_option("--config", dest="config_file",
                       help="Configuration file name.",
-                      type="string", default="config.json")
+                      type="string", default="config.pb")
     parser.add_option("--results", dest="results_file",
                       help="Results file name.",
                       type="string", default="results.dat")

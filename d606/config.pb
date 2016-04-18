@@ -36,10 +36,41 @@ variable {
 }
 
 variable {
- name: "oacl_ranges"
- type: ENUM
+ name: "m"
+ type: INT
  size: 1
- options: "((2, 7), (7, 15))"
- options: "((1, 2), (2, 3))"
- options: "((4, 6), (7, 9))"
+ min:  5
+ max:  15
+}
+
+variable {
+ name: "r1"
+ type: INT
+ size: 1
+ min:  2
+ max:  15
+}
+
+variable {
+ name: "r2"
+ type: INT
+ size: 1
+ min:  16
+ max:  30
+}
+
+variable {
+ name: "r3"
+ type: INT
+ size: 1
+ min:  2
+ max:  15
+}
+
+variable {
+ name: "r4"
+ type: INT
+ size: 1
+ min:  2
+ max:  15
 }

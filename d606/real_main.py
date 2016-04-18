@@ -16,7 +16,8 @@ run_oacl = True
 
 
 def main(*args):
-    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges'])
+    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm'])
+    print args
     search.grid = named_grid(*args)
     runs, evals = '', ''
 
@@ -82,6 +83,6 @@ def main(*args):
     print score
     return score
 
-if __name__ == '__main__':
-    freeze_support()
-    main(2, 0.1, 'rbf', [[10, 20], [12, 14]], ((3, 7), (7, 15)))
+# if __name__ == '__main__':
+#     freeze_support()
+#     main(2, 0.1, 'rbf', [[10, 20], [12, 14]], ((3, 7), (7, 15)), 11)
