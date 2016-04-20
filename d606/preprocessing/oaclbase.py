@@ -3,6 +3,8 @@ from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, cl
     special_purpose_estimator
 from multiprocessing import Queue, Process
 from numpy import average, array, median
+from evaluation.timing import timed_block
+import time
 
 
 class OACL(TransformerMixin):
@@ -28,9 +30,10 @@ class OACL(TransformerMixin):
         elif self.Shared is True:
             returned = []
             thetas = []
-            for k in x:
-                returned.append(special_purpose_estimator(k, self.get_params()))
-            # TODO collect and cleanup the thetha/artifact values
+            with timed_block('Estimating '):
+                for k in x:
+                    returned.append(special_purpose_estimator(k, self.get_params()))
+                # TODO collect and cleanup the thetha/artifact values
 
             for x in range(0, len(returned)):
                 returned[x] = sorted(returned[x], key=lambda theta: theta[0])
@@ -41,7 +44,7 @@ class OACL(TransformerMixin):
         else:
             thetas = []
             processes = []
-
+            ts = time.time()
             n_runs = len(x)
             input_queue = Queue(n_runs)
             output_queue = Queue(n_runs)
@@ -59,6 +62,9 @@ class OACL(TransformerMixin):
 
             for p in processes:
                 p.join()
+
+            te = time.time()
+            print "Took " + str(te-ts) + " estimating using old"
 
             sort = sorted(thetas, key=lambda theta: theta[2])
 
