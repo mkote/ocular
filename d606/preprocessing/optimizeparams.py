@@ -1,5 +1,4 @@
 import os
-from ast import literal_eval
 import subprocess
 from time import sleep
 from real_main import main
@@ -16,8 +15,8 @@ def optim_params():
     while True:
         old_path = os.getcwd()
         print os.getcwd()
-        os.chdir('../spearmint-lite')
-        command = 'python spearmint-lite.py ../braninpy'
+        os.chdir('../spearmintlite')
+        command = 'python spearmintlite.py ../braninpy'
         subprocess.call(command, shell=True)
         sleep(2)
         os.chdir(old_path)

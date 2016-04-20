@@ -2,7 +2,7 @@ import branin
 """
 Jasper Snoek
 This is a simple script to help demonstrate the functionality of
-spearmint-lite.  It will read in results.dat and fill in 'pending'
+spearmintlite.  It will read in results.dat and fill in 'pending'
 experiments.
 """
 if __name__ == '__main__':
