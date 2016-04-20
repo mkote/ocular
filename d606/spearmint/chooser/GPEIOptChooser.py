@@ -28,7 +28,7 @@ import numpy.random   as npr
 import scipy.linalg   as spla
 import scipy.optimize as spo
 import scipy.stats    as sps
-from Locker  import *
+from Locker import *
 from spearmint.helpers import *
 
 from spearmint import gp
