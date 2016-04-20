@@ -1,24 +1,22 @@
 # This module contains implementation of ocular artifact detection and removal
-
-from math import exp, log
 from decimal import Decimal, getcontext
-from scipy.optimize import basinhopping
-from scipy.optimize._basinhopping import Metropolis
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
-
-from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
-import numpy as np
-import matplotlib.pyplot as plt
+from scipy.optimize import basinhopping
+from scipy.optimize._basinhopping import Metropolis
+from dataextractor import extract_trials_single_channel
+from numpy import exp, array, cov, mean, inf, mat, copy, seterr, shape, frombuffer
+from numpy.random import rand, uniform
+from multiprocessing import Pool, Array, cpu_count
+from ctypes import c_float, c_int
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
     z = (energy_new - energy_old) * self.beta
     if z < -1:
         z = -1
-    w = min(1.0, np.exp(-z))
-    rand = np.random.rand()
-    return w >= rand
+    w = min(1.0, exp(-z))
+    return w >= rand()
 
 Metropolis.accept_reject = _fixed_accept_reject
 
@@ -139,7 +137,7 @@ def find_artifact_signals(raw_signal, m, range_list):
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
         i += 1
-    return np.array(artifact_signals)
+    return array(artifact_signals)
 
 
 def nearest_zero_point(arr, a, b):
@@ -167,7 +165,7 @@ def is_cross_zero(a, b):
 
 
 def covariance_matrix(artifact_signal, raw_signal):
-    return np.cov(m=artifact_signal, y=raw_signal)
+    return cov(m=artifact_signal, y=raw_signal)
 
 
 def correlation_vector(artifact_signals, signal):
@@ -179,7 +177,7 @@ def column(matrix, i):
 
 
 def variance(vector):
-    avg = int(np.mean(vector))
+    avg = int(mean(vector))
     return sum([pow(val - avg, 2) for val in vector]) / len(vector)
 
 
@@ -190,7 +188,7 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
     z = []
 
     for i in range(n_trials):
-        Xa = np.mat(column(trial_artifact_signals, i))
+        Xa = mat(column(trial_artifact_signals, i))
         x0 = trial_signals[i]
 
         k1 = thetaT * (Xa * Xa.transpose()) * theta
@@ -202,9 +200,9 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
     lr = LogisticRegression()
     lr.fit(z, labels)
     # Ignore OverflowWarnings that occur for exp(inf). The result is still correct.
-    np.seterr(over='ignore')
+    seterr(over='ignore')
     h = lr.predict_proba(z)
-    np.seterr(over='warn')
+    seterr(over='warn')
     score = log_loss(y, h)
 
     return score
@@ -214,42 +212,42 @@ def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
     A = [x[0] for x in A]
     corrected_signal = [a_i - b_i for a_i, b_i in zip(raw_signal, A)]
-    return np.array(corrected_signal)
+    return array(corrected_signal)
 
 
 def objective_function_aux(args, args2):
-    arg1 = np.array([[args[k]] for k in xrange(len(args)-1)])
+    arg1 = array([[args[k]] for k in xrange(len(args)-1)])
     arg2 = args[len(args)-1]
     return objective_function(arg1, arg2, *args2)
 
 
-def plot_example():
-    eeg_data = load_data(1, 'T')
-    raw_signal = eeg_data[5][0][4]
-    raw_signal_eog = eeg_data[5][0][23]
-    raw_signal = raw_signal[0:2000]
-    raw_signal_eog = raw_signal_eog[0:2000]
-
-    plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-    plt.ylabel('amplitude')
-    plt.xlabel('time point')
-    plt.figure(1)
-    plt.subplot(211)
-    plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-    plt.subplot(211)
-    m = 11
-    filtered_signal = moving_avg_filter(raw_signal, m)
-    plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-
-    plt.subplot(211)
-    rh = find_relative_heights(filtered_signal)
-    ti = find_peak_indexes(rh, (8, 1.5))
-    artifact_signal = find_artifact_signal(ti, filtered_signal)
-    plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
-
-    plt.subplot(212)
-    plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
-    plt.show()
+# def plot_example():
+#     eeg_data = load_data(1, 'T')
+#     raw_signal = eeg_data[5][0][4]
+#     raw_signal_eog = eeg_data[5][0][23]
+#     raw_signal = raw_signal[0:2000]
+#     raw_signal_eog = raw_signal_eog[0:2000]
+#
+#     plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+#     plt.ylabel('amplitude')
+#     plt.xlabel('time point')
+#     plt.figure(1)
+#     plt.subplot(211)
+#     plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
+#     plt.subplot(211)
+#     m = 11
+#     filtered_signal = moving_avg_filter(raw_signal, m)
+#     plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
+#
+#     plt.subplot(211)
+#     rh = find_relative_heights(filtered_signal)
+#     ti = find_peak_indexes(rh, (8, 1.5))
+#     artifact_signal = find_artifact_signal(ti, filtered_signal)
+#     plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
+#
+#     plt.subplot(212)
+#     plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
+#     plt.show()
 
 
 def extract_trials_array(signal, trials_start):
@@ -266,12 +264,12 @@ class MyStepper:
         self.stepsize = stepsize
 
     def __call__(self, x):
-        bounds = [[0, 1], [0, 1], [-np.inf, 0]]
+        bounds = [[0, 1], [0, 1], [-inf, 0]]
         s = self.stepsize
         while 1:
-            x_old = np.copy(x)
-            x[:2] += np.random.uniform(-s, s, np.shape(x[:2]))
-            x[2] += np.random.uniform(-s * 10, s * 10, 1)
+            x_old = copy(x)
+            x[:2] += uniform(-s, s, shape(x[:2]))
+            x[2] += uniform(-s * 10, s * 10, 1)
             test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
             if all(test):
                 break
@@ -285,7 +283,7 @@ class MyStepper:
 def get_theta(raw_signal, trials_start, labels, range_list, m):
     n_trials = len(trials_start)              # Number of trials
     artifact_signals = find_artifact_signals(raw_signal, m, range_list)
-    trial_signals = np.mat(extract_trials_array(raw_signal, trials_start))
+    trial_signals = mat(extract_trials_array(raw_signal, trials_start))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start)
                               for i in xrange(len(range_list))]
     mystepper = MyStepper()
@@ -293,7 +291,7 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
                               [0.5] * (len(range_list)) + [0],
                               take_step=mystepper,
                               minimizer_kwargs={
-                                  "bounds":[[0, 1]] * (len(range_list)) + [[-np.inf, 0]],
+                                  "bounds":[[0, 1]] * (len(range_list)) + [[-inf, 0]],
                                   "method":"SLSQP",
                                   "args":[labels, n_trials, trial_artifact_signals, trial_signals],
                               #    "options": {"disp": True}
@@ -302,10 +300,68 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
                               niter_success=25,
                               # disp=True,
                               )
-    filtering_param = np.array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
+    filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
     return filtering_param, artifact_signals
+
+def special_purpose_theta(args):
+    index, range_list, m = args
+    print index
+    raw_signal = shared_array_oacl[96735*index:96735*(index+1)]
+    n_trials = len(trials_start_oacl)
+    artifact_signals = find_artifact_signals(raw_signal, m, range_list)
+    trial_signals = mat(extract_trials_array(raw_signal, trials_start_oacl))
+    trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start_oacl)
+                              for i in xrange(len(range_list))]
+    mystepper = MyStepper()
+    min_result = basinhopping(objective_function_aux,
+                              [0.5] * (len(range_list)) + [0],
+                              take_step=mystepper,
+                              minimizer_kwargs={
+                                  "bounds": [[0, 1]] * (len(range_list)) + [[-inf, 0]],
+                                  "method": "SLSQP",
+                                  "args": [labels_oacl, n_trials, trial_artifact_signals,
+                                           trial_signals],
+                              },
+                              interval=7,
+                              niter_success=25)
+    filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
+    # b = min_result.x[len(min_result.x) - 1]
+
+    return (index, filtering_param, artifact_signals)
+
+
+def init(shared_arr, trials_start, labels):
+    global shared_array_oacl, output_oacl, trials_start_oacl, labels_oacl
+    shared_array_oacl = shared_arr
+    trials_start_oacl = trials_start
+    labels_oacl = labels
+
+
+def special_purpose_estimator(x, params):
+    out = []
+    range_list, m, decimal_precision, trials = params
+    getcontext().prec = decimal_precision
+    channels, trials_start, labels, artifacts = x
+
+    shared_runs_base = Array(c_float, x[0].shape[0]*x[0].shape[1], lock=False)
+    shared_trials_base = Array(c_int, len(trials_start), lock=False)
+    shared_labels_base = Array(c_int, len(labels), lock=False)
+    shared_runs_array = frombuffer(shared_runs_base, dtype=c_float)
+    shared_trials_array = frombuffer(shared_trials_base, dtype=c_int)
+    shared_labels_array = frombuffer(shared_labels_base, dtype=c_int)
+    shared_runs_array[:] = x[0].flat
+    shared_trials_array[:] = trials_start[:]
+    shared_labels_array[:] = labels[:]
+
+    pool = Pool(cpu_count(), initializer=init, initargs=(shared_runs_array, shared_trials_array, shared_labels_array))
+    out = pool.map(special_purpose_theta, [(x, range_list, m) for x in range(0, len(channels))])
+
+    pool.close()
+    pool.join()
+
+    return out
 
 
 def clean_signal(data, thetas, params):

@@ -1,5 +1,6 @@
 from sklearn.base import TransformerMixin
-from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal, clean_signal_multiproc
+from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal, clean_signal_multiproc, \
+    special_purpose_estimator
 from multiprocessing import Queue, Process
 from numpy import average, array, median
 
@@ -7,12 +8,13 @@ from numpy import average, array, median
 class OACL(TransformerMixin):
 
     def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False,
-                 trials=False):
+                 trials=False, shared=False):
         self.theta = None
         self.ranges = ranges
         self.m = m
         self.decimal_precision = decimal_precision
         self.multi_run = multi_run
+        self.Shared = shared
         self.trials = trials
         self.artifacts = []
 
@@ -23,6 +25,17 @@ class OACL(TransformerMixin):
     def fit(self, x, y):
         if self.multi_run is False:
             self.theta = estimate_theta(x, self.get_params())
+        elif self.Shared is True:
+            thetas = []
+            for k in x:
+                thetas.append(special_purpose_estimator(k, self.get_params()))
+            # TODO collect and cleanup the thetha/artifact values
+            sort = sorted(thetas, key=lambda theta: theta[2])
+
+            self.artifacts = [x[1] for x in sort]
+            thetas = [x[0] for x in sort]
+
+            self.theta = self.generalize_thetas(thetas)
         else:
             thetas = []
             processes = []
