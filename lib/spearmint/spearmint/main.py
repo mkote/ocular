@@ -64,7 +64,7 @@ web_proc = None
 
 
 def parse_args():
-    parser = optparse.OptionParser(usage="\n\tspearmint [options] <experiment/config.pb>")
+    parser = optparse.OptionParser(usage="\n\tspearmint [options] <experiment/config.json>")
 
     parser.add_option("--max-concurrent", dest="max_concurrent",
                       help="Maximum number of concurrent jobs.",

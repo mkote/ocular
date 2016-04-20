@@ -132,7 +132,6 @@ d606/expt-grid.pkl
 d606/output/*
 d606/trace.csv
 d606/chooser*
-d606/evals.dump
-d606/runs.dump
 d606/jobs/*
 d606/results.txt
+*.dump

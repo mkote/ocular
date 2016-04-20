@@ -121,7 +121,7 @@ def home():
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print "No experiment configuration file passed as argument to web app!"
-        print "Usage:\n\tpython spearmint/web/app.py path/to/config.pb\n"
+        print "Usage:\n\tpython spearmint/web/app.py path/to/config.json\n"
         sys.exit(0)
 
     app.set_experiment_config(sys.argv[1])

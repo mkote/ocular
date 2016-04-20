@@ -1,8 +1,13 @@
 import ast
 import os
-
 import real_main
 from eval.timing import timed_block
+
+band_sample = [[[8, 12], [12, 16], [16, 20], [20, 24]]]
+band_sample += [[8, 12], [12, 16], [16, 20], [20, 24], [24, 28]]
+band_sample += [[4, 8], [8, 12], [12, 16], [16, 20], [20, 24], [24, 28], [28, 32]]
+
+kernel_sample = ['linear', 'rbf', 'poly']
 
 
 def branin(n_comp, c, kernel, band_list, oacl_ranges, m):
@@ -25,8 +30,8 @@ def branin(n_comp, c, kernel, band_list, oacl_ranges, m):
 def main(job_id, params):
     n_comp = params['n_comp'][0]
     c = params['C'][0]
-    kernel = str(params['kernel'][0])
-    band_list = ast.literal_eval(params['band_list'][0])
+    kernel = kernel_sample[params['kernel'][0]]
+    band_list = band_sample[params['band_list'][0]]
     r1 = params['r1'][0]
     r2 = params['r2'][0]
     r3 = params['r3'][0]

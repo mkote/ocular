@@ -1,34 +1,36 @@
-from preprocessing.dataextractor import load_data, restructure_data, extract_eog
-from preprocessing.filter import Filter
-from featureselection.mnecsp import csp_one_vs_all
-from classification.svm import csv_one_versus_all, svm_prediction
-from evaluation.timing import timed_block
-from evaluation.voting import csp_voting
-from evaluation.score import scoring
-import preprocessing.searchgrid as search
-from preprocessing.trial_remaker import remake_trial
-from collections import namedtuple
-from multiprocessing import freeze_support
 import cPickle
 import os
+from collections import namedtuple
+
+import preprocessing.searchgrid as search
+from classification.svm import csv_one_versus_all, svm_prediction
+from eval.score import scoring
+from eval.timing import timed_block
+from eval.voting import csp_voting
+from featureselection.mnecsp import csp_one_vs_all
+from preprocessing.dataextractor import load_data, restructure_data, extract_eog
+from preprocessing.filter import Filter
+from preprocessing.trial_remaker import remake_trial
 
 run_oacl = True
+optimize_params = True
 
 
 def main(*args):
+
     named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm'])
-    print args
     search.grid = named_grid(*args)
     runs, evals = '', ''
 
     if not os.path.isfile('runs.dump') and not os.path.isfile('evals.dump') or run_oacl is True:
-        runs = load_data(1, "T")
-        eog_test, runs = extract_eog(runs)
-        runs, train_oacl = remake_trial(runs)
+        with timed_block('Iteration '):
+            runs = load_data(1, "T")
+            eog_test, runs = extract_eog(runs)
+            runs, train_oacl = remake_trial(runs)
 
-        evals = load_data(1, "E")
-        eog_eval, evals = extract_eog(evals)
-        evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
+            evals = load_data(1, "E")
+            eog_eval, evals = extract_eog(evals)
+            evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
         # Save data, could be a method instead
         if os.path.isfile('runs.dump'):
@@ -75,8 +77,8 @@ def main(*args):
     print search.grid
     print '\n'
     print score
-    return score
+    return score, 1200
 
-# if __name__ == '__main__':
-#     freeze_support()
-#     main(2, 0.1, 'rbf', [[10, 20], [12, 14]], ((3, 7), (7, 15)), 11)
+if __name__ == '__main__':
+    # freeze_support()
+    main(2, 0.1, 'rbf', [[4, 8], [8, 12], [12, 16], [16, 20], [20, 30]], ((3, 7), (7, 15)), 11)

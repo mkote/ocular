@@ -1,14 +1,15 @@
 # This module contains implementation of ocular artifact detection and removal
-from decimal import Decimal, getcontext
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import log_loss
+from decimal import getcontext
+
+import matplotlib.pyplot as plt
+import numpy as np
 from scipy.optimize import basinhopping
 from scipy.optimize._basinhopping import Metropolis
-from preprocessing.dataextractor import load_data, extract_trials_single_channel
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import log_loss
 
-import numpy as np
-import matplotlib.pyplot as plt
-from evaluation.timing import timed_block
+from eval.timing import timed_block
+from preprocessing.dataextractor import load_data, extract_trials_single_channel
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
@@ -269,7 +270,7 @@ class MyStepper:
 
     def __call__(self, x):
         num_tethas = x.size - 1
-        bounds = [[0, 1] for y in range(0, num_tethas)] + [[-np.inf, 0]]
+        bounds = [[0, 1]] * num_tethas + [[-np.inf, 0]]
         s = self.stepsize
         while 1:
             x_old = np.copy(x)
@@ -312,7 +313,7 @@ def clean_signal(data, thetas, params):
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
-        with timed_block('signal cleaned'):
+        with timed_block('Cleaning signal '):
             artifacts_signals = find_artifact_signals(channel, m, range_list)
             cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
     return cleaned_signal
@@ -327,13 +328,14 @@ def clean_signal_multiproc(input_q, output_q, thetas, params):
         data, index = input_q.get()
     channels, trials, labels, artifacts = data
     cleaned_signal = []
-    for i, (channel, theta) in enumerate(zip(channels, thetas)):
-        print "Process " + str(index) + " is cleaning " + str(i)
-        if trials is True:
-            artifact_signal = artifacts_signals[i]
-        else:
-            artifact_signal = find_artifact_signals(channel, m, range_list)
-        cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifact_signal))
+    with timed_block('Cleaning '):
+        for i, (channel, theta) in enumerate(zip(channels, thetas)):
+            print "Process " + str(index) + " is cleaning " + str(i)
+            if trials is True:
+                artifact_signal = artifacts_signals[i]
+            else:
+                artifact_signal = find_artifact_signals(channel, m, range_list)
+            cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifact_signal))
     if not output_q.full():
         output_q.put((cleaned_signal, index))
         output_q.close()
@@ -351,11 +353,12 @@ def estimate_theta_multiproc(input_q, output_q, params):
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
     artifact_signals = []
-    for i, raw_signal in enumerate(channels):
-        print "Process " + str(index) + " is estimating channel " + str(i)
-        theta, artifact_signal = get_theta(raw_signal, trials_start, labels, range_list, m)
-        clean_signals.append(theta)
-        artifact_signals.append(artifact_signal)
+    with timed_block('estimating: '):
+        for i, raw_signal in enumerate(channels):
+            print "Process " + str(index) + " is estimating channel " + str(i)
+            theta, artifact_signal = get_theta(raw_signal, trials_start, labels, range_list, m)
+            clean_signals.append(theta)
+            artifact_signals.append(artifact_signal)
 
     if not output_q.full():
         output_q.put((clean_signals, artifact_signals, index))
