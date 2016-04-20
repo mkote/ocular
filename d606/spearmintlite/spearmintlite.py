@@ -43,7 +43,7 @@ except ImportError: import json
 # the "grid".  This grid is managed by an instance of the class
 # ExperimentGrid.
 #
-# The shit.py script can run in two modes, which reflect experiments
+# The spearmint.py script can run in two modes, which reflect experiments
 # vs jobs.  When run with the --wrapper argument, it will try to run a
 # single job.  This is not meant to be run by hand, but is intended to be
 # run by a job queueing system.  Without this argument, it runs in its main
@@ -96,7 +96,7 @@ def main_controller(options, args):
         sys.exit(-1)
 
     # Load up the chooser module.
-    module  = importlib.import_module('chooser.' + options.chooser_module, package='shit')
+    module  = importlib.import_module('chooser.' + options.chooser_module, package='spearmint')
     chooser = module.init(expt_dir, options.chooser_args)
 
     # Create the experimental grid
@@ -174,7 +174,7 @@ def main_controller(options, args):
 
         # Ask the chooser to actually pick one.
         # First mash the data into a format that matches that of the other
-        # shit drivers to pass to the chooser modules.
+        # spearmint drivers to pass to the chooser modules.
         grid = candidates
         if (complete.shape[0] > 0):
             grid = np.vstack((complete, candidates))

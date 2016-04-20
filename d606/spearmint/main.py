@@ -55,7 +55,7 @@ web_proc = None
 # the "grid".  This grid is managed by an instance of the class
 # ExperimentGrid.
 #
-# The shit.py script can run in two modes, which reflect experiments
+# The spearmint.py script can run in two modes, which reflect experiments
 # vs jobs.  When run with the --run-job argument, it will try to run a
 # single job.  This is not meant to be run by hand, but is intended to be
 # run by a job queueing system.  Without this argument, it runs in its main
@@ -126,7 +126,7 @@ def get_available_port(portnum):
 def start_web_view(options, experiment_config, chooser):
     '''Start the web view in a separate process.'''
 
-    from shit.web.app import app
+    from spearmint.web.app import app
     port = get_available_port(options.web_status_port)
     print "Using port: " + str(port)
     if options.web_status_host:

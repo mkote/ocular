@@ -1,5 +1,5 @@
 from cma import CMAEvolutionStrategy
-from shit import util
+from spearmint import util
 
 
 def init(expt_dir, arg_string):

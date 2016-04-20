@@ -3,7 +3,7 @@ import numpy.random as npr
 import scipy.stats  as sps
 import sklearn.ensemble.forest
 
-from shit import util
+from spearmint import util
 
 
 def init(expt_dir, arg_string):
