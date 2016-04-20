@@ -2,7 +2,7 @@ import os
 import subprocess
 from time import sleep
 from real_main import main
-
+from multiprocessing import freeze_support
 
 band_sample = [[[8, 12], [12, 16], [16, 20], [20, 24]]]
 band_sample += [[8, 12], [12, 16], [16, 20], [20, 24], [24, 28]]
@@ -66,4 +66,6 @@ def insert_result(result, time):
     # now write the modified list back out to the file
     open(file, 'w').writelines(lines)
 
-optim_params()
+if __name__ =='__main__':
+    freeze_support()
+    optim_params()
