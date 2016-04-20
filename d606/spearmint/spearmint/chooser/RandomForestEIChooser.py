@@ -1,11 +1,10 @@
 import numpy        as np
 import numpy.random as npr
 import scipy.stats  as sps
-import sklearn.ensemble
 import sklearn.ensemble.forest
+
 from spearmint import util
 
-from sklearn.externals.joblib import Parallel, delayed
 
 def init(expt_dir, arg_string):
     args = util.unpack_args(arg_string)

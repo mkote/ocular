@@ -19,20 +19,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import os
-from spearmint import gp
-import sys
-from spearmint import util
-import tempfile
+import cPickle
+
 import numpy          as np
 import numpy.random   as npr
 import scipy.linalg   as spla
 import scipy.stats    as sps
-import scipy.optimize as spo
-import cPickle
-
 from Locker  import *
 from helpers import *
+
+from spearmint import gp
+from spearmint import util
 
 
 def init(expt_dir, arg_string):

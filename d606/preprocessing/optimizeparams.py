@@ -15,8 +15,9 @@ kernel_sample = ['linear', 'rbf', 'poly']
 def optim_params():
     while True:
         old_path = os.getcwd()
-        os.chdir('../../lib/spearmint-lite')
-        command = 'python spearmint-lite.py ../../d606/braninpy'
+        print os.getcwd()
+        os.chdir('../spearmint-lite')
+        command = 'python spearmint-lite.py ../braninpy'
         subprocess.call(command, shell=True)
         sleep(2)
         os.chdir(old_path)
