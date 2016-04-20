@@ -26,14 +26,16 @@ class OACL(TransformerMixin):
         if self.multi_run is False:
             self.theta = estimate_theta(x, self.get_params())
         elif self.Shared is True:
+            returned = []
             thetas = []
             for k in x:
-                thetas.append(special_purpose_estimator(k, self.get_params()))
+                returned.append(special_purpose_estimator(k, self.get_params()))
             # TODO collect and cleanup the thetha/artifact values
-            sort = sorted(thetas, key=lambda theta: theta[2])
 
-            self.artifacts = [x[1] for x in sort]
-            thetas = [x[0] for x in sort]
+            for x in range(0, len(returned)):
+                returned[x] = sorted(returned[x], key=lambda theta: theta[0])
+                thetas.append(returned[x][1])
+                self.artifacts.append(returned[x][2])
 
             self.theta = self.generalize_thetas(thetas)
         else:
