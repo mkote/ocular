@@ -9,6 +9,7 @@ from numpy import exp, array, cov, mean, inf, mat, copy, seterr, shape, frombuff
 from numpy.random import rand, uniform
 from multiprocessing import Pool, Array, cpu_count
 from ctypes import c_float, c_int
+from itertools import product
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
@@ -224,35 +225,6 @@ def objective_function_aux(args, args2):
     return objective_function(arg1, arg2, *args2)
 
 
-# def plot_example():
-#     eeg_data = load_data(1, 'T')
-#     raw_signal = eeg_data[5][0][4]
-#     raw_signal_eog = eeg_data[5][0][23]
-#     raw_signal = raw_signal[0:2000]
-#     raw_signal_eog = raw_signal_eog[0:2000]
-#
-#     plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
-#     plt.ylabel('amplitude')
-#     plt.xlabel('time point')
-#     plt.figure(1)
-#     plt.subplot(211)
-#     plt.plot([x for x in range(0, len(raw_signal))], raw_signal)
-#     plt.subplot(211)
-#     m = 11
-#     filtered_signal = moving_avg_filter(raw_signal, m)
-#     plt.plot([x for x in range(0, len(filtered_signal))], filtered_signal)
-#
-#     plt.subplot(211)
-#     rh = find_relative_heights(filtered_signal)
-#     ti = find_peak_indexes(rh, (8, 1.5))
-#     artifact_signal = find_artifact_signal(ti, filtered_signal)
-#     plt.plot([x for x in range(0, len(artifact_signal))], artifact_signal)
-#
-#     plt.subplot(212)
-#     plt.plot([x for x in range(0, len(raw_signal_eog))], raw_signal_eog)
-#     plt.show()
-
-
 def extract_trials_array(signal, trials_start):
     n_trials = len(trials_start)
     concat_trials, concat_trials_start = extract_trials_single_channel(signal, trials_start)
@@ -281,8 +253,6 @@ class MyStepper:
         return x
 
 
-
-
 def get_theta(raw_signal, trials_start, labels, range_list, m):
     n_trials = len(trials_start)              # Number of trials
     artifact_signals = find_artifact_signals(raw_signal, m, range_list)
@@ -296,26 +266,28 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
                               minimizer_kwargs={
                                   "bounds":[[0, 1]] * (len(range_list)) + [[-inf, 0]],
                                   "method":"SLSQP",
-                                  "args":[labels, n_trials, trial_artifact_signals, trial_signals],
-                              #    "options": {"disp": True}
+                                  "args":[labels, n_trials, trial_artifact_signals, trial_signals]
                               },
                               interval=7,
-                              niter_success=25,
-                              # disp=True,
-                              )
+                              niter_success=25)
     filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
     return filtering_param, artifact_signals
 
+
 def special_purpose_theta(args):
-    index, range_list, m = args
-    print index
-    raw_signal = shared_array_oacl[96735*index:96735*(index+1)]
-    n_trials = len(trials_start_oacl)
+    index, n_trials, n_labels, range_list, m = args
+    run, channel = index
+    print run, channel
+    run_len = (22* 96735)
+    start = run*run_len+channel*96735
+    end = 96735*(channel+1)+run*run_len
+    raw_signal = shared_array_oacl[start:end]
     artifact_signals = find_artifact_signals(raw_signal, m, range_list)
-    trial_signals = mat(extract_trials_array(raw_signal, trials_start_oacl))
-    trial_artifact_signals = [extract_trials_array(artifact_signals[i], trials_start_oacl)
+    trial_signals = mat(extract_trials_array(raw_signal, trials_start_oacl[run*n_trials:(run+1)*n_trials]))
+    trial_artifact_signals = [extract_trials_array(artifact_signals[i],
+                                                   trials_start_oacl[run*n_trials:(run+1)*n_trials])
                               for i in xrange(len(range_list))]
     mystepper = MyStepper()
     min_result = basinhopping(objective_function_aux,
@@ -324,7 +296,7 @@ def special_purpose_theta(args):
                               minimizer_kwargs={
                                   "bounds": [[0, 1]] * (len(range_list)) + [[-inf, 0]],
                                   "method": "SLSQP",
-                                  "args": [labels_oacl, n_trials, trial_artifact_signals,
+                                  "args": [labels_oacl[run*n_labels:(run+1)*n_labels], n_trials, trial_artifact_signals,
                                            trial_signals],
                               },
                               interval=7,
@@ -332,11 +304,11 @@ def special_purpose_theta(args):
     filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
-    return (index, filtering_param, artifact_signals)
+    return index, filtering_param
 
 
 def init(shared_arr, trials_start, labels):
-    global shared_array_oacl, output_oacl, trials_start_oacl, labels_oacl
+    global shared_array_oacl, trials_start_oacl, labels_oacl
     shared_array_oacl = shared_arr
     trials_start_oacl = trials_start
     labels_oacl = labels
@@ -344,22 +316,30 @@ def init(shared_arr, trials_start, labels):
 
 def special_purpose_estimator(x, params):
     out = []
+    n_runs = len(x)
+    n_channels = int(x[0][0].shape[0])
+    len_chan = x[0][0].shape[1]
+    n_trials = len(x[0][1])
+    n_labels = len(x[0][2])
+    x_flat_size = sum([run[0].shape[0]*run[0].shape[1] for run in x])
     range_list, m, decimal_precision, trials = params
     getcontext().prec = decimal_precision
-    channels, trials_start, labels, artifacts = x
 
-    shared_runs_base = Array(c_float, x[0].shape[0]*x[0].shape[1], lock=False)
-    shared_trials_base = Array(c_int, len(trials_start), lock=False)
-    shared_labels_base = Array(c_int, len(labels), lock=False)
+    shared_runs_base = Array(c_float, x_flat_size, lock=False)
+    shared_trials_base = Array(c_int, n_trials*n_runs, lock=False)
+    shared_labels_base = Array(c_int, n_labels*n_runs, lock=False)
     shared_runs_array = frombuffer(shared_runs_base, dtype=c_float)
     shared_trials_array = frombuffer(shared_trials_base, dtype=c_int)
     shared_labels_array = frombuffer(shared_labels_base, dtype=c_int)
-    shared_runs_array[:] = x[0].flat
-    shared_trials_array[:] = trials_start[:]
-    shared_labels_array[:] = labels[:]
-
+    for i, z in enumerate(x):
+        shared_runs_array[(i*n_channels*len_chan):((i+1)*n_channels*len_chan)] = z[0].flat
+        shared_trials_array[i*n_trials:(i+1)*n_trials] = z[1][:]
+        shared_labels_array[i*n_labels:(i+1)*n_labels] = z[2][:]
+    v = [(q, n_trials, n_channels, range_list, m) for q in
+                                           product(range(0, n_runs), range(0, n_channels))]
     pool = Pool(cpu_count(), initializer=init, initargs=(shared_runs_array, shared_trials_array, shared_labels_array))
-    out = pool.map(special_purpose_theta, [(x, range_list, m) for x in range(0, len(channels))])
+    out = pool.map(special_purpose_theta, [(q, n_trials, n_labels, range_list, m) for q in
+                                           product(range(0, n_runs), range(0, n_channels))])
 
     pool.close()
     pool.join()

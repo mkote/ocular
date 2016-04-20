@@ -30,10 +30,9 @@ class OACL(TransformerMixin):
         elif self.Shared is True:
             returned = []
             thetas = []
-            with timed_block('Estimating '):
-                for k in x:
-                    returned.append(special_purpose_estimator(k, self.get_params()))
-                # TODO collect and cleanup the thetha/artifact values
+            with timed_block("Time took: "):
+                returned.append(special_purpose_estimator(x, self.get_params()))
+            # TODO collect and cleanup the thetha/artifact values
 
             for x in range(0, len(returned)):
                 returned[x] = sorted(returned[x], key=lambda theta: theta[0])
