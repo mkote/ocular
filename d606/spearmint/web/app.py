@@ -5,9 +5,9 @@ import numpy as np
 import importlib
 from flask import Flask, render_template, redirect, url_for, Markup
 
-from shit.ExperimentGrid import ExperimentGrid
-from shit.helpers import load_experiment
-from shit.spearmint_pb2 import _LANGUAGE, _EXPERIMENT_PARAMETERSPEC_TYPE
+from spearmint.ExperimentGrid import ExperimentGrid
+from spearmint.helpers import load_experiment
+from spearmint.spearmint_pb2 import _LANGUAGE, _EXPERIMENT_PARAMETERSPEC_TYPE
 
 class SpearmintWebApp(Flask):
     def set_experiment_config(self, expt_config):
@@ -121,7 +121,7 @@ def home():
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print "No experiment configuration file passed as argument to web app!"
-        print "Usage:\n\tpython shit/web/app.py path/to/config.json\n"
+        print "Usage:\n\tpython spearmint/web/app.py path/to/config.json\n"
         sys.exit(0)
 
     app.set_experiment_config(sys.argv[1])

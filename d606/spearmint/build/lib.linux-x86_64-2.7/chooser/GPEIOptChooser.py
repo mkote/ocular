@@ -31,8 +31,8 @@ import scipy.stats    as sps
 from Locker  import *
 from helpers import *
 
-from shit import gp
-from shit import util
+from spearmint import gp
+from spearmint import util
 
 
 def optimize_pt(c, b, comp, pend, vals, model):
