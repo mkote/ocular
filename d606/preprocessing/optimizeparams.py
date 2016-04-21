@@ -6,10 +6,10 @@ from multiprocessing import freeze_support
 
 kernel_sample = ['linear', 'rbf', 'poly']
 
+
 def optim_params():
     while True:
         old_path = os.getcwd()
-        print os.getcwd()
         os.chdir('../spearmintlite')
         command = 'python spearmintlite.py ../braninpy'
         subprocess.call(command, shell=True)

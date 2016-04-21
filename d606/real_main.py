@@ -1,7 +1,5 @@
 import cPickle
-import os
 from collections import namedtuple
-
 import preprocessing.searchgrid as search
 from classification.svm import csv_one_versus_all, svm_prediction
 from eval.score import scoring
@@ -11,8 +9,10 @@ from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, extract_eog
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial
+from os import listdir
+from os.path import isfile, join
+import os
 
-run_oacl = True
 optimize_params = True
 
 
@@ -23,7 +23,17 @@ def main(*args):
     search.grid = named_grid(*args)
     runs, evals = '', ''
 
-    if not os.path.isfile('runs.dump') and not os.path.isfile('evals.dump') or run_oacl is True:
+    old_path = os.getcwd()
+    os.chdir('..')
+
+    oacl_ranges = search.grid.oacl_ranges
+    pickel_file_name = str(oacl_ranges[0][0]) + str(oacl_ranges[0][1]) + str(oacl_ranges[1][0])
+    pickel_file_name += str(oacl_ranges[1][1]) + str(search.grid.m) + '.dump'
+    onlyfiles = [f for f in listdir('pickelfiles') if isfile(join('pickelfiles', f))]
+    if len(onlyfiles) >= 100:
+        os.remove('pickelfiles/' + onlyfiles[0])
+        os.remove('pickelfiles/' + onlyfiles[1])
+    if 'run' + pickel_file_name not in onlyfiles:
         with timed_block('Iteration '):
             runs = load_data(5, "T")
             eog_test, runs = extract_eog(runs)
@@ -34,21 +44,18 @@ def main(*args):
             evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
         # Save data, could be a method instead
-        if os.path.isfile('runs.dump'):
-            os.remove('runs.dump')
-        with open("runs.dump", "wb") as output:
+        with open('pickelfiles/run' + pickel_file_name, "wb") as output:
             cPickle.dump(runs, output, cPickle.HIGHEST_PROTOCOL)
 
-        if os.path.isfile('evals.dump'):
-            os.remove('evals.dump')
-        with open("evals.dump", "wb") as output:
+        with open('pickelfiles/evals' + pickel_file_name, "wb") as output:
             cPickle.dump(evals, output, cPickle.HIGHEST_PROTOCOL)
     else:
-        with open("runs.dump", "rb") as input:
+        with open('pickelfiles/run' + pickel_file_name, "rb") as input:
             runs = cPickle.load(input)
 
-        with open("evals.dump", "rb") as input:
+        with open('pickelfiles/evals' + pickel_file_name, "rb") as input:
             evals = cPickle.load(input)
+    os.chdir(old_path)
 
     with timed_block('All Time'):
         # for subject in [int(x) for x in range(1, 2)]:
