@@ -216,7 +216,7 @@ def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
     A = A[..., 0].tolist()
     m = (len(raw_signal) - len(A)) / 2
-    A = [0] * m + A + [0] * 5
+    A = [0] * m + A + [0] * m
     corrected_signal = (array(raw_signal) - array(A))
     return corrected_signal
 
@@ -279,12 +279,11 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
 
 
 def special_purpose_theta(args):
-    index, n_trials, n_labels, range_list, m = args
+    index, entries, n_trials, n_labels, range_list, m = args
     run, channel = index
+    start, end = entries
     print run, channel
-    run_len = (22* 96735)
-    start = run*run_len+channel*96735
-    end = 96735*(channel+1)+run*run_len
+
     raw_signal = shared_array_oacl[start:end]
     artifact_signals = find_artifact_signals(raw_signal, m, range_list)
     trial_signals = mat(extract_trials_array(raw_signal, trials_start_oacl[run*n_trials:(run+1)*n_trials]))
@@ -318,11 +317,14 @@ def init(shared_arr, trials_start, labels):
 
 def special_purpose_estimator(x, params):
     out = []
+
     n_runs = len(x)
     n_channels = int(x[0][0].shape[0])
     len_chan = x[0][0].shape[1]
+    run_len = n_channels * len_chan
     n_trials = len(x[0][1])
     n_labels = len(x[0][2])
+
     x_flat_size = sum([run[0].shape[0]*run[0].shape[1] for run in x])
     range_list, m, decimal_precision, trials = params
     getcontext().prec = decimal_precision
@@ -339,7 +341,8 @@ def special_purpose_estimator(x, params):
         shared_labels_array[i*n_labels:(i+1)*n_labels] = z[2][:]
 
     pool = Pool(cpu_count(), initializer=init, initargs=(shared_runs_array, shared_trials_array, shared_labels_array))
-    out = pool.map(special_purpose_theta, [(q, n_trials, n_labels, range_list, m) for q in
+    out = pool.map(special_purpose_theta, [(q, ((q[0]*run_len+q[1]*len_chan), (q[0]*run_len+len_chan*(q[1]+1))),
+                                            n_trials, n_labels, range_list, m) for q in
                                            product(range(0, n_runs), range(0, n_channels))], chunksize=2)
 
     pool.close()
