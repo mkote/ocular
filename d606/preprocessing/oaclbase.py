@@ -34,11 +34,16 @@ class OACL(TransformerMixin):
                 returned.append(special_purpose_estimator(x, self.get_params()))
             # TODO collect and cleanup the thetha/artifact values
 
-            for x in range(0, len(returned)):
-                returned[x] = sorted(returned[x], key=lambda theta: theta[0])
-                thetas.append(returned[x][1])
-                self.artifacts.append(returned[x][2])
+            returned = sorted(returned, key=lambda theta: theta[0])
+            thetas = [[] for z in range(0, len(x))]
+            artifacts = [[] for z in range(0, len(x))]
+            for q in returned:
+                id, thetas, artifact = q
+                run, channel = id
+                thetas[run].append(thetas)
+                artifacts[run].append(artifacts)
 
+            self.artifacts = artifacts
             self.theta = self.generalize_thetas(thetas)
         else:
             thetas = []

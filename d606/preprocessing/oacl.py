@@ -304,7 +304,7 @@ def special_purpose_theta(args):
     filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
-    return index, filtering_param
+    return index, filtering_param, artifact_signals
 
 
 def init(shared_arr, trials_start, labels):
@@ -335,11 +335,10 @@ def special_purpose_estimator(x, params):
         shared_runs_array[(i*n_channels*len_chan):((i+1)*n_channels*len_chan)] = z[0].flat
         shared_trials_array[i*n_trials:(i+1)*n_trials] = z[1][:]
         shared_labels_array[i*n_labels:(i+1)*n_labels] = z[2][:]
-    v = [(q, n_trials, n_channels, range_list, m) for q in
-                                           product(range(0, n_runs), range(0, n_channels))]
+
     pool = Pool(cpu_count(), initializer=init, initargs=(shared_runs_array, shared_trials_array, shared_labels_array))
     out = pool.map(special_purpose_theta, [(q, n_trials, n_labels, range_list, m) for q in
-                                           product(range(0, n_runs), range(0, n_channels))])
+                                           product(range(0, n_runs), range(0, n_channels))], chunksize=2)
 
     pool.close()
     pool.join()
@@ -411,6 +410,7 @@ def estimate_theta(data, params):
     getcontext().prec = decimal_precision
     channels, trials, labels, artifacts = data
     run_thetas = []
-    for channel in channels:
+    for i, channel in enumerate(channels):
+        print str(i)
         run_thetas.append(get_theta(channel, trials, labels, range_list, m))
     return run_thetas
