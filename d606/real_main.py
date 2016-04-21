@@ -17,7 +17,8 @@ optimize_params = True
 
 
 def main(*args):
-
+    print 'Running with following args \n'
+    print args
     named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm'])
     search.grid = named_grid(*args)
     runs, evals = '', ''
