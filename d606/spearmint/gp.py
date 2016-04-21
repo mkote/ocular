@@ -74,9 +74,10 @@ def grad_dist2(ls, x1, x2=None):
           gX(i,j,d) = (2/ls(d))*(x1(i,d) - x2(j,d));
     """
     try:
+        devnull = open(np.os.devnull, 'w')
         scipy.weave.inline(code, ['x1','x2','gX','ls','M','N','D'], \
                        type_converters=scipy.weave.converters.blitz, \
-                       compiler='gcc')
+                       compiler='gcc', stderr=devnull)
     except:
         # The C code weave above is 10x faster than this:
         for i in xrange(0,x1.shape[0]):
