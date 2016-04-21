@@ -9,6 +9,7 @@ Data.
 
 - [Anaconda 2.7 python packages](https://www.continuum.io/downloads) (recommended)
 - mne
+- protobuf
 
 or
 
@@ -17,6 +18,7 @@ or
 - NumPy
 - Scikit-Learn
 - mne
+- protobuf
 
 Refer to the installation guides of each dependency to obtain their dependencies (or just use the anaconda2
 distribution.)
