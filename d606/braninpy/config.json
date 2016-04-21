@@ -27,32 +27,39 @@
     "max":10,
     "size":1
   },
-  "r1" : {
+  "s" : {
     "name":"s",
     "type":"int",
     "min":2,
     "max":10,
     "size":1
   },
-  "r2" : {
+  "r1" : {
   "name":"r1",
   "type":"int",
   "min":1,
   "max":30,
   "size":1
 },
-  "r3" : {
+  "r2" : {
   "name":"r2",
   "type":"int",
   "min":1,
   "max":30,
   "size":1
 },
+  "space" : {
+  "name":"space",
+  "type":"int",
+  "min":0,
+  "max":30,
+  "size":1
+},
   "m" : {
   "name":"m",
   "type":"int",
-  "min":5,
-  "max":15,
+  "min":3,
+  "max":8,
   "size":1
 }
 }
