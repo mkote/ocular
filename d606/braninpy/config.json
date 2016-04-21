@@ -30,7 +30,7 @@
   "r1" : {
     "name":"s",
     "type":"int",
-    "min":1,
+    "min":2,
     "max":10,
     "size":1
   },
