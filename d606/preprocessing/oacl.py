@@ -214,9 +214,11 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
 def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
-    A = [x[0] for x in A]
-    corrected_signal = [a_i - b_i for a_i, b_i in zip(raw_signal, A)]
-    return array(corrected_signal)
+    A = A[..., 0].tolist()
+    m = (len(raw_signal) - len(A)) / 2
+    A = [0] * m + A + [0] * 5
+    corrected_signal = (array(raw_signal) - array(A))
+    return corrected_signal
 
 
 def objective_function_aux(args, args2):
@@ -273,7 +275,7 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
     filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 
-    return filtering_param, artifact_signals
+    return filtering_param
 
 
 def special_purpose_theta(args):
