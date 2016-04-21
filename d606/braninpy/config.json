@@ -24,35 +24,28 @@
     "name":"band_list",
     "type":"int",
     "min":0,
-    "max":2,
+    "max":10,
     "size":1
   },
   "r1" : {
-    "name":"r1",
+    "name":"s",
     "type":"int",
-    "min":2,
-    "max":15,
+    "min":1,
+    "max":10,
     "size":1
   },
   "r2" : {
-  "name":"r2",
+  "name":"r1",
   "type":"int",
-  "min":16,
+  "min":1,
   "max":30,
   "size":1
 },
   "r3" : {
-  "name":"r3",
+  "name":"r2",
   "type":"int",
-  "min":50,
-  "max":51,
-  "size":1
-},
-  "r4" : {
-  "name":"r4",
-  "type":"int",
-  "min":52,
-  "max":53,
+  "min":1,
+  "max":30,
   "size":1
 },
   "m" : {

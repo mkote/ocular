@@ -26,13 +26,12 @@ def optim_params():
         n_comp = int(par[2])
         c = float(par[3])
         kernel = kernel_sample[int(par[4])]
-        band_list = band_sample[int(par[5])]
-        r1 = int(par[6])
-        r2 = int(par[7])
-        r3 = int(par[8])
-        r4 = int(par[9])
-        m = int(par[10])
-        oacl_ranges = ((r1, r2), (r3, r4))
+        band_list = [[x * 3 + x, 4 * x + 4] for x in range(1, 1 + int(par[5]))]
+        s = int(par[6])
+        r1 = int(par[7])
+        r2 = int(par[8])
+        m = int(par[9])
+        oacl_ranges = ((s, s + r1), (s + r1 + 1, s + r1 + 1 + r2))
 
         result, time = main(n_comp, c, kernel, band_list, oacl_ranges, m)
 
