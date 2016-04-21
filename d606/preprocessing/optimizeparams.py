@@ -4,12 +4,7 @@ from time import sleep
 from real_main import main
 from multiprocessing import freeze_support
 
-band_sample = [[[8, 12], [12, 16], [16, 20], [20, 24]]]
-band_sample += [[[8, 12], [12, 16], [16, 20], [20, 24], [24, 28]]]
-band_sample += [[[4, 8], [8, 12], [12, 16], [16, 20], [20, 24], [24, 28], [28, 32]]]
-
 kernel_sample = ['linear', 'rbf', 'poly']
-
 
 def optim_params():
     while True:
@@ -24,7 +19,7 @@ def optim_params():
         params = get_params()
         par = params.split(' ')
         n_comp = int(par[2])
-        c = float(par[3])
+        c = int(par[3])*0.01
         kernel = kernel_sample[int(par[4])]
         band_list = [[x * 3 + x, 4 * x + 4] for x in range(1, 1 + int(par[5]))]
         s = int(par[6])
