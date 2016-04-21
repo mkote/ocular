@@ -65,6 +65,6 @@ def insert_result(result, time):
     # now write the modified list back out to the file
     open(file, 'w').writelines(lines)
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     freeze_support()
     optim_params()

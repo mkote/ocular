@@ -66,5 +66,6 @@ class Locker:
             return True
             
     def lock_wait(self, filename):
-        while not self.lock(filename):
-          time.sleep(0.01)
+        if os.name != 'nt':
+            while not self.lock(filename):
+                time.sleep(0.01)
