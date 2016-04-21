@@ -137,3 +137,4 @@ d606/results.txt
 d606/braninpy/chooser.GPEIOptChooser_hyperparameters.txt
 *.dump
 *.dat
+d606/braninpy/chooser.GPEIOptChooser.pkl

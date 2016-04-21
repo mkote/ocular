@@ -219,8 +219,7 @@ def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
     A = [x[0] for x in A]
     m = (len(raw_signal) - len(A)) / 2
-    for x in range(0, m):
-        A.insert(0, 0.0)
+    A = [0.0] * m + A + [0.0] * m
     corrected_signal = (np.array(raw_signal) - np.array(A))
     return corrected_signal
 
