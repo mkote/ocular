@@ -7,9 +7,11 @@ from scipy.optimize import basinhopping
 from scipy.optimize._basinhopping import Metropolis
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
-
 from eval.timing import timed_block
-from preprocessing.dataextractor import load_data, extract_trials_single_channel
+from math import floor
+from d606.preprocessing.dataextractor import load_data, extract_trials_single_channel
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
@@ -216,8 +218,11 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
     A = [x[0] for x in A]
-    corrected_signal = [a_i - b_i for a_i, b_i in zip(raw_signal, A)]
-    return np.array(corrected_signal)
+    m = (len(raw_signal) - len(A)) / 2
+    for x in range(0, m):
+        A.insert(0, 0.0)
+    corrected_signal = (np.array(raw_signal) - np.array(A))
+    return corrected_signal
 
 
 def objective_function_aux(args, args2):
