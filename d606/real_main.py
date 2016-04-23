@@ -40,13 +40,13 @@ def main(*args):
         os.remove('pickelfiles/' + file_to_delete2)
     if 'runs' + pickel_file_name not in onlyfiles:
         with timed_block('Iteration '):
-            runs = load_data(7, "T")
+            runs = load_data(6, "T")
             eog_test, runs = extract_eog(runs)
-            #runs, train_oacl = remake_trial(runs)
+            runs, train_oacl = remake_trial(runs)
 
-            evals = load_data(7, "E")
+            evals = load_data(6, "E")
             eog_eval, evals = extract_eog(evals)
-            #evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
+            evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
         # Save data, could be a method instead
         with open('pickelfiles/runs' + pickel_file_name, "wb") as output:
