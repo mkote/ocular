@@ -10,68 +10,81 @@ import d606.preprocessing.searchgrid as search
 from d606.preprocessing.trial_remaker import remake_trial, remake_single_trial
 from collections import namedtuple
 from multiprocessing import freeze_support
+from itertools import product
 import warnings
 
 
 def main():
-    Grid = namedtuple('Grid', ['band_list', 'n_comp', 'kernel', 'C'])
-    best_result = [0, 0]
-    warnings.filterwarnings('ignore', category=DeprecationWarning)
-    warnings.filterwarnings('ignore', category=RuntimeWarning)
+    # parameter C for svm
+    Cs = [0.25, 0.50, 0.75, 1]
 
-    runs = load_data(1, "T")
-    eog_test, runs = extract_eog(runs)
-    runs, train_oacl = remake_trial(runs)
+    # kernel for svm
+    kernels = ['rbf', 'linear']
 
-    evals = load_data(1, "E")
-    eog_eval, evals = extract_eog(evals)
-    evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
+    # num components for csp
+    n_comps = [3, 4, 5, 6, 7]
 
-    grid_list = grid_combinator(grid_parameters)
+    # ranges for bandpassing
+    band_lists = [[[10, 16], [16,28]],
+                 [[8, 12], [16, 24]],
+                 [[8, 12], [12, 16], [16, 20], [20, 24], [24, 28]],
+                 [[4, 8], [8, 12], [12, 16], [16, 20], [20, 24], [24, 30], [30, 36]],
+                 [[16, 20], [20, 24], [24, 30], [30, 36]]]
 
-    for sample in grid_list:
-        search.grid = Grid(*sample)
+    for subject in range(1, 10):
+        runs = load_data(subject, "T")
+        eog_test, runs = extract_eog(runs)
+        runs, train_oacl = remake_trial(runs)
+
+        evals = load_data(subject, "E")
+        eog_eval, evals = extract_eog(evals)
+        evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
+
+        best_result = [0.0, "none"]
         subject_results = []
 
         with timed_block('All Time'):
-            # for subject in [int(x) for x in range(1, 2)]:
-            csp_list = []
-            svc_list = []
-            filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
-            filters = Filter(filt)
+            for band_list in band_lists:
+                filt = band_list
+                filters = Filter(filt)
 
-            train_bands, train_combined_labels = restructure_data(runs, filters)
+                train_bands, train_combined_labels = restructure_data(runs, filters)
 
-            test_bands, test_combined_labels = restructure_data(evals, filters)
+                test_bands, test_combined_labels = restructure_data(evals, filters)
 
-            # CSP one VS all, give csp_one_cs_all num_different labels as input
-            for band in train_bands:
-                csp_list.append(csp_one_vs_all(band, 4))
+                for comp in n_comps:
+                    csp_list = []
+                    # CSP one VS all, give csp_one_cs_all num_different labels as input
+                    for band in train_bands:
+                        csp_list.append(csp_one_vs_all(band, 4, n_comps=comp))
 
-            # Create a scv for each csp and band
-            for csp, band in zip(csp_list, train_bands):
-                svc_list.append(csv_one_versus_all(csp, band))
+                    for kernel, c in product(kernels, Cs):
+                        svc_list = []
+                        # Create a scv for each csp and band
+                        for csp, band in zip(csp_list, train_bands):
+                            svc_list.append(csv_one_versus_all(csp, band, kernels=kernel, C=c))
 
-            # Predict results with svc's
-            results = svm_prediction(test_bands, svc_list, csp_list)
+                        # Predict results with svc's
+                        results = svm_prediction(test_bands, svc_list, csp_list)
 
-            voting_results = csp_voting(results)
-            score, wrong_list = scoring(voting_results, test_combined_labels)
-            subject_results.append(score)
+                        voting_results = csp_voting(results)
+                        score, wrong_list = scoring(voting_results, test_combined_labels)
+                        subject_results.append(score)
+                        config = "band_list: " + str(band_list) + ", n_comp: " + str(comp) + ", kernel: " + str(kernel) + ", C: " + str(c)
 
-            # store result in txt file
-            save_results(score, search.grid)
+                        if score > best_result[0]:
+                            best_result[0] = score
+                            best_result[1] = config
 
-            if score > best_result[0]:
-                best_result[0] = score
-                best_result[1] = search.grid
+                        save_results(score, config)
+                        print score
+                        print "band_list: " + str(band_list) + ", n_comp: " + str(comp) + ", kernel: " + str(kernel) + ", C: " + str(c)
+                        print '\n'
 
-        print subject_results
-        print search.grid
-        print '\n'
-
-    print "\t\tbest result: %s \n\t\tbest Parameters: %s" % (best_result[0], best_result[1])
-    # print mean(subject_results)
+        save_results("Subject " + str(subject) + "best result: " + str(best_result[0]) + "\n",
+                     str(best_result[1])+"\n\n")
+        print "\t\tbest result: %s \n\t\tbest Parameters: %s" % (best_result[0], best_result[1])
+        # print mean(subject_results)
 
 if __name__ == '__main__':
     freeze_support()

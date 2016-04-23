@@ -270,8 +270,7 @@ def get_theta(raw_signal, trials_start, labels, range_list, m):
                                   "method":"SLSQP",
                                   "args":[labels, n_trials, trial_artifact_signals, trial_signals]
                               },
-                              interval=7,
-                              niter_success=25)
+                              interval=20)
     filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
 

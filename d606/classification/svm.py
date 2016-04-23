@@ -5,9 +5,7 @@ import d606.preprocessing.searchgrid as search
 from numpy import array
 
 
-def train_svc(csp, data, labels):
-    c = search.grid.C if 'C' in search.grid._fields else 1
-    kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
+def train_svc(csp, data, labels, kernel="linear", c=1):
     svc = SVC(C=c, kernel=kernel, gamma='auto')
 
     y = labels
@@ -19,13 +17,13 @@ def train_svc(csp, data, labels):
     return svc
 
 
-def csv_one_versus_all(csp_list, band):
+def csv_one_versus_all(csp_list, band, kernels="linear", C=1):
     data, trials, labels = band
     d3_data = d3_matrix_creator(data)
     svc_list = []
     for i, csp in enumerate(csp_list):
         formatted_labels = array(csp_label_reformat(labels, i+1))
-        svc_list.append(train_svc(csp, d3_data, formatted_labels))
+        svc_list.append(train_svc(csp, d3_data, formatted_labels, kernels, C))
     return svc_list
 
 

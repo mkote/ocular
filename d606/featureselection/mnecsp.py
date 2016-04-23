@@ -4,7 +4,7 @@ from d606.preprocessing.dataextractor import *
 import d606.preprocessing.searchgrid as search
 
 
-def run_csp(run_data, label):
+def run_csp(run_data, label, n_comp):
     # transform data
     matrix, trials, labels = run_data
     d3_data = d3_matrix_creator(matrix)
@@ -31,16 +31,15 @@ def run_csp(run_data, label):
     # Cross validation with sklearn
     labels = epochs_data.events[:, -1]
 
-    n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 6
     csp = CSP(n_components=n_comp)
     csp = csp.fit(d3_data, labels)
     return csp
 
 
-def csp_one_vs_all(band_data, num_labels):
+def csp_one_vs_all(band_data, num_labels, n_comps=3):
     csp_list = []
     for n in range(1, num_labels + 1):
-        csp = run_csp(band_data, n)
+        csp = run_csp(band_data, n, n_comp=n_comps)
         csp_list.append(csp)
 
     return csp_list
