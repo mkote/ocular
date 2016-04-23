@@ -1,8 +1,32 @@
 \subsection{Ocular Artifact Correction}
-General intro to oacl. What is the approach.
+We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
+
+Let $x = \{s_0, ...,s_n\}$ where $s_i \in \mathbb{R}_{\geq 0}$ denote the raw EEG signal for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
+
+From $x(t)$ we perform all steps in artifact detection and removal.
+
+%Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
 \subsubsection{Artifact Detection}
-Explain how we detect artifacts and get artifact signals.
-
+The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$:
+\begin{equation}
+\label{eq:movavg}
+\textbf{moving avg equation/pseudocode}
+\end{equation}
+where $m$ is the number of neighboring points, and $n$ denotes the number of EEG samples in $x(t)$. From $s(t)$ we calculate the relative heights between samples as the maximal difference in amplitude between a sample and its neighboring samples.
+\begin{equation}
+\label{eq:relheights}
+\Delta (t) = max(|x(t)-x(t-1)|,|x(t+1) - x(t)|)
+\end{equation}
+Now, we want to have some measure of what an artifact signal looks like. [OACL] found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta A$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. For now, assume that we have some arbitrary ranges
+\begin{equation}
+\label{eq:ranges}
+h_r=[l, u] \quad  l,u \in \mathbb{N}_{\geq 0}
+\end{equation}
+then we can find the points in time where $\Delta (t)$  lies in the range $h_r$:
+\begin{equation}
+\label{eq:peaks}
+P = \{t \quad | \quad \frac{m}{2} < t < n-\frac{m}{2} \quad \textnormal{and} \quad l < \Delta (t) < u\}
+\end{equation}
 \subsubsection{Artifact Removal}
 Explain how we use the artifact signals to remove artifacts from the eeg signal.
