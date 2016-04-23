@@ -3,7 +3,7 @@
   "name":"n_comp",
   "type":"int",
   "min":2,
-  "max":15,
+  "max":30,
   "size":1
 },
   "C" : {
@@ -52,7 +52,7 @@
   "name":"space",
   "type":"int",
   "min":0,
-  "max":30,
+  "max":5,
   "size":1
 },
   "m" : {

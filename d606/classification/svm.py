@@ -1,5 +1,4 @@
 from sklearn.svm import SVC
-from sklearn.preprocessing import MinMaxScaler
 from preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
 import preprocessing.searchgrid as search
 from numpy import array

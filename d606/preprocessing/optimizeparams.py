@@ -9,12 +9,12 @@ kernel_sample = ['linear', 'rbf', 'poly']
 
 def optim_params():
     while True:
-        old_path = os.getcwd()
-        os.chdir('../spearmintlite')
-        command = 'python spearmintlite.py ../braninpy'
-        subprocess.call(command, shell=True)
-        sleep(2)
-        os.chdir(old_path)
+        #old_path = os.getcwd()
+        #os.chdir('../spearmintlite')
+        #command = 'python spearmintlite.py ../braninpy'
+        #subprocess.call(command, shell=True)
+        #sleep(2)
+        #os.chdir(old_path)
 
         params = get_params()
         par = params.split(' ')
