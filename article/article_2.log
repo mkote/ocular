@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.3.27)  31 MAR 2016 15:28
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.3.27)  23 APR 2016 11:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -466,36 +466,34 @@ LaTeX Font Info:    Font shape `T1/pplx/bx/n' in size <10> not available
 ) (./introduction.tex
 LaTeX Font Info:    Font shape `T1/pplx/bx/n' in size <12> not available
 (Font)              Font shape `T1/pplx/b/n' tried instead on input line 1.
-Package microtype Info: Character `029' is missing
-(microtype)             in font `T1/pplx/m/sc/10'.
-(microtype)             Ignoring protrusion settings for this character.
-) (./body.tex) (./results.tex
+) (./body/intro.tex) (./body/oacl.tex) (./body/fbcsp.tex) (./body/bayesian-opti
+mization.tex) (./body/classification.tex) (./results.tex
 LaTeX Font Info:    Font shape `T1/pplx/bx/n' in size <9> not available
 (Font)              Font shape `T1/pplx/b/n' tried instead on input line 4.
-) (./conclusion.tex) (./bibliography.tex) [1{/var/lib/texmf/fonts/map/pdftex/up
-dmap/pdftex.map}
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
-]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 117.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 117.
+]) (./conclusion.tex) (./bibliography.tex)
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 121.
+[2]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 121.
 (./article_2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 117.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 117.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 121.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 121.
 Package rerunfilecheck Info: File `article_2.out' has not changed.
-(rerunfilecheck)             Checksum: A809D64DAB87CDB4E6C49D55DAEA8B91;635.
+(rerunfilecheck)             Checksum: 428C884AA03872B6114FBB2077D2B77F;805.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 117.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 121.
  ) 
 Here is how much of TeX's memory you used:
- 8768 strings out of 495000
- 135659 string characters out of 6181169
- 357304 words of memory out of 5000000
- 11747 multiletter control sequences out of 15000+600000
- 68516 words of font info for 171 fonts, out of 8000000 for 9000
+ 8803 strings out of 495000
+ 136085 string characters out of 6181169
+ 351304 words of memory out of 5000000
+ 11749 multiletter control sequences out of 15000+600000
+ 61765 words of font info for 182 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 36i,11n,43p,262b,547s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 36i,11n,43p,452b,542s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/
@@ -504,10 +502,10 @@ ype1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/pu
 blic/fpl/fplrc8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/up
 lb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplr8a.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb>
-Output written on article_2.pdf (1 page, 87553 bytes).
+Output written on article_2.pdf (2 pages, 92155 bytes).
 PDF statistics:
- 94 PDF objects out of 1000 (max. 8388607)
- 82 compressed objects within 1 object stream
- 15 named destinations out of 1000 (max. 500000)
- 59985 words of extra memory for PDF output out of 61914 (max. 10000000)
+ 106 PDF objects out of 1000 (max. 8388607)
+ 93 compressed objects within 1 object stream
+ 18 named destinations out of 1000 (max. 500000)
+ 54881 words of extra memory for PDF output out of 61914 (max. 10000000)
 
