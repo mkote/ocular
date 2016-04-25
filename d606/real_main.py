@@ -38,13 +38,15 @@ def main(*args):
         file_to_delete1 = 'evals' + file_to_delete1
         os.remove('pickelfiles/' + file_to_delete1)
         os.remove('pickelfiles/' + file_to_delete2)
+        onlyfiles.remove(file_to_delete1)
+        onlyfiles.remove(file_to_delete2)
     if 'runs' + pickel_file_name not in onlyfiles:
         with timed_block('Iteration '):
-            runs = load_data(6, "T")
+            runs = load_data(8, "T")
             eog_test, runs = extract_eog(runs)
             runs, train_oacl = remake_trial(runs)
 
-            evals = load_data(6, "E")
+            evals = load_data(8, "E")
             eog_eval, evals = extract_eog(evals)
             evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
@@ -103,7 +105,7 @@ def main(*args):
     print 'svm results ' + str(svm_score)
     print '\n'
     print 'Best score: ' + str(score)
-    return score, 1200
+    return svm_score, 1200
 
 if __name__ == '__main__':
     # freeze_support()
