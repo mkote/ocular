@@ -1,6 +1,7 @@
 from sklearn.svm import SVC
 from preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
 import preprocessing.searchgrid as search
+from sklearn.preprocessing import normalize
 from numpy import array
 
 
@@ -11,6 +12,7 @@ def train_svc(csp, data, labels):
 
     y = labels
     x = csp.transform(data)
+    x = normalize(x)
 
     # fit classifier
     svc.fit(x, y)
@@ -39,6 +41,7 @@ def svm_prediction(test_bands, svc_list, csp_list):
         for x in d3_matrix:
             for svc, csp in zip(svc_list[y], csp_list[y]):
                 transformed = csp.transform(array([x]))
+                transformed = normalize(transformed)
                 single_run_result.append(int(svc.predict(transformed)))
 
             band_results.append(single_run_result)
