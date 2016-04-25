@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1461413337 "article_2.tex" "article_2.pdf" "article_2" 1461413338
+["pdflatex"] 1461413337 "article_2.tex" "article_2.pdf" "article_2" 1461587798
   "/etc/texmf/web2c/texmf.cnf" 1459099141 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
@@ -212,7 +212,7 @@
   "introduction.tex" 1461403129 2109 0031898329ab1e5fc4e57ab155c838a1 ""
   "results.tex" 1459862974 626 9ca92598f26e9347e2ed9a0e1e75df18 ""
   (generated)
-  "article_2.log"
-  "article_2.out"
   "article_2.aux"
   "article_2.pdf"
+  "article_2.log"
+  "article_2.out"
