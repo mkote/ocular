@@ -1,22 +1,19 @@
 from sklearn.base import TransformerMixin
-from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal, clean_signal_multiproc, \
-    special_purpose_estimator
+from preprocessing.oacl import estimate_theta, clean_signal, clean_signal_multiproc, special_purpose_estimator
 from multiprocessing import Queue, Process
-from numpy import average, array, median
-from evaluation.timing import timed_block
-import time
+from numpy import array, median
+from eval.timing import timed_block
 
 
 class OACL(TransformerMixin):
 
     def __init__(self, ranges=((3, 7), (7, 15)), m=11, decimal_precision=300, multi_run=False,
-                 trials=False, shared=False):
+                 trials=False):
         self.theta = None
         self.ranges = ranges
         self.m = m
         self.decimal_precision = decimal_precision
         self.multi_run = multi_run
-        self.Shared = shared
         self.trials = trials
         self.artifacts = []
         self.trial_thetas = []
@@ -28,7 +25,7 @@ class OACL(TransformerMixin):
     def fit(self, x, y):
         if self.multi_run is False:
             self.theta = estimate_theta(x, self.get_params())
-        elif self.Shared is True:
+        else:
             returned = []
             thetas = []
             with timed_block("Time took: "):
@@ -47,38 +44,6 @@ class OACL(TransformerMixin):
 
             self.artifacts = artifacts
             self.theta = self.generalize_thetas(thetas)
-        else:
-            thetas = []
-            processes = []
-            ts = time.time()
-            n_runs = len(x)
-            input_queue = Queue(n_runs)
-            output_queue = Queue(n_runs)
-
-            for i, z in enumerate(x):
-                input_queue.put((z, i))
-
-            for x in range(0, n_runs):
-                p = Process(target=estimate_theta_multiproc, args=(input_queue, output_queue, self.get_params()))
-                p.start()
-                processes.append(p)
-
-            for x in range(0, n_runs):
-                thetas.append(output_queue.get())
-
-            for p in processes:
-                p.join()
-
-            te = time.time()
-            print "Took " + str(te-ts) + " estimating using old"
-
-            sort = sorted(thetas, key=lambda theta: theta[2])
-
-            self.artifacts = [x[1] for x in sort]
-            thetas = [x[0] for x in sort]
-
-            self.theta = self.generalize_thetas(thetas)
-
         return self
 
     def transform(self, x):

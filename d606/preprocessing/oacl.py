@@ -1,5 +1,4 @@
 # This module contains implementation of ocular artifact detection and removal
-<<<<<<< HEAD
 from decimal import Decimal, getcontext
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
@@ -244,12 +243,12 @@ class MyStepper:
 
     def __call__(self, x):
         num_tethas = x.size - 1
-        bounds = [[0, 1]] * num_tethas + [[-np.inf, 0]]
+        bounds = [[0, 1]] * num_tethas + [[-inf, 0]]
         s = self.stepsize
         while 1:
-            x_old = np.copy(x)
-            x[:num_tethas] += np.random.uniform(-s, s, np.shape(x[:num_tethas]))
-            x[num_tethas] += np.random.uniform(-s * 10, s * 10, 1)
+            x_old = copy(x)
+            x[:num_tethas] += uniform(-s, s, shape(x[:num_tethas]))
+            x[num_tethas] += uniform(-s * 10, s * 10, 1)
             test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
             if all(test):
                 break
@@ -318,8 +317,6 @@ def init(shared_arr, trials_start, labels):
 
 
 def special_purpose_estimator(x, params):
-    out = []
-
     n_runs = len(x)
     n_channels = int(x[0][0].shape[0])
     len_chan = x[0][0].shape[1]
@@ -384,30 +381,6 @@ def clean_signal_multiproc(input_q, output_q, thetas, params):
         cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifact_signal))
     if not output_q.full():
         output_q.put((cleaned_signal, index))
-        output_q.close()
-        output_q.join_thread()
-    else:
-        print "QUEUE IS FULL ????"
-    print "Process " + str(index) + " exiting!!"
-
-
-def estimate_theta_multiproc(input_q, output_q, params):
-    range_list, m, decimal_precision, trials = params
-    getcontext().prec = decimal_precision
-    eeg_data, index = input_q.get()
-    print "Process " + str(index) + " is starting"
-    channels, trials_start, labels, artifacts = eeg_data
-    clean_signals = []
-    artifact_signals = []
-    with timed_block('estimating: '):
-        for i, raw_signal in enumerate(channels):
-            print "Process " + str(index) + " is estimating channel " + str(i)
-            theta, artifact_signal = get_theta(raw_signal, trials_start, labels, range_list, m)
-            clean_signals.append(theta)
-            artifact_signals.append(artifact_signal)
-
-    if not output_q.full():
-        output_q.put((clean_signals, artifact_signals, index))
         output_q.close()
         output_q.join_thread()
     else:

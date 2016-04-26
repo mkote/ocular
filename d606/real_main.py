@@ -12,6 +12,7 @@ from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial
 from os import listdir
 from os.path import isfile, join
+from multiprocessing import freeze_support
 import os
 
 optimize_params = True
@@ -30,6 +31,8 @@ def main(*args):
     oacl_ranges = search.grid.oacl_ranges
     pickel_file_name = str(oacl_ranges[0][0]) + str(oacl_ranges[0][1]) + str(oacl_ranges[1][0])
     pickel_file_name += str(oacl_ranges[1][1]) + str(search.grid.m) + '.dump'
+    if not os.path.isdir('pickelfiles'):
+        os.mkdir('pickelfiles')
     onlyfiles = [f for f in listdir('pickelfiles') if isfile(join('pickelfiles', f))]
     if len(onlyfiles) >= 100:
         file_to_delete1 = onlyfiles[0].replace('evals', '')
@@ -108,5 +111,5 @@ def main(*args):
     return svm_score, 1200
 
 if __name__ == '__main__':
-    # freeze_support()
+    freeze_support()
     main(2, 0.1, 'rbf', [[4, 8], [8, 12], [12, 16], [16, 20], [20, 30]], ((3, 7), (7, 15)), 11)
