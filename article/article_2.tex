@@ -53,18 +53,24 @@
 \fancyfoot{} % Blank out the default footer
 \fancyhead[C]{Running title $\bullet$ November 2012 $\bullet$ Vol. XXI, No. 1} % Custom header text
 \fancyfoot[RO,LE]{\thepage} % Custom footer text
+\usepackage[Table]{xcolor}
+\usepackage{todonotes}
+\usepackage{menukeys}
 
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
 %----------------------------------------------------------------------------------------
 
-\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Removal of EEG Ocular Artifacts}} % Article title
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{EEG Ocular Artifact Correction with optimized parameters for OACL, CSP and classification}} % Article title
 
 \author{
 \large
-\textsc{John Smith}\thanks{A thank you or further information}\\[2mm] % Your name
-\normalsize University of California \\ % Your institution
-\normalsize \href{mailto:john@smith.com}{john@smith.com} % Your email address
+\textsc{Benjamin Ahm, } % Your name
+\textsc{Emil Riis Hansen, }
+\textsc{Kristian Hauge Jensen, }\\
+\textsc{Morten Korsholm Terndrup}\\[2mm]\thanks{A thank you or further information}
+\normalsize Aalborg University \\ % Your institution
+\normalsize \href{mailto:mternd13@student.aau.dk}{mternd13@student.aau.dk} % Your email address
 \vspace{-5mm}
 }
 \date{}
@@ -94,7 +100,11 @@
 
 %------------------------------------------------
 
-\input{body}
+\input{body/intro}
+\input{body/oacl}
+\input{body/fbcsp}
+\input{body/bayesian-optimization}
+\input{body/classification}
 
 %------------------------------------------------
 

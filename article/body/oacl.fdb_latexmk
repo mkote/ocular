@@ -1,0 +1,11 @@
+# Fdb version 3
+["pdflatex"] 1461404473 "oacl.tex" "oacl.pdf" "oacl" 1461404473
+  "/etc/texmf/web2c/texmf.cnf" 1459099141 475 c0e671620eb5563b2130f56340a5fde8 ""
+  "/usr/share/texlive/texmf-dist/web2c/texmf.cnf" 1435377840 31349 7675f8adfbe12aae865d340d35423a49 ""
+  "/usr/share/texmf/web2c/texmf.cnf" 1435377840 31349 7675f8adfbe12aae865d340d35423a49 ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1459099181 725443 1004fac24d5e33500814172f9f6ae29b ""
+  "oacl.aux" 1461404189 8 a94a2480d3289e625eea47cd1b285758 ""
+  "oacl.tex" 1461404471 782 576c76ba110a42c5753a19bed4048b51 ""
+  (generated)
+  "oacl.log"
+  "oacl.pdf"
