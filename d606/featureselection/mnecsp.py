@@ -1,7 +1,7 @@
 import mne
 from mne.decoding import CSP
-from d606.preprocessing.dataextractor import *
-import d606.preprocessing.searchgrid as search
+from preprocessing.dataextractor import *
+import preprocessing.searchgrid as search
 
 
 def run_csp(run_data, label, n_comp):

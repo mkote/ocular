@@ -127,5 +127,15 @@ fabric.properties
 *.rar
 
 ### Misc
+d606/best*
+d606/expt-grid.pkl
+d606/output/*
+d606/trace.csv
+d606/chooser*
+d606/jobs/*
 d606/results.txt
 *.txt
+d606/braninpy/chooser.GPEIOptChooser_hyperparameters.txt
+*.dump
+*.dat
+d606/braninpy/chooser.GPEIOptChooser.pkl

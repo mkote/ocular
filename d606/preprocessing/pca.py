@@ -1,5 +1,5 @@
 from sklearn.decomposition import PCA
-from d606.preprocessing.dataextractor import load_data
+from preprocessing.dataextractor import load_data
 
 """ number of components, might be a constant in the beginning,
     but might come in handy if it were

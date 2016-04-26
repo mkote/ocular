@@ -1,4 +1,5 @@
 # This module contains implementation of ocular artifact detection and removal
+<<<<<<< HEAD
 from decimal import Decimal, getcontext
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
@@ -10,6 +11,7 @@ from numpy.random import rand, uniform
 from multiprocessing import Pool, Array, cpu_count
 from ctypes import c_float, c_int
 from itertools import product
+from eval.timing import timed_block
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
@@ -95,8 +97,8 @@ def find_peak_indexes(relative_heights, peak_range):
 
     # Add 1 because index of rel heights list is one less than the
     # index of the smoothed data.
-    Pt = [i+1 for i in range(0, len(rh)) if l < rh[i] < u]
-    return Pt
+    pt = [i+1 for i in range(0, len(rh)) if l < rh[i] < u]
+    return pt
 
 
 def find_artifact_ranges(smooth_signal, peak_indexes):
@@ -135,12 +137,10 @@ def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
     rh = find_relative_heights(smooth_signal)
-    i = 1
     for range in range_list:
         peaks = find_peak_indexes(rh, range)
         artifact_signal = find_artifact_signal(peaks, smooth_signal)
         artifact_signals.append(artifact_signal)
-        i += 1
     return array(artifact_signals)
 
 
@@ -162,7 +162,7 @@ def nearest_zero_point(arr, a, b):
 
 
 def is_cross_zero(a, b):
-    if (a > 0 and b < 0) or (a < 0 and b > 0):
+    if a > 0 > b or a < 0 < b:
         return True
     else:
         return False
@@ -187,16 +187,18 @@ def variance(vector):
 
 def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
                        trial_signals):
-    thetaT = theta.transpose()
+    summa = 0
+    theta_t = theta.transpose()
+
     y = labels
     z = []
 
     for i in range(n_trials):
-        Xa = mat(column(trial_artifact_signals, i))
+        xa = mat(column(trial_artifact_signals, i))
         x0 = trial_signals[i]
 
-        k1 = thetaT * (Xa * Xa.transpose()) * theta
-        k2 = 2 * thetaT * (Xa * x0.transpose())
+        k1 = theta_t * (xa * xa.transpose()) * theta
+        k2 = 2 * theta_t * (xa * x0.transpose())
 
         z.append([float(k1 - k2 + variance(x0.tolist()[0]) + b)])
 
@@ -241,12 +243,13 @@ class MyStepper:
         self.stepsize = stepsize
 
     def __call__(self, x):
-        bounds = [[0, 1], [0, 1], [-inf, 0]]
+        num_tethas = x.size - 1
+        bounds = [[0, 1]] * num_tethas + [[-np.inf, 0]]
         s = self.stepsize
         while 1:
-            x_old = copy(x)
-            x[:2] += uniform(-s, s, shape(x[:2]))
-            x[2] += uniform(-s * 10, s * 10, 1)
+            x_old = np.copy(x)
+            x[:num_tethas] += np.random.uniform(-s, s, np.shape(x[:num_tethas]))
+            x[num_tethas] += np.random.uniform(-s * 10, s * 10, 1)
             test = [bounds[y][0] <= x[y] <= bounds[y][1] for y in range(0, len(bounds))]
             if all(test):
                 break
@@ -356,8 +359,9 @@ def clean_signal(data, thetas, params):
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
-        artifacts_signals = find_artifact_signals(channel, m, range_list)
-        cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
+        with timed_block('Cleaning signal '):
+            artifacts_signals = find_artifact_signals(channel, m, range_list)
+            cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
     return cleaned_signal
 
 
@@ -395,11 +399,12 @@ def estimate_theta_multiproc(input_q, output_q, params):
     channels, trials_start, labels, artifacts = eeg_data
     clean_signals = []
     artifact_signals = []
-    for i, raw_signal in enumerate(channels):
-        print "Process " + str(index) + " is estimating channel " + str(i)
-        theta, artifact_signal = get_theta(raw_signal, trials_start, labels, range_list, m)
-        clean_signals.append(theta)
-        artifact_signals.append(artifact_signal)
+    with timed_block('estimating: '):
+        for i, raw_signal in enumerate(channels):
+            print "Process " + str(index) + " is estimating channel " + str(i)
+            theta, artifact_signal = get_theta(raw_signal, trials_start, labels, range_list, m)
+            clean_signals.append(theta)
+            artifact_signals.append(artifact_signal)
 
     if not output_q.full():
         output_q.put((clean_signals, artifact_signals, index))

@@ -86,7 +86,6 @@ class OACL(TransformerMixin):
         if self.theta is None:
             raise RuntimeError("It is not possible to transform the data," +
                                " no theta value was found")
-            return
 
         cleaned_signal = []
 
