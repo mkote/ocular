@@ -365,7 +365,7 @@ def clean_signal_multiproc(input_q, output_q, thetas, params):
     range_list, m, decimal_precision, trials = params
     getcontext().prec = decimal_precision
     if trials is True:
-        data, artifacts_signals, index = input_q.get()
+        data, trial_thetas, artifacts_signals, index = input_q.get()
     else:
         data, index = input_q.get()
     channels, trials, labels, artifacts = data
@@ -374,6 +374,7 @@ def clean_signal_multiproc(input_q, output_q, thetas, params):
         print "Process " + str(index) + " is cleaning " + str(i)
         if trials is True:
             artifact_signal = artifacts_signals[i]
+            theta = trial_thetas[i]
         else:
             artifact_signal = find_artifact_signals(channel, m, range_list)
         cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifact_signal))
