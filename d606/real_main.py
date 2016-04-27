@@ -115,7 +115,10 @@ def main(*args):
                 temp.append(single_csp.transform(d3_matrix))
             feature_list.append(temp)
             temp = []
-        print "HERE"
+
+        sample_list = zip(*feature_list)
+
+        # Use MIFS
 
         print "Done so far"
 
