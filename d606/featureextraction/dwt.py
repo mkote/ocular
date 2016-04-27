@@ -1,5 +1,5 @@
 from pywt import dwt
-from d606.preprocessing.dataextractor import *
+from preprocessing.dataextractor import *
 
 jumplist = [0, 1, 2]
 

@@ -1,4 +1,4 @@
-from d606.preprocessing.bandpass import bandpass_matrix
+from preprocessing.bandpass import bandpass_matrix
 from scipy.signal import iirfilter
 
 

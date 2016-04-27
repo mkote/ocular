@@ -1,7 +1,8 @@
 from sklearn.base import TransformerMixin
-from d606.preprocessing.oacl import estimate_theta, estimate_theta_multiproc, clean_signal, clean_signal_multiproc
+from preprocessing.oacl import estimate_theta, clean_signal, clean_signal_multiproc, special_purpose_estimator
 from multiprocessing import Queue, Process
-from numpy import average, array, median
+from numpy import array, median
+from eval.timing import timed_block
 
 
 class OACL(TransformerMixin):
@@ -15,6 +16,7 @@ class OACL(TransformerMixin):
         self.multi_run = multi_run
         self.trials = trials
         self.artifacts = []
+        self.trial_thetas = []
 
     def get_params(self):
         params = (self.ranges, self.m, self.decimal_precision, self.trials)
@@ -24,34 +26,24 @@ class OACL(TransformerMixin):
         if self.multi_run is False:
             self.theta = estimate_theta(x, self.get_params())
         else:
+            returned = []
             thetas = []
-            processes = []
+            with timed_block("Time took: "):
+                returned = special_purpose_estimator(x, self.get_params())
 
-            n_runs = len(x)
-            input_queue = Queue(n_runs)
-            output_queue = Queue(n_runs)
+            returned = sorted(returned, key=lambda theta: theta[0])
+            thetas = [[] for z in range(0, len(x))]
+            artifacts = [[] for z in range(0, len(x))]
+            if self.trials is True:
+                self.trial_thetas = thetas
+            for q in returned:
+                id, theta, artifact = q
+                run, channel = id
+                thetas[run].append(theta)
+                artifacts[run].append(artifact)
 
-            for i, z in enumerate(x):
-                input_queue.put((z, i))
-
-            for x in range(0, n_runs):
-                p = Process(target=estimate_theta_multiproc, args=(input_queue, output_queue, self.get_params()))
-                p.start()
-                processes.append(p)
-
-            for x in range(0, n_runs):
-                thetas.append(output_queue.get())
-
-            for p in processes:
-                p.join()
-
-            sort = sorted(thetas, key=lambda theta: theta[2])
-
-            self.artifacts = [x[1] for x in sort]
-            thetas = [x[0] for x in sort]
-
+            self.artifacts = artifacts
             self.theta = self.generalize_thetas(thetas)
-
         return self
 
     def transform(self, x):
@@ -59,7 +51,6 @@ class OACL(TransformerMixin):
         if self.theta is None:
             raise RuntimeError("It is not possible to transform the data," +
                                " no theta value was found")
-            return
 
         cleaned_signal = []
 
@@ -74,7 +65,7 @@ class OACL(TransformerMixin):
 
             if self.trials is True:
                 for i, z in enumerate(x):
-                    input_queue.put((z, self.artifacts[i], i))
+                    input_queue.put((z, self.trial_thetas[i], self.artifacts[i], i))
             else:
                 for i, z in enumerate(x):
                     input_queue.put((z, i))
