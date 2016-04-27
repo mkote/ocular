@@ -13,7 +13,6 @@ def remake_trial(raw_data, arg_oacl=None):
 
     if arg_oacl is None:
         m = search.grid.m if 'm' in search.grid._fields else 11
-        m = m * 2 - 1
         ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
         oacl = OACL(multi_run=True, ranges=ranges, trials=True, m=m)
     else:
@@ -39,20 +38,20 @@ def remake_trial(raw_data, arg_oacl=None):
     return result, oacl
 
 
-def remake_single_trial(raw_data):
+def remake_single_run_transform(raw_data, arg_oacl=None):
     trial = namedtuple('EEG', ['matrix', 'trials', 'labels', 'artifacts'])
-    temp_trial = []
     result = []
+    oacl = ''
 
-    oacl = OACL()
+    if arg_oacl is None:
+        oacl = OACL()
+    else:
+        oacl = arg_oacl
 
-    cleaned_signal = oacl.fit_transform(raw_data, raw_data[2])
+    cleaned_signal = oacl.transform(raw_data)
 
-    temp_trial.append(cleaned_signal)
-    temp_trial.append(raw_data[1])
-    temp_trial.append(raw_data[2])
-    temp_trial.append(raw_data[3])
-    result.append(trial(*temp_trial))
-    temp_trial = []
+    for i, raw_trial in enumerate(raw_data):
+        rest = raw_trial[1:4]
+        result.append(trial(array(cleaned_signal[i]), *rest))
 
-    return result, oacl
+    return result

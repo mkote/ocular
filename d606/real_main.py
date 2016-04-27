@@ -9,10 +9,13 @@ from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, extract_eog
 from classification.randomforrest import rfl_one_versus_all, rfl_prediction
 from preprocessing.filter import Filter
-from preprocessing.trial_remaker import remake_trial
+from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from os import listdir
 from os.path import isfile, join
 from multiprocessing import freeze_support
+from sklearn import cross_validation
+from numpy import array
+from preprocessing.oaclbase import OACL
 import os
 
 optimize_params = True
@@ -23,7 +26,7 @@ def main(*args):
     print args
     named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm'])
     search.grid = named_grid(*args)
-    runs, evals = '', ''
+    runs, evals, thetas = '', '', ''
 
     old_path = os.getcwd()
     os.chdir('..')
@@ -49,6 +52,8 @@ def main(*args):
             eog_test, runs = extract_eog(runs)
             runs, train_oacl = remake_trial(runs)
 
+            thetas = train_oacl.trial_thetas
+
             evals = load_data(8, "E")
             eog_eval, evals = extract_eog(evals)
             evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
@@ -59,12 +64,43 @@ def main(*args):
 
         with open('pickelfiles/evals' + pickel_file_name, "wb") as output:
             cPickle.dump(evals, output, cPickle.HIGHEST_PROTOCOL)
+
+        with open('pickelfiles/thetas' + pickel_file_name, 'wb') as output:
+            cPickle.dump(thetas, output, cPickle.HIGHEST_PROTOCOL)
     else:
         with open('pickelfiles/runs' + pickel_file_name, "rb") as input:
             runs = cPickle.load(input)
 
         with open('pickelfiles/evals' + pickel_file_name, "rb") as input:
             evals = cPickle.load(input)
+
+        with open('pickelfiles/thetas' + pickel_file_name, 'rb') as input:
+            thetas = cPickle.load(input)
+
+    run_choice = range(3, 9)
+
+    sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
+
+    for train_index, test_index in sh:
+        train = array(runs)[array(run_choice)[(sorted(train_index))]]
+        test = load_data(8, "T")
+        eog_test, test = extract_eog(test)
+        test = array(test)[array(run_choice)[test_index]]
+
+        m = search.grid.m if 'm' in search.grid._fields else 11
+        ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
+        oacl = OACL(ranges=ranges, m=m, multi_run=True)
+        oacl.theta = oacl.generalize_thetas(array(thetas)[train_index])
+        test = remake_single_run_transform(test, oacl)
+
+        filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
+        filters = Filter(filt)
+
+        train_bands, train_combined_labels = restructure_data(train, filters)
+        test_bands, test_combined_labels = restructure_data(test, filters)
+        print "Done so far"
+
+
     os.chdir(old_path)
 
     with timed_block('All Time'):
