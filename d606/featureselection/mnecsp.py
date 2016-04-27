@@ -7,7 +7,8 @@ import preprocessing.searchgrid as search
 def run_csp(run_data, label, n_comp):
     # transform data
     matrix, trials, labels = run_data
-    d3_data = d3_matrix_creator(matrix)
+    num_trials = len(labels)
+    d3_data = d3_matrix_creator(matrix, num_trials)
 
     # create data info object for rawArray
     # ch_names = ['eog' + str(x) for x in range(1, 4)]

@@ -6,7 +6,7 @@ from eval.score import scoring
 from eval.timing import timed_block
 from eval.voting import csp_voting
 from featureselection.mnecsp import csp_one_vs_all
-from preprocessing.dataextractor import load_data, restructure_data, extract_eog
+from preprocessing.dataextractor import load_data, restructure_data, extract_eog, d3_matrix_creator
 from classification.randomforrest import rfl_one_versus_all, rfl_prediction
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
@@ -15,6 +15,7 @@ from os.path import isfile, join
 from multiprocessing import freeze_support
 from sklearn import cross_validation
 from numpy import array
+from skfeature.function.information_theoretical_based.MIFS import mifs
 from preprocessing.oaclbase import OACL
 import os
 
@@ -82,6 +83,8 @@ def main(*args):
     sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
 
     for train_index, test_index in sh:
+        csp_list = []
+
         train = array(runs)[array(run_choice)[(sorted(train_index))]]
         test = load_data(8, "T")
         eog_test, test = extract_eog(test)
@@ -96,8 +99,27 @@ def main(*args):
         filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
         filters = Filter(filt)
 
+        n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
+
         train_bands, train_combined_labels = restructure_data(train, filters)
         test_bands, test_combined_labels = restructure_data(test, filters)
+
+        for band in train_bands:
+            csp_list.append(csp_one_vs_all(band, 4, n_comps=n_comp))
+
+        feature_list = []
+        temp = []
+        for band, csp in zip(test_bands, csp_list):
+            d3_matrix = d3_matrix_creator(band[0], len(band[1]))
+            for single_csp in csp:
+                temp.append(single_csp.transform(d3_matrix))
+            feature_list.append(temp)
+            temp = []
+
+        sample_list = zip(*feature_list)
+
+        # Use MIFS
+
         print "Done so far"
 
 
@@ -116,8 +138,7 @@ def main(*args):
         test_bands, test_combined_labels = restructure_data(evals, filters)
 
         # CSP one VS all, give csp_one_cs_all num_different labels as input
-        for band in train_bands:
-            csp_list.append(csp_one_vs_all(band, 4))
+
 
         # Create a svm for each csp and band
         for csp, band in zip(csp_list, train_bands):

@@ -134,8 +134,16 @@ d606/trace.csv
 d606/chooser*
 d606/jobs/*
 d606/results.txt
+*.vscode
 *.txt
 d606/braninpy/chooser.GPEIOptChooser_hyperparameters.txt
 *.dump
 *.dat
 d606/braninpy/chooser.GPEIOptChooser.pkl
+
+*.aux
+*.fbd_latexmk
+*.fls
+*.log
+*.pdf
+*.gz
