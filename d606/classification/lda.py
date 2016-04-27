@@ -1,7 +1,7 @@
 from math import floor
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as Lda
-from d606.preprocessing.dataextractor import load_data
+from preprocessing.dataextractor import load_data
 
 '''NUM_COMPONENTS = 2                              # Why 2?!
 
