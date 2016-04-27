@@ -87,13 +87,12 @@ def extract_trials_two(matrix, trials):
     return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
 
 
-def d3_matrix_creator(matrix):
+def d3_matrix_creator(matrix, num_trials):
     """
     :param matrix: 2d matrix
     :return: 3d matrix with epochs as first index
     """
     slice_list = []
-    num_trials = 288
     for x in range(num_trials):
         slice_list.append(matrix[:, x*TRIAL_LENGTH:(x+1)*TRIAL_LENGTH])
 
