@@ -141,6 +141,7 @@ d606/braninpy/chooser.GPEIOptChooser_hyperparameters.txt
 *.dat
 d606/braninpy/chooser.GPEIOptChooser.pkl
 
+### texstudio files
 *.aux
 *.fbd_latexmk
 *.fls
