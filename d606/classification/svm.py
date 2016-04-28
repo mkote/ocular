@@ -1,7 +1,7 @@
 from sklearn.svm import SVC
 from preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
 import preprocessing.searchgrid as search
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import StandardScaler
 from numpy import array
 
 
@@ -10,7 +10,7 @@ def train_svc(csp, data, labels, kernel="linear", c=1):
 
     y = labels
     x = csp.transform(data)
-    x = normalize(x)
+    x = StandardScaler(x)
 
     # fit classifier
     svc.fit(x, y)
