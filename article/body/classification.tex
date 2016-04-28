@@ -1,1 +1,14 @@
-\subsection{Motor Imagery Classification}
+\subsection{Classification}
+With the feature vector $\mathbf{X}$ extracted by the multi-class CSP algorithm, we can now train a classifier for multi-class motor imagery.
+
+Several algorithms have seen popularity for classifying EEG data. The survey by \citet{chan2015systematic} on the performance of ensemble methods in EEG context argues that Random Forrests more accurately classifies EEG data than other well-known methods such as k nearest neighbors and Support Vector Machines. \citet{sun2007experimental} also surveys the effectiveness of ensemble methods, but argues that the results are subject to the choice of base classifier as weak learners.
+
+To evaluate the results we train SVM and Random Forrest classifiers to see if there are any significant difference by these algorithms. We use the classification/standardization/scaling algorithms from the Scikit-Learn library for Python \citep{sklearn}.  
+
+\subsubsection{Support Vector Machine}
+The Support Vector Machine classification algorithm 
+
+For the SVM we perform Bayesian optimization with respect to the regularization parameter $C$ and choice of kernel as well as the $y$ parameter in the case of RBF kernel. Since SVMs are not scale invariant, we scale and standardize the feature vector $\mathbb{X}$ before training, such that the model is not dominated by a few features.
+
+\subsubsection{Random Forrest}
+For training the Random Forrest classifier, we perform Bayesian optimization on the number of weak learners used.
