@@ -11,6 +11,7 @@ from classification.randomforrest import rfl_one_versus_all, rfl_prediction
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from os import listdir
+from random import shuffle
 from itertools import chain
 from os.path import isfile, join
 from multiprocessing import freeze_support
@@ -117,12 +118,15 @@ def main(*args):
             feature_list.append(temp)
             temp = []
 
+        ran = [list(chain(*x)) for x in zip(*list(chain(*feature_list)))]
+        # y = array([test_combined_labels[0], test_combined_labels[1]])
+        f = mifs(array(ran), array(test_combined_labels), n_selected_features=4)
+        F = ran[:, f[0:4]]
+
         f = []
         for i, x in enumerate(zip(*list(chain(*feature_list)))):
-            y = array([float(test_combined_labels[i]) for z in range(len(x))])
-            t = []
-            t.append(array(x))
-            f.append(mifs(array(t), test_combined_labels[i], kwargs={'n_selected_features': 4}))
+            y = array([test_combined_labels[i]] * len(x))
+            f.append(mifs(array(x), y, n_selected_features = 4))
 
 
         # Use MIFS
