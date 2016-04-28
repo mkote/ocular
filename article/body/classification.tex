@@ -3,12 +3,14 @@ With the feature vector $\mathbf{X}$ extracted by the multi-class CSP algorithm,
 
 Several algorithms have seen popularity for classifying EEG data. The survey by \citet{chan2015systematic} on the performance of ensemble methods in EEG context argues that Random Forrests more accurately classifies EEG data than other well-known methods such as k nearest neighbors and Support Vector Machines. \citet{sun2007experimental} also surveys the effectiveness of ensemble methods, but argues that the results are subject to the choice of base classifier as weak learners.
 
-To evaluate the results we train SVM and Random Forrest classifiers to see if there are any significant difference by these algorithms. We use the classification/standardization/scaling algorithms from the Scikit-Learn library for Python \citep{sklearn}.  
+To evaluate the results we train SVM and Random Forrest classifiers to see if there are any significant difference by these algorithms. We use the classification/standardization/scaling algorithms from the Scikit-Learn library for Python [\cite{scikit-learn}].  
 
 \subsubsection{Support Vector Machine}
-The Support Vector Machine classification algorithm 
+The Support Vector Machine classification is a supervised machine learning algorithm that works by finding a hyperplane that discriminates samples but also maximizes the margin between the different classes. In the case of multi-class classification, we use a "one-vs-rest" approach where we for 4 classes construct 4 binary classifiers that classifies one class against all others. This scheme is aggregated into the final decision function for classifying future trials.
 
-For the SVM we perform Bayesian optimization with respect to the regularization parameter $C$ and choice of kernel as well as the $y$ parameter in the case of RBF kernel. Since SVMs are not scale invariant, we scale and standardize the feature vector $\mathbb{X}$ before training, such that the model is not dominated by a few features.
+For the SVM we perform Bayesian optimization with respect to the regularization parameter $C$ and choice of kernel as well as the $y$ parameter in the case of RBF kernel. Since SVMs are not scale invariant, we scale and standardize the feature vector $\mathbf{X}$ before training, such that the model is not dominated by a few features.
 
 \subsubsection{Random Forrest}
+The Random Forrest learning algorithm works by randomly splitting the training set into $n$ subsets and trains $n$ \emph{weak learners} (such as Decision Trees) on one training subset each. When classifying new samples, the Random Forrest classifies on each weak learner and returns the mode result. Intuitively, the weak learners 'vote' on the result.
+
 For training the Random Forrest classifier, we perform Bayesian optimization on the number of weak learners used.

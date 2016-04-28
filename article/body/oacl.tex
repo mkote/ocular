@@ -1,19 +1,26 @@
 \subsection{Ocular Artifact Correction}
 We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
 
-Let $x = \{s_0, ...,s_n\}$ where $s_i \in \mathbb{R}_{\geq 0}$ denote the raw EEG signal for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
+Let $x = \{s_0, ...,s_n\}$ where $s_t \in \mathbb{R}_{\geq 0}$ denote the raw EEG data for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
 
 From $x(t)$ we perform all steps in artifact detection and removal.
 
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
 \subsubsection{Artifact Detection}
-The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$:
+The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$. A moving average filter at time t, is computed as the average of $\frac{m}{2}$ samples on either side of the tth sample:
 \begin{equation}
 \label{eq:movavg}
-\textbf{moving avg equation/pseudocode}
+s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
 \end{equation}
-where $m$ is the number of neighboring points, and $n$ denotes the number of EEG samples in $x(t)$. From $s(t)$ we calculate the relative heights between samples as the maximal difference in amplitude between a sample and its neighboring samples.
+where $m$ is the number of neighboring points used. Then, we obtain the moving average as:
+\begin{equation}
+\label{eq:setmovavg}
+S = \{s(t) | \forall t s.t. \frac{m}{2} \leq t \leq n-\frac{m}{2} \}
+\end{equation}
+where $m$ is the number of neighboring points, and $n$ denotes the number of EEG samples in $x(t)$. The contstraints for $t$ ensures that enough samples are avilable on either side of a given $t$. 
+
+From $S$ we calculate the relative heights between samples as the maximal difference in amplitude between a sample and its neighboring samples.
 \begin{equation}
 \label{eq:relheights}
 \Delta (t) = max(|x(t)-x(t-1)|,|x(t+1) - x(t)|)

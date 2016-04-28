@@ -1,2 +1,18 @@
-\subsection{Filter-bank CSP}
-Filter-bank common spatial patterns \(FBCSP\), is commonly known as a valid way of extracting relevant features from EEG data \todo{indsæt kilder}. The drawback of this method, is the limitation of CSP being a binary  
+\subsection{Filter-bank MC CSP}
+Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. 
+
+
+CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. It does so by calculating the covariance matrices for the signals, and applying the generalized eigenvalue decomposition on these, from where the spatial filters are found as the eigenvalues and eigenvectors.
+
+The method assumes there are classification information hidden within the variance between signals. Assuming the classification is on \cite{blankertz2008optimizing}
+
+which maps signals into a new space, where signal classes are more discriminative.  features from EEG data \todo{indsæt kilder}. The method is shown in \todo{indsæt tikz billede}.  The drawback of this method, is the limitation of the standard CSP as 
+
+
+%\begin{tikzpicture}
+%\draw [black] (0,0) rectangle (1.5,1);
+%\foreach \i in {1,...,4}
+%{ 
+%	\draw (0,0) -- (0,\i * 0.2);
+%}
+%\end{tikzpicture}
