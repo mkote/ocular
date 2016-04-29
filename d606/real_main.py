@@ -5,6 +5,7 @@ from classification.svm import csv_one_versus_all, svm_prediction
 from eval.score import scoring
 from eval.timing import timed_block
 from eval.voting import csp_voting
+from featureselection import mifs
 from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, extract_eog, d3_matrix_creator
 from classification.randomforrest import rfl_one_versus_all, rfl_prediction
@@ -17,9 +18,9 @@ from os.path import isfile, join
 from multiprocessing import freeze_support
 from sklearn import cross_validation
 from numpy import array
-from skfeature.function.information_theoretical_based.MIFS import mifs
 from preprocessing.oaclbase import OACL
 import os
+import numpy as np
 
 optimize_params = True
 
@@ -122,7 +123,12 @@ def main(*args):
         for x in zip(*feature_list):
             combi_csp_class_features.append([list(chain(*z)) for z in zip(*x)])
 
-        f = mifs(array(combi_csp_class_features[0]), array(test_combined_labels), n_selected_features=4)
+        # TODO: figure out which method should be used
+        MIFS = mifs.MutualInformationFeatureSelector(method="JMI", verbose=2, categorical=True, n_features=4)
+        MIFS.fit(combi_csp_class_features[0], test_combined_labels)
+
+
+        #f = mifs(array(combi_csp_class_features[0]), array(test_combined_labels), n_selected_features=4)
 
 
         print "Done so far"
@@ -175,3 +181,28 @@ def main(*args):
 if __name__ == '__main__':
     freeze_support()
     main(2, 0.1, 'rbf', [[4, 8], [8, 12], [12, 16], [16, 20], [20, 30]], ((3, 7), (7, 15)), 11)
+
+
+def check_selection(selected, i, r):
+    """
+    Check FN, FP, TP ratios among the selected features.
+    """
+    # reorder selected features
+    try:
+        selected = set(selected)
+        all_f = set(range(i+r))
+        TP = len(selected.intersection(all_f))
+        FP = len(selected - all_f)
+        FN =  len(all_f - selected)
+        if (TP+FN) > 0:
+            sens = TP/float(TP + FN)
+        else:
+            sens = np.nan
+        if (TP+FP) > 0:
+            prec =  TP/float(TP + FP)
+        else:
+            prec = np.nan
+    except:
+        sens = np.nan
+        prec = np.nan
+    return sens, prec
