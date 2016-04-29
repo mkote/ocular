@@ -118,18 +118,12 @@ def main(*args):
             feature_list.append(temp)
             temp = []
 
-        ran = [list(chain(*x)) for x in zip(*list(chain(*feature_list)))]
-        # y = array([test_combined_labels[0], test_combined_labels[1]])
-        f = mifs(array(ran), array(test_combined_labels), n_selected_features=4)
-        F = ran[:, f[0:4]]
+        combi_csp_class_features = []
+        for x in zip(*feature_list):
+            combi_csp_class_features.append([list(chain(*z)) for z in zip(*x)])
 
-        f = []
-        for i, x in enumerate(zip(*list(chain(*feature_list)))):
-            y = array([test_combined_labels[i]] * len(x))
-            f.append(mifs(array(x), y, n_selected_features = 4))
+        f = mifs(array(combi_csp_class_features[0]), array(test_combined_labels), n_selected_features=4)
 
-
-        # Use MIFS
 
         print "Done so far"
 
