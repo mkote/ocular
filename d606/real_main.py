@@ -112,7 +112,7 @@ def main(*args):
 
         feature_list = []
         temp = []
-        for band, csp in zip(test_bands, csp_list):
+        for band, csp in zip(train_bands, csp_list):
             d3_matrix = d3_matrix_creator(band[0], len(band[1]))
             for single_csp in csp:
                 temp.append(single_csp.transform(d3_matrix))
@@ -126,7 +126,7 @@ def main(*args):
         for j in range(len(combi_csp_class_features)):
             # TODO: figure out which method should be used
             MIFS = mifs.MutualInformationFeatureSelector(method="JMI", verbose=2, categorical=True, n_features=4)
-            MIFS.fit(combi_csp_class_features[j], array([i - 1 for i in test_combined_labels]))
+            MIFS.fit(combi_csp_class_features[j], array([0 if j == i - 1 else 1 for i in train_combined_labels]))
 
             # Include all components of each CSP where at least one of its components has been selected
             selection = MIFS.support_
@@ -138,6 +138,7 @@ def main(*args):
 
             combi_csp_class_features[j] = MIFS.transform(combi_csp_class_features[j])
 
+        
 
         print "Done so far"
 
