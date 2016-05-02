@@ -1,5 +1,9 @@
 import cPickle
 from collections import namedtuple
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+
 import preprocessing.searchgrid as search
 from classification.svm import csv_one_versus_all, svm_prediction
 from eval.score import scoring
@@ -93,6 +97,8 @@ def main(*args):
         eog_test, test = extract_eog(test)
         test = array(test)[array(run_choice)[test_index]]
 
+        C = search.grid.C if 'C' in search.grid._fields else 1
+        kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
         m = search.grid.m if 'm' in search.grid._fields else 11
         ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
         oacl = OACL(ranges=ranges, m=m, multi_run=True)
@@ -123,6 +129,7 @@ def main(*args):
         for x in zip(*feature_list):
             combi_csp_class_features.append(array([list(chain(*z)) for z in zip(*x)]))
 
+        mifs_list = []
         for j in range(len(combi_csp_class_features)):
             # TODO: figure out which method should be used
             MIFS = mifs.MutualInformationFeatureSelector(method="JMI", verbose=2, categorical=True, n_features=4)
@@ -137,55 +144,98 @@ def main(*args):
             MIFS.support_ = array(list(chain(*temp2)))
 
             combi_csp_class_features[j] = MIFS.transform(combi_csp_class_features[j])
+            mifs_list.append(MIFS)
 
-        
+        feature_list = []
+        temp = []
+        for band, csp in zip(test_bands, csp_list):
+            d3_matrix = d3_matrix_creator(band[0], len(band[1]))
+            for single_csp in csp:
+                temp.append(single_csp.transform(d3_matrix))
+            feature_list.append(temp)
+            temp = []
+
+        combi_csp_class_features_test = []
+        for x in zip(*feature_list):
+            combi_csp_class_features_test.append(array([list(chain(*z)) for z in zip(*x)]))
+
+        svc_list = []
+        for i in range(len(combi_csp_class_features)):
+            svc = SVC(C=C, kernel=kernel, gamma='auto', probability=True)
+            scaled = StandardScaler().fit_transform(combi_csp_class_features[i].tolist())
+            svc.fit(scaled, [0 if j - 1 == i else 1 for j in train_combined_labels])
+            svc_list.append(svc)
+
+        for i in range(len(combi_csp_class_features_test)):
+            combi_csp_class_features_test[i] = mifs_list[i].transform(combi_csp_class_features_test[i])
+
+        proba = []
+        for i in range(len(combi_csp_class_features)):
+            svc = svc_list[i]
+            scaled = StandardScaler().fit_transform(combi_csp_class_features_test[i].tolist())
+            temp_proba = []
+            for j in range(len(scaled)):
+                temp_proba.append(svc.predict_proba(scaled[j]))
+            proba.append(temp_proba)
+
+        predictions = []
+        for prob in zip(*proba):
+            prob = [p[0][0] for p in prob]
+            maxprob = max(prob)
+            idx = prob.index(maxprob)
+            predictions.append(idx + 1)
+
+        accuracy = np.mean([1 if a == b else 0 for (a, b) in zip(predictions, test_combined_labels)])
+
+        print("Accuracy: " + str(accuracy) + "%")
+
 
         print "Done so far"
 
 
-    os.chdir(old_path)
-
-    with timed_block('All Time'):
-        # for subject in [int(x) for x in range(1, 2)]:
-        csp_list = []
-        svc_list = []
-        rfl_list = []
-        filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
-        filters = Filter(filt)
-
-        train_bands, train_combined_labels = restructure_data(runs, filters)
-
-        test_bands, test_combined_labels = restructure_data(evals, filters)
-
-        # CSP one VS all, give csp_one_cs_all num_different labels as input
-
-
-        # Create a svm for each csp and band
-        for csp, band in zip(csp_list, train_bands):
-            svc_list.append(csv_one_versus_all(csp, band))
-
-        # Create a random forest tree for each csp and band
-        for csp, band in zip(csp_list, train_bands):
-            rfl_list.append(rfl_one_versus_all(csp, band))
-
-        # Predict results with svm's
-        svm_results = svm_prediction(test_bands, svc_list, csp_list)
-
-        # Predict results with svm's
-        rfl_results = rfl_prediction(test_bands, rfl_list, csp_list)
-
-        svm_voting_results = csp_voting(svm_results)
-        rfl_voting_results = csp_voting(rfl_results)
-
-        svm_score, wrong_list = scoring(svm_voting_results, test_combined_labels)
-        rfl_score, wrong_list = scoring(rfl_voting_results, test_combined_labels)
-        score = svm_score if svm_score >= rfl_score else rfl_score
-    print search.grid
-    print 'rfl results: ' + str(rfl_score)
-    print 'svm results ' + str(svm_score)
-    print '\n'
-    print 'Best score: ' + str(score)
-    return svm_score, 1200
+    # os.chdir(old_path)
+    #
+    # with timed_block('All Time'):
+    #     # for subject in [int(x) for x in range(1, 2)]:
+    #     csp_list = []
+    #     svc_list = []
+    #     rfl_list = []
+    #     filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
+    #     filters = Filter(filt)
+    #
+    #     train_bands, train_combined_labels = restructure_data(runs, filters)
+    #
+    #     test_bands, test_combined_labels = restructure_data(evals, filters)
+    #
+    #     # CSP one VS all, give csp_one_cs_all num_different labels as input
+    #
+    #
+    #     # Create a svm for each csp and band
+    #     for csp, band in zip(csp_list, train_bands):
+    #         svc_list.append(csv_one_versus_all(csp, band))
+    #
+    #     # Create a random forest tree for each csp and band
+    #     for csp, band in zip(csp_list, train_bands):
+    #         rfl_list.append(rfl_one_versus_all(csp, band))
+    #
+    #     # Predict results with svm's
+    #     svm_results = svm_prediction(test_bands, svc_list, csp_list)
+    #
+    #     # Predict results with svm's
+    #     rfl_results = rfl_prediction(test_bands, rfl_list, csp_list)
+    #
+    #     svm_voting_results = csp_voting(svm_results)
+    #     rfl_voting_results = csp_voting(rfl_results)
+    #
+    #     svm_score, wrong_list = scoring(svm_voting_results, test_combined_labels)
+    #     rfl_score, wrong_list = scoring(rfl_voting_results, test_combined_labels)
+    #     score = svm_score if svm_score >= rfl_score else rfl_score
+    # print search.grid
+    # print 'rfl results: ' + str(rfl_score)
+    # print 'svm results ' + str(svm_score)
+    # print '\n'
+    # print 'Best score: ' + str(score)
+    # return svm_score, 1200
 
 if __name__ == '__main__':
     freeze_support()
