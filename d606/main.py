@@ -9,9 +9,7 @@ from preprocessing.dataextractor import load_data, restructure_data, extract_eog
 from classification.randomforrest import rfl_one_versus_all, rfl_prediction
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
-from os import listdir
 from itertools import chain
-from os.path import isfile, join
 from multiprocessing import freeze_support
 from sklearn import cross_validation
 from numpy import array
@@ -44,6 +42,8 @@ def main(*args):
     # Generate a name for serializing of file
     filename_suffix = filehandler.generate_filename(oacl_ranges, m)
 
+    # Check whether the data is already present as serialized data
+    # If not run OACL and serialize, else load data from file
     if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
             runs = load_data(8, "T")
