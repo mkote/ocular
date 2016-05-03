@@ -4,9 +4,9 @@ from sklearn.svm import SVC
 import preprocessing.searchgrid as search
 from eval.timing import timed_block
 from featureselection import mifs
+from featureselection.mifsaux import create_mifs_list, binarize_labels
 from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, extract_eog, d3_matrix_creator
-from classification.randomforrest import rfl_one_versus_all, rfl_prediction
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
@@ -19,6 +19,23 @@ import filehandler
 import numpy as np
 
 optimize_params = True
+
+
+def create_feature_vector_list(bands, csp_list):
+    feature_list = []
+    temp = []
+    for band, csp in zip(bands, csp_list):
+        d3_matrix = d3_matrix_creator(band[0], len(band[1]))
+        for single_csp in csp:
+            temp.append(single_csp.transform(d3_matrix))
+        feature_list.append(temp)
+        temp = []
+
+    feature_vector_list = []
+    for x in zip(*feature_list):
+        feature_vector_list.append(array([list(chain(*z)) for z in zip(*x)]))
+
+    return feature_vector_list
 
 
 def main(*args):
@@ -71,8 +88,6 @@ def main(*args):
 
     accuracies = []
     for train_index, test_index in sh:
-        csp_list = []
-
         train = array(runs)[array(run_choice)[(sorted(train_index))]]
         test = load_data(8, "T")
         eog_test, test = extract_eog(test)
@@ -86,69 +101,45 @@ def main(*args):
         filters = Filter(filt)
 
 
-        train_bands, train_combined_labels = restructure_data(train, filters)
-        test_bands, test_combined_labels = restructure_data(test, filters)
+        train_bands, train_labels = restructure_data(train, filters)
+        test_bands, test_labels = restructure_data(test, filters)
 
+        csp_list = []
         for band in train_bands:
             csp_list.append(csp_one_vs_all(band, 4, n_comps=n_comp))
 
-        feature_list = []
-        temp = []
-        for band, csp in zip(train_bands, csp_list):
-            d3_matrix = d3_matrix_creator(band[0], len(band[1]))
-            for single_csp in csp:
-                temp.append(single_csp.transform(d3_matrix))
-            feature_list.append(temp)
-            temp = []
+        train_features = create_feature_vector_list(train_bands, csp_list)
+        test_features = create_feature_vector_list(test_bands, csp_list)
 
-        combi_csp_class_features = []
-        for x in zip(*feature_list):
-            combi_csp_class_features.append(array([list(chain(*z)) for z in zip(*x)]))
+        selector = mifs.MutualInformationFeatureSelector(method="JMI",
+                                                         verbose=2,
+                                                         categorical=True,
+                                                         n_features=4)
 
-        mifs_list = []
-        for j in range(len(combi_csp_class_features)):
-            # TODO: figure out which method should be used
-            MIFS = mifs.MutualInformationFeatureSelector(method="JMI", verbose=2, categorical=True, n_features=4)
-            MIFS.fit(combi_csp_class_features[j], array([0 if j == i - 1 else 1 for i in train_combined_labels]))
+        mifs_list = create_mifs_list(selector,
+                                     train_features,
+                                     len(filt),
+                                     n_comp,
+                                     train_labels)
 
-            # Include all components of each CSP where at least one of its components has been selected
-            selection = MIFS.support_
-            b = len(filt)
-            m = n_comp
-            temp = [selection[i:i+m] for i in range(0, m*b, m)]
-            temp2 = [[True] * m if True in temp[i] else [False] * m for i in range(b)]
-            MIFS.support_ = array(list(chain(*temp2)))
+        train_features = [mifs_list[i].transform(train_features[i])
+                          for i in range(len(mifs_list))]
+        test_features = [mifs_list[i].transform(test_features[i])
+                         for i in range(len(mifs_list))]
 
-            combi_csp_class_features[j] = MIFS.transform(combi_csp_class_features[j])
-            mifs_list.append(MIFS)
-
-        feature_list = []
-        temp = []
-        for band, csp in zip(test_bands, csp_list):
-            d3_matrix = d3_matrix_creator(band[0], len(band[1]))
-            for single_csp in csp:
-                temp.append(single_csp.transform(d3_matrix))
-            feature_list.append(temp)
-            temp = []
-
-        combi_csp_class_features_test = []
-        for x in zip(*feature_list):
-            combi_csp_class_features_test.append(array([list(chain(*z)) for z in zip(*x)]))
 
         svc_list = []
-        for i in range(len(combi_csp_class_features)):
+        for i in range(len(train_features)):
             svc = SVC(C=C, kernel=kernel, gamma='auto', probability=True)
-            scaled = StandardScaler().fit_transform(combi_csp_class_features[i].tolist())
-            svc.fit(scaled, [0 if j - 1 == i else 1 for j in train_combined_labels])
+            scaled = StandardScaler().fit_transform(train_features[i].tolist())
+            svc.fit(scaled, binarize_labels(train_labels, i))
             svc_list.append(svc)
 
-        for i in range(len(combi_csp_class_features_test)):
-            combi_csp_class_features_test[i] = mifs_list[i].transform(combi_csp_class_features_test[i])
 
         proba = []
-        for i in range(len(combi_csp_class_features)):
+        for i in range(len(train_features)):
             svc = svc_list[i]
-            scaled = StandardScaler().fit_transform(combi_csp_class_features_test[i].tolist())
+            scaled = StandardScaler().fit_transform(test_features[i].tolist())
             temp_proba = []
             for j in range(len(scaled)):
                 temp_proba.append(svc.predict_proba(scaled[j]))
@@ -161,7 +152,7 @@ def main(*args):
             idx = prob.index(maxprob)
             predictions.append(idx + 1)
 
-        accuracy = np.mean([1 if a == b else 0 for (a, b) in zip(predictions, test_combined_labels)])
+        accuracy = np.mean([1 if a == b else 0 for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy) + "%")
 
         accuracies.append(accuracy)
