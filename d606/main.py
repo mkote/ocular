@@ -1,4 +1,3 @@
-import cPickle
 from collections import namedtuple
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -34,11 +33,18 @@ def main(*args):
     old_path = os.getcwd()
     os.chdir('..')
 
+    # Load args from search-grid
     oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
     m = search.grid.m if 'm' in search.grid._fields else 11
+    C = search.grid.C if 'C' in search.grid._fields else 1
+    kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
+    filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
+    n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
+
+    # Generate a name for serializing of file
     filename_suffix = filehandler.generate_filename(oacl_ranges, m)
 
-    if filehandler.file_is_present('runs' + filename_suffix):
+    if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
             runs = load_data(8, "T")
             eog_test, runs = extract_eog(runs)
@@ -63,8 +69,6 @@ def main(*args):
 
     sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
 
-    thetas = []
-
     accuracies = []
     for train_index, test_index in sh:
         csp_list = []
@@ -74,19 +78,13 @@ def main(*args):
         eog_test, test = extract_eog(test)
         test = array(test)[array(run_choice)[test_index]]
 
-        C = search.grid.C if 'C' in search.grid._fields else 1
-        kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
-        m = search.grid.m if 'm' in search.grid._fields else 11
-        ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
-        oacl = OACL(ranges=ranges, m=m, multi_run=True)
+        oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
         oacl.theta = oacl.generalize_thetas(array(thetas)[train_index])
 
         test = remake_single_run_transform(test, oacl)
 
-        filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
         filters = Filter(filt)
 
-        n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
 
         train_bands, train_combined_labels = restructure_data(train, filters)
         test_bands, test_combined_labels = restructure_data(test, filters)

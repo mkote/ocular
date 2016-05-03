@@ -27,7 +27,7 @@ def load_data(filename):
 
 def file_is_present(filename):
     files_in_directory = filter(os.path.isfile, os.listdir(directory))
-    return 1 if filename in files_in_directory else 0
+    return True if filename in files_in_directory else False
 
 
 def check_if_cleanups_needed():
