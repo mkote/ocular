@@ -1,6 +1,6 @@
 import ast
 import os
-import real_main
+import main
 from eval.timing import timed_block
 
 
@@ -12,7 +12,7 @@ def branin(n_comp, c, kernel, band_list, oacl_ranges, m):
         os.chdir('../../../d606')
 
     with timed_block('Iteration '):
-        result = real_main.main(n_comp, c, kernel, band_list, oacl_ranges, m)
+        result = main.main(n_comp, c, kernel, band_list, oacl_ranges, m)
 
     os.chdir(old_path)
 
