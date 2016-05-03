@@ -152,7 +152,7 @@ def main(*args):
             idx = prob.index(maxprob)
             predictions.append(idx + 1)
 
-        accuracy = np.mean([1 if a == b else 0 for (a, b) in zip(predictions, test_labels)])
+        accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy) + "%")
 
         accuracies.append(accuracy)
