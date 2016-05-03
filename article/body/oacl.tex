@@ -2,7 +2,7 @@
 We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
 
 Let $x = \{s_0, ...,s_n\}$ where $s_t \in \mathbb{R}_{\geq 0}$ denote the raw EEG data for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
-
+\input{./figures/relheights.tex}
 From $x(t)$ we perform all steps in artifact detection and removal.
 
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
@@ -13,19 +13,15 @@ The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
 \end{equation}
-where $m$ is the number of neighboring points used. Then, we obtain the moving average as:
-\begin{equation}
-\label{eq:setmovavg}
-S = \{s(t) | \forall t s.t. \frac{m}{2} \leq t \leq n-\frac{m}{2} \}
-\end{equation}
-where $m$ is the number of neighboring points, and $n$ denotes the number of EEG samples in $x(t)$. The contstraints for $t$ ensures that enough samples are avilable on either side of a given $t$. 
+where $m$ is the number of neighboring points used.
 
-From $S$ we calculate the relative heights between samples as the maximal difference in amplitude between a sample and its neighboring samples.
+From the smoothed signal $s(t)$ OACL finds the changes in amplitude between the samples, which could indicate eye movement. Therefore, we proceed by computing the relative heights between samples as the maximal difference in amplitude between a sample at time $t$ and its neighboring samples.
 \begin{equation}
 \label{eq:relheights}
 \Delta (t) = max(|x(t)-x(t-1)|,|x(t+1) - x(t)|)
 \end{equation}
-Now, we want to have some measure of what an artifact signal looks like. [OACL] found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta A$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. For now, assume that we have some arbitrary ranges
+Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta A$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization.
+For now, assume that we have some arbitrary ranges
 \begin{equation}
 \label{eq:ranges}
 h_r=[l, u] \quad  l,u \in \mathbb{N}_{\geq 0}
@@ -34,6 +30,8 @@ then we can find the points in time where $\Delta (t)$  lies in the range $h_r$:
 \begin{equation}
 \label{eq:peaks}
 P = \{t \quad | \quad \frac{m}{2} < t < n-\frac{m}{2} \quad \textnormal{and} \quad l < \Delta (t) < u\}
+where 
 \end{equation}
+ $P$ is the indexes of the samples of the smoothed signal, where a change in amplitude lies within the range that characterizes an ocular artifact.
 \subsubsection{Artifact Removal}
 Explain how we use the artifact signals to remove artifacts from the eeg signal.

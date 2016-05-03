@@ -1,2 +1,2 @@
 \section{Optimization of parameters for Ocular Artifact Correction}
-short overview, maybe show a figure describing the pipeline.
+Ocular artifacts such as eye movements or blinking are often present in EEG data, and is the cause for significant decrease in classification accuracy. The reason for this, is that the amplitude of a signal changes when eye movements happen and can introduce uncertainty about the events we are interested in classifying, such as motor imagery. In order to reduce the impact of these ocular artifacts, we use the OACL technique proposed by \citet{li2015ocular} and generalize it to handle multi-class EEG data.

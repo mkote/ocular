@@ -6,6 +6,7 @@ from scipy.optimize import basinhopping
 from scipy.optimize._basinhopping import Metropolis
 from dataextractor import extract_trials_single_channel
 from numpy import exp, array, cov, mean, inf, mat, copy, seterr, shape, frombuffer
+from scipy.io import loadmat
 from numpy.random import rand, uniform
 from multiprocessing import Pool, Array, cpu_count
 from ctypes import c_float, c_int
@@ -398,3 +399,18 @@ def estimate_theta(data, params):
         print str(i)
         run_thetas.append(get_theta(channel, trials, labels, range_list, m))
     return run_thetas
+import dataextractor as de
+import matplotlib2tikz
+data = de.load_data(3, "T")
+trial = data[3][0][7]
+s = moving_avg_filter(trial, 5)
+s = s[2700:4500]
+series = s[0:200]
+import matplotlib.pyplot as plt
+plt.plot(series, 'b^-')
+plt.axis()
+plt.xlabel("time (t)")
+plt.ylabel("amplitude (s(t))")
+plt.grid(True)
+matplotlib2tikz.save('relheights.tex')
+print "hej"
