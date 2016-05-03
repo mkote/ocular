@@ -194,7 +194,7 @@ def restructure_data(runs, filters):
     return bands, combined_labels
 
 
-def extract_eog(runs):
+def separate_eog_eeg(runs):
     n_runs = []
     n_eog = []
     for run in runs:

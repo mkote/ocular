@@ -6,7 +6,7 @@ from eval.timing import timed_block
 from featureselection import mifs
 from featureselection.mifsaux import create_mifs_list, binarize_labels
 from featureselection.mnecsp import csp_one_vs_all
-from preprocessing.dataextractor import load_data, restructure_data, extract_eog, d3_matrix_creator
+from preprocessing.dataextractor import load_data, restructure_data, separate_eog_eeg, d3_matrix_creator
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
@@ -64,13 +64,13 @@ def main(*args):
     if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
             runs = load_data(8, "T")
-            eog_test, runs = extract_eog(runs)
+            eog_test, runs = separate_eog_eeg(runs)
             runs, train_oacl = remake_trial(runs)
 
             thetas = train_oacl.trial_thetas
 
             evals = load_data(8, "E")
-            eog_eval, evals = extract_eog(evals)
+            eog_eval, evals = separate_eog_eeg(evals)
             evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
         # Save data, could be a method instead
@@ -90,7 +90,7 @@ def main(*args):
     for train_index, test_index in sh:
         train = array(runs)[array(run_choice)[(sorted(train_index))]]
         test = load_data(8, "T")
-        eog_test, test = extract_eog(test)
+        _, test = separate_eog_eeg(test)
         test = array(test)[array(run_choice)[test_index]]
 
         oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
@@ -111,7 +111,7 @@ def main(*args):
         train_features = create_feature_vector_list(train_bands, csp_list)
         test_features = create_feature_vector_list(test_bands, csp_list)
 
-        selector = mifs.MutualInformationFeatureSelector(method="JMI",
+        selector = mifs.MutualInformationFeatureSelector(method="JMIM",
                                                          verbose=2,
                                                          categorical=True,
                                                          n_features=4)
