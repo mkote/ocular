@@ -5,7 +5,7 @@ Several algorithms have seen popularity for classifying EEG data. The survey by 
 
 To evaluate the results we train SVM and Random Forrest classifiers to see if there are any significant difference by these algorithms. We use the classification/standardization/scaling algorithms from the Scikit-Learn library for Python [\cite{scikit-learn}].  
 
-\subsubsection{Support Vector Machine}
+\subsubsection{Support Vector Machines}
 The Support Vector Machine classification is a supervised machine learning algorithm that works by finding a hyperplane that discriminates samples but also maximizes the margin between the different classes. In the case of multi-class classification, we use a "one-vs-rest" approach where we for 4 classes construct 4 binary classifiers that classifies one class against all others. This scheme is aggregated into the final decision function for classifying future trials.
 
 For the SVM we perform Bayesian optimization with respect to the regularization parameter $C$ and choice of kernel as well as the $y$ parameter in the case of RBF kernel. Since SVMs are not scale invariant, we scale and standardize the feature vector $\mathbf{X}$ before training, such that the model is not dominated by a few features.

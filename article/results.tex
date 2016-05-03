@@ -1,6 +1,8 @@
 \section{Experimental Results}
+In order to evaluate the Bayesian Optimized Ocular Artifact Correction, we train and test the technique on the BCI Competition dataset IV 2a of 4-Class motor imagery EEG data.
+The dataset consist of a labeled training and test-set. The training set consists of EEG measurements of 9 subjects. The 9 subjects participated each in 2 sessions of 6 runs. Runs consist of 48 labeled trials, divided between each of the 4 classes, which yields 12 trials for each label. Each trial measured the EEG signals of a subject on 22 EEG channels and 3 EOG channels. 
 
-\subsection{Data Examination}
+We discarded the EOG channels since we are interested in correcting artifacts only with EEG data. 
 
 \subsection{Discussion}
 Here we discuss the results given in section 3, and talk more about what the results imply/how it could be improved.

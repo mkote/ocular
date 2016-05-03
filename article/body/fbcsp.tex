@@ -1,12 +1,13 @@
 \subsection{Filter-bank MC CSP}
 Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. 
 
-
 CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. It does so by calculating the covariance matrices for the signals, and applying the generalized eigenvalue decomposition on these, from where the spatial filters are found as the eigenvalues and eigenvectors.
 
-The method assumes there are classification information hidden within the variance between signals. Assuming the classification is on \cite{blankertz2008optimizing}
+The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in our data, the assumption can be justified \cite{blankertz2008optimizing}. \todo{Måske vis en gaussian distribution fittet til en trial, samt beskrivelse af denne forudsætning for CSP - Emil}.
 
-which maps signals into a new space, where signal classes are more discriminative.  features from EEG data \todo{indsæt kilder}. The method is shown in \todo{indsæt tikz billede}.  The drawback of this method, is the limitation of the standard CSP as 
+One problem regarding CSP is multi class (MC) classification. The standard algorithm only calculates spatial filters based on two classes, whereas     
+
+which maps signals into a new space, where signal classes are more discriminative.  features from EEG data \todo{indsæt kilder}. The method is shown in \todo{indsæt tikz billede - Emil}.  The drawback of this method, is the limitation of the standard CSP as 
 
 
 %\begin{tikzpicture}
