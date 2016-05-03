@@ -6,7 +6,7 @@
 import os, sys
 import subprocess
 from time import sleep
-from real_main import main
+from main import main
 from multiprocessing import freeze_support
 
 kernel_sample = ['linear', 'rbf', 'poly']
