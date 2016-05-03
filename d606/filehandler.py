@@ -1,7 +1,7 @@
 import cPickle
 import os
 
-directory = 'picklefiles'
+directory = "picklefiles"
 
 
 def save_data(runs, filename):
@@ -20,13 +20,14 @@ def save_data(runs, filename):
 
 
 def load_data(filename):
-    with open(directory + "/" + filename, 'rb') as input:
+    with open(filename, 'rb') as input:
         runs = cPickle.load(input)
     return runs
 
 
 def file_is_present(filename):
-    files_in_directory = filter(os.path.isfile, os.listdir(directory))
+    os.chdir(directory)
+    files_in_directory = filter(os.path.isfile, os.listdir(os.getcwd()))
     return True if filename in files_in_directory else False
 
 
