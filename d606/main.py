@@ -1,14 +1,9 @@
 import cPickle
 from collections import namedtuple
-
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-
 import preprocessing.searchgrid as search
-from classification.svm import csv_one_versus_all, svm_prediction
-from eval.score import scoring
 from eval.timing import timed_block
-from eval.voting import csp_voting
 from featureselection import mifs
 from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, extract_eog, d3_matrix_creator
@@ -16,7 +11,6 @@ from classification.randomforrest import rfl_one_versus_all, rfl_prediction
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from os import listdir
-from random import shuffle
 from itertools import chain
 from os.path import isfile, join
 from multiprocessing import freeze_support
@@ -24,6 +18,7 @@ from sklearn import cross_validation
 from numpy import array
 from preprocessing.oaclbase import OACL
 import os
+import filehandler
 import numpy as np
 
 optimize_params = True
@@ -39,22 +34,11 @@ def main(*args):
     old_path = os.getcwd()
     os.chdir('..')
 
-    oacl_ranges = search.grid.oacl_ranges
-    pickel_file_name = str(oacl_ranges[0][0]) + str(oacl_ranges[0][1]) + str(oacl_ranges[1][0])
-    pickel_file_name += str(oacl_ranges[1][1]) + str(search.grid.m) + '.dump'
-    if not os.path.isdir('pickelfiles'):
-        os.mkdir('pickelfiles')
-    onlyfiles = [f for f in listdir('pickelfiles') if isfile(join('pickelfiles', f))]
-    if len(onlyfiles) >= 100:
-        file_to_delete1 = onlyfiles[0].replace('evals', '')
-        file_to_delete1 = file_to_delete1.replace('runs', '')
-        file_to_delete2 = 'runs' + file_to_delete1
-        file_to_delete1 = 'evals' + file_to_delete1
-        os.remove('pickelfiles/' + file_to_delete1)
-        os.remove('pickelfiles/' + file_to_delete2)
-        onlyfiles.remove(file_to_delete1)
-        onlyfiles.remove(file_to_delete2)
-    if 'runs' + pickel_file_name not in onlyfiles:
+    oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
+    m = search.grid.m if 'm' in search.grid._fields else 11
+    filename_suffix = filehandler.generate_filename(oacl_ranges, m)
+
+    if filehandler.file_is_present('runs' + filename_suffix):
         with timed_block('Iteration '):
             runs = load_data(8, "T")
             eog_test, runs = extract_eog(runs)
@@ -67,23 +51,13 @@ def main(*args):
             evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
 
         # Save data, could be a method instead
-        with open('pickelfiles/runs' + pickel_file_name, "wb") as output:
-            cPickle.dump(runs, output, cPickle.HIGHEST_PROTOCOL)
-
-        with open('pickelfiles/evals' + pickel_file_name, "wb") as output:
-            cPickle.dump(evals, output, cPickle.HIGHEST_PROTOCOL)
-
-        with open('pickelfiles/thetas' + pickel_file_name, 'wb') as output:
-            cPickle.dump(thetas, output, cPickle.HIGHEST_PROTOCOL)
+        filehandler.save_data(runs, 'runs' + filename_suffix)
+        filehandler.save_data(evals, 'evals' + filename_suffix)
+        filehandler.save_data(thetas, 'thetas' + filename_suffix)
     else:
-        with open('pickelfiles/runs' + pickel_file_name, "rb") as input:
-            runs = cPickle.load(input)
-
-        with open('pickelfiles/evals' + pickel_file_name, "rb") as input:
-            evals = cPickle.load(input)
-
-        with open('pickelfiles/thetas' + pickel_file_name, 'rb') as input:
-            thetas = cPickle.load(input)
+        runs = filehandler.load_data('runs' + filename_suffix)
+        evals = filehandler.load_data('evals' + filename_suffix)
+        thetas = filehandler.load_data('thetas' + filename_suffix)
 
     run_choice = range(3, 9)
 
