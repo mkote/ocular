@@ -20,7 +20,7 @@ def save_data(runs, filename):
 
 
 def load_data(filename):
-    with open(filename, 'rb') as input:
+    with open(directory + '/' + filename, 'rb') as input:
         runs = cPickle.load(input)
     return runs
 
@@ -28,6 +28,7 @@ def load_data(filename):
 def file_is_present(filename):
     os.chdir(directory)
     files_in_directory = filter(os.path.isfile, os.listdir(os.getcwd()))
+    os.chdir('..')
     return True if filename in files_in_directory else False
 
 
@@ -37,8 +38,8 @@ def check_if_cleanups_needed():
 
 
 def generate_filename(oacl_ranges, m, subject):
-    return str(subject) + str(oacl_ranges[0][0]) + str(oacl_ranges[0][1]) + \
-           str(oacl_ranges[1][0]) + str(oacl_ranges[1][1]) + str(m) + '.dump'
+    return ';'.join([str(subject), str(oacl_ranges[0][0]), str(oacl_ranges[0][1]), 
+           str(oacl_ranges[1][0]), str(oacl_ranges[1][1]), str(m)]) + '.dump'
 
 
 def cleanup_directory():
