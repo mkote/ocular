@@ -154,4 +154,4 @@ def main(*args):
         accuracies.append(accuracy)
 
     os.chdir(old_path)
-    return np.mean(accuracies) * 100, time.time
+    return np.mean(accuracies) * 100, time.time()
