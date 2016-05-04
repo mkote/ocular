@@ -149,7 +149,7 @@ def main(*args):
             predictions.append(idx + 1)
 
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
-        print("Accuracy: " + str(accuracy) + "%")
+        print("Accuracy: " + str(accuracy * 100) + "%")
 
         accuracies.append(accuracy)
 
