@@ -36,9 +36,9 @@ def check_if_cleanups_needed():
     return 0 if len(files_in_directory) < 100 else 1
 
 
-def generate_filename(oacl_ranges, m):
-    return str(oacl_ranges[0][0]) + str(oacl_ranges[0][1]) + str(oacl_ranges[1][0]) + \
-           str(oacl_ranges[1][1]) + str(m) + '.dump'
+def generate_filename(oacl_ranges, m, subject):
+    return str(subject) + str(oacl_ranges[0][0]) + str(oacl_ranges[0][1]) + \
+           str(oacl_ranges[1][0]) + str(oacl_ranges[1][1]) + str(m) + '.dump'
 
 
 def cleanup_directory():
