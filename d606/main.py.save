@@ -157,5 +157,4 @@ def main(*args):
 
         accuracies.append(accuracy)
 
-    return np.mean(accuracies) * 100
-
+    return np.mean(accuracies) 

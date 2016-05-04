@@ -1,7 +1,7 @@
 import os
 import subprocess
 from time import sleep
-from real_main import main
+from main import main
 from multiprocessing import freeze_support
 
 kernel_sample = ['linear', 'rbf', 'poly']
@@ -10,7 +10,7 @@ kernel_sample = ['linear', 'rbf', 'poly']
 def optim_params():
     while True:
         old_path = os.getcwd()
-        os.chdir('../spearmintlite')
+        os.chdir('spearmintlite')
         command = 'python spearmintlite.py ../braninpy'
         subprocess.call(command, shell=True)
         sleep(2)
@@ -36,7 +36,7 @@ def optim_params():
 
 
 def get_params():
-    with open('../braninpy/results.dat', 'rb') as fh:
+    with open('braninpy/results.dat', 'rb') as fh:
         last_line = ''
         for line in fh:
             last_line = line
@@ -45,7 +45,7 @@ def get_params():
 
 
 def insert_result(result, time):
-    file = "../braninpy/results.dat"
+    file = "braninpy/results.dat"
 
     # read the file into a list of lines
     lines = open(file, 'r').readlines()
