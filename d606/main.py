@@ -1,4 +1,6 @@
 from collections import namedtuple
+
+import time
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 import preprocessing.searchgrid as search
@@ -41,11 +43,9 @@ def create_feature_vector_list(bands, csp_list):
 def main(*args):
     print 'Running with following args \n'
     print args
-    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm'])
+    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm', 'subject'])
     search.grid = named_grid(*args)
-    runs, evals, thetas = '', '', ''
 
-    old_path = os.getcwd()
     os.chdir('..')
 
     # Load args from search-grid
@@ -55,31 +55,26 @@ def main(*args):
     kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
     filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
     n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
+    subject = search.grid.subject if 'subject' in search.grid._fields else 1
 
     # Generate a name for serializing of file
-    filename_suffix = filehandler.generate_filename(oacl_ranges, m)
+    filename_suffix = filehandler.generate_filename(oacl_ranges, m, subject)
 
     # Check whether the data is already present as serialized data
     # If not run OACL and serialize, else load data from file
     if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
-            runs = load_data(8, "T")
+            runs = load_data(subject, "T")
             eog_test, runs = separate_eog_eeg(runs)
             runs, train_oacl = remake_trial(runs)
 
             thetas = train_oacl.trial_thetas
 
-            evals = load_data(8, "E")
-            eog_eval, evals = separate_eog_eeg(evals)
-            evals, test_oacl = remake_trial(evals, arg_oacl=train_oacl)
-
         # Save data, could be a method instead
         filehandler.save_data(runs, 'runs' + filename_suffix)
-        filehandler.save_data(evals, 'evals' + filename_suffix)
         filehandler.save_data(thetas, 'thetas' + filename_suffix)
     else:
         runs = filehandler.load_data('runs' + filename_suffix)
-        evals = filehandler.load_data('evals' + filename_suffix)
         thetas = filehandler.load_data('thetas' + filename_suffix)
 
     run_choice = range(3, 9)
@@ -89,7 +84,7 @@ def main(*args):
     accuracies = []
     for train_index, test_index in sh:
         train = array(runs)[array(run_choice)[(sorted(train_index))]]
-        test = load_data(8, "T")
+        test = load_data(subject, "T")
         _, test = separate_eog_eeg(test)
         test = array(test)[array(run_choice)[test_index]]
 
@@ -157,5 +152,4 @@ def main(*args):
 
         accuracies.append(accuracy)
 
-    return np.mean(accuracies) * 100
-
+    return np.mean(accuracies) * 100, time.time
