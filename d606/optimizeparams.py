@@ -21,7 +21,9 @@ def optim_params():
         n_comp = int(par[2])
         c = int(par[3])*0.01
         kernel = kernel_sample[int(par[4])]
-        band_list = [[x * 3 + x, 4 * x + 4] for x in range(1, 1 + int(par[5]))]
+        band_range = int(par[5])
+        num_bands = int(40/band_range)
+        band_list = [[4 + band_range * x, 4 + band_range + band_range * x] for x in range(0, num_bands)]
         s = int(par[6])
         r1 = int(par[7])
         r2 = int(par[8])
