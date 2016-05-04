@@ -1,19 +1,41 @@
-\subsection{Filter-bank MC CSP}
+\subsection{Filter-bank multi class CSP}
 Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. 
 
-CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. It does so by calculating the covariance matrices for the signals, and applying the generalized eigenvalue decomposition on these, from where the spatial filters are found as the eigenvalues and eigenvectors.
+CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in the test training and evaluation data, the assumption can be justified \cite{blankertz2008optimizing}.
+Formally CSP combines data trials with the same imagery task. Let $A$ and $B$ be matrices of combined trials for imagery task 1 and 2,
 
-The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in our data, the assumption can be justified \cite{blankertz2008optimizing}. \todo{Måske vis en gaussian distribution fittet til en trial, samt beskrivelse af denne forudsætning for CSP - Emil}.
+\begin{equation}
+\label{eq:csp_data}
+\pmb{A}, \pmb{B} \in \mathbb{R}^{n*m}
+\end{equation}
 
-One problem regarding CSP is multi class (MC) classification. The standard algorithm only calculates spatial filters based on two classes, whereas     
+where $n$ and $m$ are the number of signals and samples respectively. CSP now calculates the covariance matrices for $\pmb{A}$ and $\pmb{B}$,
 
-which maps signals into a new space, where signal classes are more discriminative.  features from EEG data \todo{indsæt kilder}. The method is shown in \todo{indsæt tikz billede - Emil}.  The drawback of this method, is the limitation of the standard CSP as 
+\begin{equation}
+\label{eq:covariance_matrice}
+\pmb{A_{cov}} = \frac{(\pmb{A} \cdot \overline{\pmb{A}})^\mathsf{T}  \cdot (\pmb{A} \cdot \overline{\pmb{A}})}{m - 1}
+\end{equation}
+
+where $m$ is the number of samples in $\pmb{A}$, and elements of $\overline{\pmb{A}}$ is defined as,
+
+\begin{equation}
+\label{eq:a_bar}
+\pmb{\overline{A}_{ij}} = \frac{\pmb{A_{i,1}} + \pmb{A_{i,2}} + ... + \pmb{A_{i,m}}}{m}
+\end{equation}
+
+By applying simultaneous diagonalization on $\pmb{A_{cov}}$ and $\pmb{B_{cov}}$, we form the eigenvectors $\pmb{P}$, which will be the spatial filters. $\pmb{P}$ is found when both of the following diagonalizations hold, 
+
+\begin{equation}
+\label{eq:diagonalization_A}
+\pmb{P} \cdot \pmb{A_{cov}} \cdot \pmb{P} = \pmb{D}, \quad \pmb{P}, \pmb{D}, \pmb{A_{cov}} \in \mathbb{R}^{n*n}
+\end{equation}
+
+\begin{equation}
+\label{eq:diagonalization_B}
+\pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{n*n}
+\end{equation}
+
+$\pmb{P}$ can now be applied \todo{Hvordan skal den applies? - Emil} on signals, which maps them into a new space, where signal features are more discriminative. The method is shown in \todo{indsæt tikz billede - Emil}.  The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications require a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
+We propose our solution to the CSP problem, which combines a filter-bank (FB) method, with a multi class (MC) CSP.
 
 
-%\begin{tikzpicture}
-%\draw [black] (0,0) rectangle (1.5,1);
-%\foreach \i in {1,...,4}
-%{ 
-%	\draw (0,0) -- (0,\i * 0.2);
-%}
-%\end{tikzpicture}
