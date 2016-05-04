@@ -46,6 +46,7 @@ def main(*args):
     named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm', 'subject'])
     search.grid = named_grid(*args)
 
+    old_path = os.getcwd()
     os.chdir('..')
 
     # Load args from search-grid
@@ -152,4 +153,5 @@ def main(*args):
 
         accuracies.append(accuracy)
 
+    os.chdir(old_path)
     return np.mean(accuracies) * 100, time.time
