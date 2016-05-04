@@ -32,7 +32,7 @@ def optim_params():
             r1 = int(par[7])
             r2 = int(par[8])
             space = int(par[9])
-            m = int(par[10])
+            m = int(par[10]) * 2 + 1
             oacl_ranges = ((s, s + r1), (space + s + r1 + 1, space + s + r1 + 1 + r2))
 
             result, time = main(n_comp, c, kernel, band_list, oacl_ranges, m, subject)
