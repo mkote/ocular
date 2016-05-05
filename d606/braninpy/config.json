@@ -3,7 +3,7 @@
   "name":"n_comp",
   "type":"int",
   "min":2,
-  "max":30,
+  "max":22,
   "size":1
 },
   "C" : {
