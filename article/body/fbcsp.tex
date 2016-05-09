@@ -1,4 +1,123 @@
 \subsection{Filter-bank multi class CSP}
+
+\begin {figure*}%[!hbtp]
+\centering
+\begin{adjustbox}{width=\textwidth}
+\begin{tikzpicture}
+
+% Variables
+\pgfmathsetmacro{\bs}{0.5};
+\pgfmathsetmacro{\boxl}{2};
+\pgfmathsetmacro{\boxh}{1};
+\pgfmathsetmacro{\ll}{1};
+\coordinate (blength) at (0.5, 0);
+\coordinate (linel) at (2, 0);
+\coordinate (bh) at (0, 1);
+\coordinate (bl) at (2, 0);
+\newcommand*{\fblist}{-3, 0, 3}
+\newcommand*{\csplist}{-1, 0, 1}
+\def\filterbands{{"[4 - 8]","[8 - 12],"[12 - 16]"}}
+
+% Coordinate for start circle
+\coordinate (trains) at (0, 0);
+
+% Coordinate for cross validation
+\coordinate (crosss) at ($(trains) + (blength) + (linel) + 1/2*(bl)$);
+
+% Coordinate for OACL
+\coordinate (oacls) at ($(crosss) + (bl) + (linel)$);
+
+% Coordinate for Filter Bank
+\coordinate (filters) at ($(oacls) + (bl) + (linel)$);
+
+% Coordinate for filterbank nodes
+\coordinate (filterbanks) at ($(filters) + 1/2*(bl) + (linel) + 1/2*(blength)$);
+
+% Coordinate for csp ovr nodes
+\coordinate (cspovrs) at ($(filterbanks) + 1/2*(blength) + (linel)$);
+
+% Coordinate for Feature selection nodes
+\coordinate (featureselections) at ($(cspovrs) + 1/2*(blength) + (linel)$);
+
+% Coordinate for voting box
+\coordinate (votings) at ($(featureselections) + 1/2*(blength) + (linel) + 1/2*(bl)$);
+
+% Coordinate for result node
+\coordinate (results) at ($(votings) + 1/2*(bl) + 1/2*(blength) + (linel)$);
+
+% Coordinate for mean results
+\coordinate (meanresults) at ($(results) + (blength) + (linel)$);
+
+
+% Draw training data circle
+\node [draw, circle, name=traincircle, minimum size = \bs] at (trains) {};
+
+% Draw Cross validation box
+\node (crossvalidation) at (crosss) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Crossvalidation};
+\draw [->] (traincircle) -- (crossvalidation);
+
+% Draw oacl box
+\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {OACL};
+\draw [->] (crossvalidation) -- (oacl);
+
+% Draw Filter Bank
+\node (filterbank) at (filters) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Filter Bank};
+\draw [->] (oacl) -- (filterbank);
+
+% Draw Filter Bank Nodes and CSP OVR nodes
+\foreach \x in \fblist
+	\foreach \y in \csplist{
+		\node [draw, circle, name=filterbanknode\x, minimum size = \bs] at ($(filterbanks) + (0, \x)$) {};
+		\draw [->] (filterbank) -- (filterbanknode\x);
+		\node [draw, circle, name=cspovrnode\x\y, minimum size = \bs] at ($(filterbanknode\x) + (0, \y) + (linel)$) {};
+		\draw [->] (filterbanknode\x) -- (cspovrnode\x\y);
+}
+
+% Draw filter bands
+\noindent\foreach [count=\i] \x in \fblist{
+	\draw [->] (filterbank) -- node[above] {[$4*\i$ - 8]} (filterbanknode\x);
+}
+
+
+% Draw Feature selection nodes
+\foreach \x in \fblist{
+	\node [draw, circle, name=featurenode\x, minimum size = \bs] at ($(featureselections) + (0, \x)$) {};
+			
+}
+
+% Draw feature selection arrows
+\foreach \x in \fblist{
+	\draw [->] (cspovrnode\x1) -- (featurenode3);
+}
+\foreach \x in \fblist{
+	\draw [->] (cspovrnode\x0) -- (featurenode0);
+}
+\foreach \x in \fblist{
+	\draw [->] (cspovrnode\x-1) -- (featurenode-3);
+}
+
+% Draw voting node and arrows
+\node (votingbox) at (votings) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Voting};
+\foreach \x in \fblist{
+	\draw [->] (featurenode\x) -- (votingbox);	
+}
+
+% Draw result node
+\node [draw, circle, name=result, minimum size = \bs] at (results) {};
+\draw [->] (votingbox) -- (result);
+
+% Draw mean result node
+\node [draw, circle, name=meanresult, minimum size = \bs] at (meanresults) {};
+\draw [->] (result) -- (meanresult);
+
+\draw [->] (result) to[out=290, in=280, distance=200] (crossvalidation);
+\draw [->] (meanresult) to[out=270, in=270, distance=300] (crossvalidation);
+\end{tikzpicture}
+\end{adjustbox}
+\end{figure*}
+
+\subsection{CSP}
+
 Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. 
 
 CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in the test training and evaluation data, the assumption can be justified \cite{blankertz2008optimizing}.
@@ -35,7 +154,12 @@ By applying simultaneous diagonalization on $\pmb{A_{cov}}$ and $\pmb{B_{cov}}$,
 \pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{n*n}
 \end{equation}
 
-$\pmb{P}$ can now be applied \todo{Hvordan skal den applies? - Emil} on signals, which maps them into a new space, where signal features are more discriminative. The method is shown in \todo{indsæt tikz billede - Emil}.  The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications require a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
-We propose our solution to the CSP problem, which combines a filter-bank (FB) method, with a multi class (MC) CSP.
+Our spatial filter will now correspond to the first row of $\pmb{P}$, such that the spatial filter $\vec{w} = \pmb{P}^\mathsf{T}_{1}$ 
 
+$\pmb{P}$ can now be applied \todo{Hvordan skal den applies? - Emil} on signals, which maps them into a new space, where signal features are more discriminative. The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications requires a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
+
+\subsection{Multi Class CSP}
+
+\subsection{Filter Bank}
+We propose our solution to the CSP problem, which combines a filter-bank (FB) method, with a multi class (MC) CSP. CSP expects the user to know the frequency of importance for each imagery class. These frequencies are however seldom known beforehand. Our solution to this problem, introduces a step called filter bank (FB), which splits the data into filters of different frequencies, which will all be used in the classification stage. By splitting the data, the user can ignore the CSP requirement of knowing the right frequencies.
 

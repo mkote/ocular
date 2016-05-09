@@ -1,21 +1,16 @@
 from collections import namedtuple
-
 import time
 
-from math import log
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 import preprocessing.searchgrid as search
 from eval.timing import timed_block
-from featureselection import mifs
-from featureselection.mifsaux import create_mifs_list, binarize_labels
 from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, separate_eog_eeg, d3_matrix_creator
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
-from multiprocessing import freeze_support
 from sklearn import cross_validation
+from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
 import os
@@ -39,13 +34,15 @@ def create_feature_vector_list(bands, csp_list):
     for x in zip(*feature_list):
         feature_vector_list.append(array([list(chain(*z)) for z in zip(*x)]))
 
-    return feature_vector_list
+    comb = [list(chain(*z)) for z in zip(*feature_vector_list)]
+
+    return comb
 
 
 def main(*args):
     print 'Running with following args \n'
     print args
-    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm', 'subject'])
+    named_grid = namedtuple('Grid', ['n_comp', 'n_trees', 'band_list', 'oacl_ranges', 'm', 'subject'])
     search.grid = named_grid(*args)
 
     old_path = os.getcwd()
@@ -54,8 +51,7 @@ def main(*args):
     # Load args from search-grid
     oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
     m = search.grid.m if 'm' in search.grid._fields else 11
-    C = search.grid.C if 'C' in search.grid._fields else 1
-    kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
+    n_trees = search.grid.n_trees if 'n_trees' in search.grid._fields else 20
     filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
     n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
     subject = search.grid.subject if 'subject' in search.grid._fields else 1
@@ -109,46 +105,23 @@ def main(*args):
         train_features = create_feature_vector_list(train_bands, csp_list)
         test_features = create_feature_vector_list(test_bands, csp_list)
 
-        selector = mifs.MutualInformationFeatureSelector(method="JMIM",
-                                                         verbose=2,
-                                                         categorical=True,
-                                                         n_features=4)
 
-        mifs_list = create_mifs_list(selector,
-                                     train_features,
-                                     len(filt),
-                                     n_comp,
-                                     train_labels)
+        rf = RandomForestClassifier(n_estimators=n_trees)
+        rf.fit(train_features, train_labels)
+        important_features = rf.feature_importances_
+        indices = np.argsort(important_features)[::-1]
 
-        train_features = [mifs_list[i].transform(train_features[i])
-                          for i in range(len(mifs_list))]
-        test_features = [mifs_list[i].transform(test_features[i])
-                         for i in range(len(mifs_list))]
+        bahm_magic = int((n_comp/2)*np.log2(2*len(filt)))
+        indices = indices[0:bahm_magic]
 
+        temp_train = [array(x)[indices] for x in train_features]
+        rf = RandomForestClassifier(n_estimators=bahm_magic)
+        rf.fit(temp_train, train_labels)
 
-        svc_list = []
-        for i in range(len(train_features)):
-            svc = SVC(C=C, kernel=kernel, gamma='auto', probability=True)
-            scaled = StandardScaler().fit_transform(train_features[i].tolist())
-            svc.fit(scaled, binarize_labels(train_labels, i))
-            svc_list.append(svc)
-
-
-        proba = []
-        for i in range(len(train_features)):
-            svc = svc_list[i]
-            scaled = StandardScaler().fit_transform(test_features[i].tolist())
-            temp_proba = []
-            for j in range(len(scaled)):
-                temp_proba.append(svc.predict_proba(scaled[j]))
-            proba.append(temp_proba)
-
+        temp_test = [array(x)[indices] for x in test_features]
         predictions = []
-        for prob in zip(*proba):
-            prob = [p[0][0] for p in prob]
-            maxprob = max(prob)
-            idx = prob.index(maxprob)
-            predictions.append(idx + 1)
+        for y in temp_test:
+            predictions.append(rf.predict(y.reshape(1, -1)))
 
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy * 100) + "%")
@@ -156,29 +129,24 @@ def main(*args):
         accuracies.append(accuracy)
 
     os.chdir(old_path)
+    print "Mean accuracy: " + str(np.mean(accuracies) * 100)
     return np.mean(accuracies) * 100, time.time()
 
 
 def main_without_oacl(*args):
     print 'Running with following args \n'
     print args
-    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm', 'subject'])
+    named_grid = namedtuple('Grid', ['n_comp', 'n_trees', 'band_list', 'oacl_ranges', 'm', 'subject'])
     search.grid = named_grid(*args)
 
     old_path = os.getcwd()
     os.chdir('..')
 
     # Load args from search-grid
-    oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
-    m = search.grid.m if 'm' in search.grid._fields else 11
-    C = search.grid.C if 'C' in search.grid._fields else 1
-    kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
+    n_trees = search.grid.n_trees if 'n_trees' in search.grid._fields else 20
     filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
     n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
     subject = search.grid.subject if 'subject' in search.grid._fields else 1
-
-    # Generate a name for serializing of file
-    filename_suffix = filehandler.generate_filename(oacl_ranges, m, subject)
 
     runs = load_data(subject, "T")
     eog_test, runs = separate_eog_eeg(runs)
@@ -206,46 +174,22 @@ def main_without_oacl(*args):
         train_features = create_feature_vector_list(train_bands, csp_list)
         test_features = create_feature_vector_list(test_bands, csp_list)
 
-        selector = mifs.MutualInformationFeatureSelector(method="JMIM",
-                                                         verbose=2,
-                                                         categorical=True,
-                                                         n_features=int(log(len(filt) * n_comp, 2)))
+        rf = RandomForestClassifier(n_estimators=n_trees)
+        rf.fit(train_features, train_labels)
+        important_features = rf.feature_importances_
+        indices = np.argsort(important_features)[::-1]
 
-        mifs_list = create_mifs_list(selector,
-                                     train_features,
-                                     len(filt),
-                                     n_comp,
-                                     train_labels)
+        bahm_magic = int((n_comp/2)*np.log2(2*len(filt)))
+        indices = indices[0:bahm_magic]
 
-        train_features = [mifs_list[i].transform(train_features[i])
-                          for i in range(len(mifs_list))]
-        test_features = [mifs_list[i].transform(test_features[i])
-                         for i in range(len(mifs_list))]
+        temp_train = [array(x)[indices] for x in train_features]
+        rf = RandomForestClassifier(n_estimators=bahm_magic)
+        rf.fit(temp_train, train_labels)
 
-
-        svc_list = []
-        for i in range(len(train_features)):
-            svc = SVC(C=C, kernel=kernel, gamma='auto', probability=True)
-            scaled = StandardScaler().fit_transform(train_features[i].tolist())
-            svc.fit(scaled, binarize_labels(train_labels, i))
-            svc_list.append(svc)
-
-
-        proba = []
-        for i in range(len(train_features)):
-            svc = svc_list[i]
-            scaled = StandardScaler().fit_transform(test_features[i].tolist())
-            temp_proba = []
-            for j in range(len(scaled)):
-                temp_proba.append(svc.predict_proba(scaled[j]))
-            proba.append(temp_proba)
-
+        temp_test = [array(x)[indices] for x in test_features]
         predictions = []
-        for prob in zip(*proba):
-            prob = [p[0][0] for p in prob]
-            maxprob = max(prob)
-            idx = prob.index(maxprob)
-            predictions.append(idx + 1)
+        for y in temp_test:
+            predictions.append(rf.predict(y.reshape(1, -1)))
 
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy * 100) + "%")
@@ -253,4 +197,10 @@ def main_without_oacl(*args):
         accuracies.append(accuracy)
 
     os.chdir(old_path)
+    print "Mean accuracy: " + str(np.mean(accuracies) * 100)
     return np.mean(accuracies) * 100, time.time()
+
+
+if __name__ == '__main__':
+    freeze_support()
+    main(12, 29, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], ((2, 3), (4, 5)), 7, 1)

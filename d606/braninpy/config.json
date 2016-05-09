@@ -6,20 +6,13 @@
   "max":22,
   "size":1
 },
-  "C" : {
-  "name":"C",
+  "n_trees" : {
+  "name":"n_trees",
   "type":"int",
-  "min":1,
-  "max":100,
+  "min":10,
+  "max":48,
   "size":1
 },
-  "kernel" : {
-  "name":"kernel",
-  "type":"int",
-  "min":0,
-  "max":2,
-  "size":1
-  },
   "band_list" : {
     "name":"band_list",
     "type":"int",
