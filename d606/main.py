@@ -42,7 +42,7 @@ def create_feature_vector_list(bands, csp_list):
 def main(*args):
     print 'Running with following args \n'
     print args
-    named_grid = namedtuple('Grid', ['n_comp', 'n_trees', 'band_list', 'oacl_ranges', 'm', 'subject'])
+    named_grid = namedtuple('Grid', ['n_comp', 'band_list', 'oacl_ranges', 'm', 'subject'])
     search.grid = named_grid(*args)
 
     old_path = os.getcwd()
@@ -51,7 +51,6 @@ def main(*args):
     # Load args from search-grid
     oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
     m = search.grid.m if 'm' in search.grid._fields else 11
-    n_trees = search.grid.n_trees if 'n_trees' in search.grid._fields else 20
     filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
     n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
     subject = search.grid.subject if 'subject' in search.grid._fields else 1
@@ -106,7 +105,7 @@ def main(*args):
         test_features = create_feature_vector_list(test_bands, csp_list)
 
 
-        rf = RandomForestClassifier(n_estimators=n_trees)
+        rf = RandomForestClassifier(n_estimators=len(filt)*4*n_comp)
         rf.fit(train_features, train_labels)
         important_features = rf.feature_importances_
         indices = np.argsort(important_features)[::-1]
