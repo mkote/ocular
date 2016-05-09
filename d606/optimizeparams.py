@@ -16,8 +16,8 @@ def optim_params():
             old_path = os.getcwd()
             os.chdir('spearmintlite')
             command = 'python spearmintlite.py ../braninpy'
-            subprocess.call(command, shell=True)
-            sleep(2)
+            p = subprocess.check_call(command)
+
             os.chdir(old_path)
 
             params = get_params()
@@ -37,7 +37,6 @@ def optim_params():
             result, time = main(n_comp, n_trees, band_list, oacl_ranges, m, subject)
 
             insert_result(result, time)
-            sleep(2)
         os.rename('braninpy/results.dat', 'braninpy/results' + str(subject) + '.dat')
 
 
