@@ -1,8 +1,7 @@
 from collections import namedtuple
-
 import time
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 import preprocessing.searchgrid as search
 from eval.timing import timed_block
 from featureselection import mifs
@@ -12,7 +11,6 @@ from preprocessing.dataextractor import load_data, restructure_data, separate_eo
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
-from multiprocessing import freeze_support
 from sklearn import cross_validation
 from numpy import array
 from preprocessing.oaclbase import OACL
@@ -124,21 +122,21 @@ def main(*args):
                          for i in range(len(mifs_list))]
 
 
-        svc_list = []
+        rfc_list = []
         for i in range(len(train_features)):
-            svc = SVC(C=C, kernel=kernel, gamma='auto', probability=True)
+            rfc = RandomForestClassifier(n_estimators=20, max_depth=None, min_samples_split=1, max_features='sqrt')
             scaled = StandardScaler().fit_transform(train_features[i].tolist())
-            svc.fit(scaled, binarize_labels(train_labels, i))
-            svc_list.append(svc)
+            rfc.fit(scaled, binarize_labels(train_labels, i))
+            rfc_list.append(rfc)
 
 
         proba = []
         for i in range(len(train_features)):
-            svc = svc_list[i]
+            rfc = rfc_list[i]
             scaled = StandardScaler().fit_transform(test_features[i].tolist())
             temp_proba = []
             for j in range(len(scaled)):
-                temp_proba.append(svc.predict_proba(scaled[j]))
+                temp_proba.append(rfc.predict_proba(scaled[j].reshape(1, -1)))
             proba.append(temp_proba)
 
         predictions = []
