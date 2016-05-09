@@ -1,5 +1,6 @@
 import os
 import subprocess
+from sys import executable
 from time import sleep
 from main import main
 from multiprocessing import freeze_support
@@ -16,7 +17,7 @@ def optim_params():
             old_path = os.getcwd()
             os.chdir('spearmintlite')
             command = 'python spearmintlite.py ../braninpy'
-            p = subprocess.check_call(command)
+            p = subprocess.check_call([executable, 'spearmintlite.py', '../braninpy'], cwd=os.getcwd())
 
             os.chdir(old_path)
 
