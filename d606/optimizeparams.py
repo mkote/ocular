@@ -2,7 +2,7 @@ import os
 import subprocess
 from sys import executable
 from time import sleep
-from main import main
+from main import main, main_without_oacl
 from multiprocessing import freeze_support
 
 SVC_KERNELS = ['linear', 'rbf', 'poly']
