@@ -41,7 +41,7 @@ def create_feature_vector_list(bands, csp_list):
 def main(*args):
     print 'Running with following args \n'
     print args
-    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm', 'subject'])
+    named_grid = namedtuple('Grid', ['n_comp', 'n_trees', 'band_list', 'oacl_ranges', 'm', 'subject'])
     search.grid = named_grid(*args)
 
     old_path = os.getcwd()
