@@ -23,19 +23,18 @@ def optim_params():
             params = get_params()
             par = params.split(' ')
             n_comp = int(par[2])
-            c = int(par[3])*0.01
-            kernel = SVC_KERNELS[int(par[4])]
-            band_range = int(par[5])
+            n_trees = int(par[3])
+            band_range = int(par[4])
             num_bands = int(36/band_range)
             band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
-            s = int(par[6])
-            r1 = int(par[7])
-            r2 = int(par[8])
-            space = int(par[9])
-            m = int(par[10]) * 2 + 1
+            s = int(par[5])
+            r1 = int(par[6])
+            r2 = int(par[7])
+            space = int(par[8])
+            m = int(par[9]) * 2 + 1
             oacl_ranges = ((s, s + r1), (space + s + r1 + 1, space + s + r1 + 1 + r2))
 
-            result, time = main(n_comp, c, kernel, band_list, oacl_ranges, m, subject)
+            result, time = main(n_comp, n_trees, band_list, oacl_ranges, m, subject)
 
             insert_result(result, time)
             sleep(2)
