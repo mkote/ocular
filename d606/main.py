@@ -12,6 +12,7 @@ from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
 from sklearn import cross_validation
+from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
 import os
@@ -35,7 +36,9 @@ def create_feature_vector_list(bands, csp_list):
     for x in zip(*feature_list):
         feature_vector_list.append(array([list(chain(*z)) for z in zip(*x)]))
 
-    return feature_vector_list
+    comb = [list(chain(*z)) for z in zip(*feature_vector_list)]
+
+    return comb
 
 
 def main(*args):
@@ -104,46 +107,23 @@ def main(*args):
         train_features = create_feature_vector_list(train_bands, csp_list)
         test_features = create_feature_vector_list(test_bands, csp_list)
 
-        selector = mifs.MutualInformationFeatureSelector(method="JMIM",
-                                                         verbose=2,
-                                                         categorical=True,
-                                                         n_features=4)
 
-        mifs_list = create_mifs_list(selector,
-                                     train_features,
-                                     len(filt),
-                                     n_comp,
-                                     train_labels)
+        rf = RandomForestClassifier(n_estimators=n_trees)
+        rf.fit(train_features, train_labels)
+        important_features = rf.feature_importances_
+        indices = np.argsort(important_features)[::-1]
 
-        train_features = [mifs_list[i].transform(train_features[i])
-                          for i in range(len(mifs_list))]
-        test_features = [mifs_list[i].transform(test_features[i])
-                         for i in range(len(mifs_list))]
+        bahm_magic = int((n_comp/2)*np.log2(2*len(filt)))
+        indices = indices[0:bahm_magic]
 
+        temp_train = [array(x)[indices] for x in train_features]
+        rf = RandomForestClassifier(n_estimators=bahm_magic)
+        rf.fit(temp_train, train_labels)
 
-        rfc_list = []
-        for i in range(len(train_features)):
-            rfc = RandomForestClassifier(n_estimators=n_trees)
-            scaled = StandardScaler().fit_transform(train_features[i].tolist())
-            rfc.fit(scaled, binarize_labels(train_labels, i))
-            rfc_list.append(rfc)
-
-
-        proba = []
-        for i in range(len(train_features)):
-            rfc = rfc_list[i]
-            scaled = StandardScaler().fit_transform(test_features[i].tolist())
-            temp_proba = []
-            for j in range(len(scaled)):
-                temp_proba.append(rfc.predict_proba(scaled[j].reshape(1, -1)))
-            proba.append(temp_proba)
-
+        temp_test = [array(x)[indices] for x in test_features]
         predictions = []
-        for prob in zip(*proba):
-            prob = [p[0][0] for p in prob]
-            maxprob = max(prob)
-            idx = prob.index(maxprob)
-            predictions.append(idx + 1)
+        for y in temp_test:
+            predictions.append(rf.predict(y.reshape(1, -1)))
 
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy * 100) + "%")
@@ -151,4 +131,10 @@ def main(*args):
         accuracies.append(accuracy)
 
     os.chdir(old_path)
+    print "Mean accuracy: " + str(np.mean(accuracies) * 100)
     return np.mean(accuracies) * 100, time.time()
+
+if __name__ == '__main__':
+    freeze_support()
+    main(12, 29, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], ((2, 3), (4, 5)), 7, 1)
+
