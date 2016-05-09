@@ -1,7 +1,7 @@
 import os
 import subprocess
 from time import sleep
-from main import main
+from main import main, main_without_oacl
 from multiprocessing import freeze_support
 
 SVC_KERNELS = ['linear', 'rbf', 'poly']
@@ -35,7 +35,7 @@ def optim_params():
             m = int(par[10]) * 2 + 1
             oacl_ranges = ((s, s + r1), (space + s + r1 + 1, space + s + r1 + 1 + r2))
 
-            result, time = main(n_comp, c, kernel, band_list, oacl_ranges, m, subject)
+            result, time = main_without_oacl(n_comp, c, kernel, band_list, oacl_ranges, m, subject)
 
             insert_result(result, time)
             sleep(2)

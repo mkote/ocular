@@ -1,6 +1,8 @@
 from collections import namedtuple
 
 import time
+
+from math import log
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 import preprocessing.searchgrid as search
@@ -111,6 +113,103 @@ def main(*args):
                                                          verbose=2,
                                                          categorical=True,
                                                          n_features=4)
+
+        mifs_list = create_mifs_list(selector,
+                                     train_features,
+                                     len(filt),
+                                     n_comp,
+                                     train_labels)
+
+        train_features = [mifs_list[i].transform(train_features[i])
+                          for i in range(len(mifs_list))]
+        test_features = [mifs_list[i].transform(test_features[i])
+                         for i in range(len(mifs_list))]
+
+
+        svc_list = []
+        for i in range(len(train_features)):
+            svc = SVC(C=C, kernel=kernel, gamma='auto', probability=True)
+            scaled = StandardScaler().fit_transform(train_features[i].tolist())
+            svc.fit(scaled, binarize_labels(train_labels, i))
+            svc_list.append(svc)
+
+
+        proba = []
+        for i in range(len(train_features)):
+            svc = svc_list[i]
+            scaled = StandardScaler().fit_transform(test_features[i].tolist())
+            temp_proba = []
+            for j in range(len(scaled)):
+                temp_proba.append(svc.predict_proba(scaled[j]))
+            proba.append(temp_proba)
+
+        predictions = []
+        for prob in zip(*proba):
+            prob = [p[0][0] for p in prob]
+            maxprob = max(prob)
+            idx = prob.index(maxprob)
+            predictions.append(idx + 1)
+
+        accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
+        print("Accuracy: " + str(accuracy * 100) + "%")
+
+        accuracies.append(accuracy)
+
+    os.chdir(old_path)
+    return np.mean(accuracies) * 100, time.time()
+
+
+def main_without_oacl(*args):
+    print 'Running with following args \n'
+    print args
+    named_grid = namedtuple('Grid', ['n_comp', 'C', 'kernel', 'band_list', 'oacl_ranges', 'm', 'subject'])
+    search.grid = named_grid(*args)
+
+    old_path = os.getcwd()
+    os.chdir('..')
+
+    # Load args from search-grid
+    oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
+    m = search.grid.m if 'm' in search.grid._fields else 11
+    C = search.grid.C if 'C' in search.grid._fields else 1
+    kernel = search.grid.kernel if 'kernel' in search.grid._fields else 'linear'
+    filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
+    n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
+    subject = search.grid.subject if 'subject' in search.grid._fields else 1
+
+    # Generate a name for serializing of file
+    filename_suffix = filehandler.generate_filename(oacl_ranges, m, subject)
+
+    runs = load_data(subject, "T")
+    eog_test, runs = separate_eog_eeg(runs)
+
+    run_choice = range(3, 9)
+
+    sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
+
+    accuracies = []
+    for train_index, test_index in sh:
+        train = array(runs)[array(run_choice)[(sorted(train_index))]]
+        test = load_data(subject, "T")
+        _, test = separate_eog_eeg(test)
+        test = array(test)[array(run_choice)[test_index]]
+
+        filters = Filter(filt)
+
+        train_bands, train_labels = restructure_data(train, filters)
+        test_bands, test_labels = restructure_data(test, filters)
+
+        csp_list = []
+        for band in train_bands:
+            csp_list.append(csp_one_vs_all(band, 4, n_comps=n_comp))
+
+        train_features = create_feature_vector_list(train_bands, csp_list)
+        test_features = create_feature_vector_list(test_bands, csp_list)
+
+        selector = mifs.MutualInformationFeatureSelector(method="JMIM",
+                                                         verbose=2,
+                                                         categorical=True,
+                                                         n_features=int(log(len(filt) * n_comp, 2)))
 
         mifs_list = create_mifs_list(selector,
                                      train_features,
