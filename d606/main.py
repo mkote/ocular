@@ -71,7 +71,6 @@ def run_oacl(subject, runs, oacl_ranges, m):
 
 def transform_fold_data(train_index, test_index, train, test,
                         oacl_ranges=None, thetas=None, m=None):
-    print(len(train), len(test))
     train = array(train)[RUNS_WITH_EEG[sorted(train_index)]]
     test = array(test)[RUNS_WITH_EEG[test_index]]
 
