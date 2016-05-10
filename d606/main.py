@@ -93,7 +93,6 @@ def main(*args):
 
         filters = Filter(filt)
 
-
         train_bands, train_labels = restructure_data(train, filters)
         test_bands, test_labels = restructure_data(test, filters)
 
@@ -104,23 +103,12 @@ def main(*args):
         train_features = create_feature_vector_list(train_bands, csp_list)
         test_features = create_feature_vector_list(test_bands, csp_list)
 
-
         rf = RandomForestClassifier(n_estimators=len(filt)*4*n_comp)
         rf.fit(train_features, train_labels)
-        important_features = rf.feature_importances_
-        indices = np.argsort(important_features)[::-1]
 
-        bahm_magic = int((n_comp/2)*np.log2(2*len(filt)))
-        indices = indices[0:bahm_magic]
-
-        temp_train = [array(x)[indices] for x in train_features]
-        rf = RandomForestClassifier(n_estimators=bahm_magic)
-        rf.fit(temp_train, train_labels)
-
-        temp_test = [array(x)[indices] for x in test_features]
         predictions = []
-        for y in temp_test:
-            predictions.append(rf.predict(y.reshape(1, -1)))
+        for y in test_features:
+            predictions.append(rf.predict(array(y).reshape(1, -1)))
 
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy * 100) + "%")
@@ -135,14 +123,13 @@ def main(*args):
 def main_without_oacl(*args):
     print 'Running with following args \n'
     print args
-    named_grid = namedtuple('Grid', ['n_comp', 'band_list', 'oacl_ranges', 'm', 'subject'])
+    named_grid = namedtuple('Grid', ['n_comp', 'band_list', 'subject'])
     search.grid = named_grid(*args)
 
     old_path = os.getcwd()
     os.chdir('..')
 
     # Load args from search-grid
-    n_trees = search.grid.n_trees if 'n_trees' in search.grid._fields else 20
     filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
     n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
     subject = search.grid.subject if 'subject' in search.grid._fields else 1
@@ -173,22 +160,12 @@ def main_without_oacl(*args):
         train_features = create_feature_vector_list(train_bands, csp_list)
         test_features = create_feature_vector_list(test_bands, csp_list)
 
-        rf = RandomForestClassifier(n_estimators=n_trees)
+        rf = RandomForestClassifier(n_estimators=len(filt)*4*n_comp)
         rf.fit(train_features, train_labels)
-        important_features = rf.feature_importances_
-        indices = np.argsort(important_features)[::-1]
 
-        bahm_magic = int((n_comp/2)*np.log2(2*len(filt)))
-        indices = indices[0:bahm_magic]
-
-        temp_train = [array(x)[indices] for x in train_features]
-        rf = RandomForestClassifier(n_estimators=bahm_magic)
-        rf.fit(temp_train, train_labels)
-
-        temp_test = [array(x)[indices] for x in test_features]
         predictions = []
-        for y in temp_test:
-            predictions.append(rf.predict(y.reshape(1, -1)))
+        for y in test_features:
+            predictions.append(rf.predict(array(y).reshape(1, -1)))
 
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
         print("Accuracy: " + str(accuracy * 100) + "%")
