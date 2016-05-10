@@ -26,19 +26,22 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     old_path = os.getcwd()
     os.chdir('..')
 
-    runs = load_data(subject, "T")
-    eog_test, runs = separate_eog_eeg(runs)
+    train = load_data(subject, "T")
+    _, train = separate_eog_eeg(train)
+    test = load_data(subject, "T")
+    _, test = separate_eog_eeg(test)
     thetas = None
 
     if not any([x == None for x in [oacl_ranges, m]]):
-        thetas, runs = run_oacl(subject, runs, oacl_ranges, m)
+        thetas, train = run_oacl(subject, train, oacl_ranges, m)
 
     sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
 
     accuracies = []
     for train_index, test_index in sh:
-        accuracy = evaluate_fold(train_index, test_index, runs, subject, band_list, n_comp,
-                                 oacl_ranges, thetas, m)
+        transform_fold_data(train_index, test_index, train, test,
+                            oacl_ranges, thetas, m)
+        accuracy = evaluate_fold(train, test, band_list, n_comp)
         print("Accuracy: " + str(accuracy * 100) + "%")
         accuracies.append(accuracy)
 
@@ -69,18 +72,20 @@ def run_oacl(subject, runs, oacl_ranges, m):
     return thetas, runs
 
 
-def evaluate_fold(train_index, test_index, runs, subject, band_list, n_comp,
-                  oacl_ranges=None, thetas=None, m=None):
-    train = array(runs)[RUNS_WITH_EEG[sorted(train_index)]]
-    test = load_data(subject, "T")
-    _, test = separate_eog_eeg(test)
+def transform_fold_data(train_index, test_index, train, test,
+                        oacl_ranges=None, thetas=None, m=None):
+    train = array(train)[RUNS_WITH_EEG[sorted(train_index)]]
     test = array(test)[RUNS_WITH_EEG[test_index]]
 
-    if not any([x == None for x in[oacl_ranges, thetas, m]]):
+    if not any([x == None for x in [oacl_ranges, thetas, m]]):
         oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
         oacl.theta = oacl.generalize_thetas(array(thetas)[train_index])
         test = remake_single_run_transform(test, oacl)
 
+    return train, test
+
+
+def evaluate_fold(train, test, band_list, n_comp):
     filters = Filter(band_list)
 
     train_bands, train_labels = restructure_data(train, filters)
@@ -123,81 +128,29 @@ def create_feature_vector_list(bands, csp_list):
     return comb
 
 
-def main_to_test_oacl_evaluation_data(*args):
-    named_grid = namedtuple('Grid', ['n_comp', 'band_list', 'oacl_ranges', 'm', 'subject'])
-    search.grid = named_grid(*args)
-
+def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
     old_path = os.getcwd()
     os.chdir('..')
 
-    oacl_ranges = search.grid.oacl_ranges if 'oacl_ranges' in search.grid._fields else ((3, 7), (7, 15))
-    m = search.grid.m if 'm' in search.grid._fields else 11
-    filt = search.grid.band_list if 'band_list' in search.grid._fields else [[8, 12], [16, 24]]
-    n_comp = search.grid.n_comp if 'n_comp' in search.grid._fields else 3
-    subject = search.grid.subject if 'subject' in search.grid._fields else 1
+    train = load_data(subject, "T")
+    _, train = separate_eog_eeg(train)
+    test = load_data(subject, "E")
+    _, test = separate_eog_eeg(test)
 
-    # Generate a name for serializing of file
-    filename_suffix = filehandler.generate_filename(oacl_ranges, m, subject)
+    if not any([x == None for x in [oacl_ranges, m]]):
+        thetas, train = run_oacl(subject, train, oacl_ranges, m)
+        oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
+        oacl.theta = oacl.generalize_thetas(array(thetas))
+        test, _ = remake_trial(test, oacl)
 
-    # Check whether the data is already present as serialized data
-    # If not run OACL and serialize, else load data from file
-    if filehandler.file_is_present('runs' + filename_suffix) is False:
-        with timed_block('Iteration '):
-            train = load_data(subject, "T")
-            eog_train, train = separate_eog_eeg(train)
-            train, train_oacl = remake_trial(train)
+    train = array(train)[RUNS_WITH_EEG]
+    test = array(test)[RUNS_WITH_EEG]
+    accuracy = evaluate_fold(train, test, band_list, n_comp)
+    print("Accuracy: " + str(accuracy * 100) + "%")
 
-            thetas = train_oacl.trial_thetas
-
-            test = load_data(subject, "E")
-            eog_test, test = separate_eog_eeg(test)
-            test, train_oacl = remake_trial(test, train_oacl)
-
-        # Save data, could be a method instead
-        filehandler.save_data(train, 'runs' + filename_suffix)
-        filehandler.save_data(thetas, 'thetas' + filename_suffix)
-    else:
-        train = filehandler.load_data('runs' + filename_suffix)
-        thetas = filehandler.load_data('thetas' + filename_suffix)
-        train_oacl = OACL(oacl_ranges, m, multi_run=True)
-        train_oacl.theta = train_oacl.generalize_thetas(thetas)
-        test = load_data(subject, "E")
-        eog_test, test = separate_eog_eeg(test)
-        test, train_oacl = remake_trial(test, train_oacl)
-
-        filters = Filter(filt)
-
-        train_bands, train_labels = restructure_data(train, filters)
-        test_bands, test_labels = restructure_data(test, filters)
-
-        csp_list = []
-        for band in train_bands:
-            csp_list.append(csp_one_vs_all(band, 4, n_comps=n_comp))
-
-        train_features = create_feature_vector_list(train_bands, csp_list)
-        test_features = create_feature_vector_list(test_bands, csp_list)
-
-        rf = RandomForestClassifier(n_estimators=len(filt)*4*n_comp)
-        rf.fit(train_features, train_labels)
-        important_features = rf.feature_importances_
-        indices = np.argsort(important_features)[::-1]
-
-        bahm_magic = int((n_comp/2)*np.log2(2*len(filt)))
-        indices = indices[0:bahm_magic]
-
-        temp_train = [array(x)[indices] for x in train_features]
-        rf = RandomForestClassifier(n_estimators=bahm_magic)
-        rf.fit(temp_train, train_labels)
-
-        temp_test = [array(x)[indices] for x in test_features]
-        predictions = []
-        for y in temp_test:
-            predictions.append(rf.predict(y.reshape(1, -1)))
-
-        accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
-        print("Accuracy: " + str(accuracy * 100) + "%")
+    os.chdir(old_path)
 
 
 if __name__ == '__main__':
     freeze_support()
-    main_to_test_oacl_evaluation_data(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], ((2, 3), (4, 5)), 7, 1)
+    evaluate(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3), (4, 5)), 7)
