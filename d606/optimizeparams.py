@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 from sys import executable
-from main import main, main_without_oacl
+from main import main
 from multiprocessing import freeze_support
 
 SVC_KERNELS = ['linear', 'rbf', 'poly']
@@ -40,7 +40,7 @@ def optim_params():
             m = int(par[8]) * 2 + 1
             oacl_ranges = ((s, s + r1), (space + s + r1 + 1, space + s + r1 + 1 + r2))
 
-            result, timestamp = main(n_comp, band_list, oacl_ranges, m, subject)
+            result, timestamp = main(n_comp, band_list, subject, oacl_ranges, m)
 
             insert_result(result, timestamp)
 
