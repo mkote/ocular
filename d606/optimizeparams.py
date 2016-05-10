@@ -1,7 +1,7 @@
 import os
 import subprocess
+import time
 from sys import executable
-from time import sleep
 from main import main, main_without_oacl
 from multiprocessing import freeze_support
 
@@ -13,10 +13,17 @@ NUM_ITERATIONS = 200
 
 def optim_params():
     for subject in range(FIRST_SUBJECT, LAST_SUBJECT + FIRST_SUBJECT):
+        if os.path.isfile('braninpy/chooser.GPEIOptChooser.pkl'):
+            os.remove('braninpy/chooser.GPEIOptChooser.pkl')
+        if os.path.isfile('braninpy/chooser.GPEIOptChooser_hyperparameters.txt'):
+            os.remove('braninpy/chooser.GPEIOptChooser_hyperparameters.txt')
+        if os.path.isfile('braninpy/results.dat'):
+            os.rename('braninpy/results.dat', 'braninpy/results.dat.' + str(time.time()))
+
         for iteration in range(NUM_ITERATIONS):
             old_path = os.getcwd()
             os.chdir('spearmintlite')
-            p = subprocess.check_call([executable, 'spearmintlite.py', '../braninpy'], cwd=os.getcwd())
+            subprocess.check_call([executable, 'spearmintlite.py', '../braninpy'], cwd=os.getcwd())
 
             os.chdir(old_path)
 
@@ -33,12 +40,11 @@ def optim_params():
             m = int(par[8]) * 2 + 1
             oacl_ranges = ((s, s + r1), (space + s + r1 + 1, space + s + r1 + 1 + r2))
 
-            result, time = main(n_comp, band_list, oacl_ranges, m, subject)
+            result, timestamp = main(n_comp, band_list, oacl_ranges, m, subject)
 
-            insert_result(result, time)
+            insert_result(result, timestamp)
+
         os.rename('braninpy/results.dat', 'braninpy/results' + str(subject) + '.dat')
-        os.remove('braninpy/chooser.GPEIOptChooser.pkl')
-        os.remove('braninpy/chooser.GPEIOptChooser_hyperparameters.txt')
 
 
 def get_params():
