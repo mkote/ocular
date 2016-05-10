@@ -1,4 +1,5 @@
-\subsection{Filter-bank multi class CSP}
+\subsection{Filter bank multi class CSP}
+We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data, since the individual parts have shown valid by other studies. CSP assumes we know which frequency ranges contains important data for different imagery classes. Since one rarely knows this, we have chosen to use filter bank, as a step before CSP, as this automatically chooses frequency ranges from EEG data. CSP can in it's original form only be used on binary classification problems, but the extension explained in this paper, multi class CSP (MCCSP), can be used on a more. Since MCCSP makes use of the original binary CSP, we first explain how CSP works, and then extend it with multi class.
 
 \begin {figure*}%[!hbtp]
 \centering
@@ -37,16 +38,22 @@
 \coordinate (cspovrs) at ($(filterbanks) + 1/2*(blength) + (linel)$);
 
 % Coordinate for Feature selection nodes
-\coordinate (featureselections) at ($(cspovrs) + 1/2*(blength) + (linel)$);
+\coordinate (featureselections) at ($(cspovrs) + 1/2*(blength) + 3/2*(linel)$);
 
 % Coordinate for voting box
-\coordinate (votings) at ($(featureselections) + 1/2*(blength) + (linel) + 1/2*(bl)$);
+\coordinate (votings) at ($(featureselections) + 1/2*(blength) + 3/2*(linel) + 1/2*(bl)$);
 
 % Coordinate for result node
 \coordinate (results) at ($(votings) + 1/2*(bl) + 1/2*(blength) + (linel)$);
 
 % Coordinate for mean results
 \coordinate (meanresults) at ($(results) + (blength) + (linel)$);
+
+% Cooordinates for start and end of step box
+\coordinate (boxceil) at (0, 6);
+\coordinate (boxfloor) at (0, -9);
+\coordinate (startbox) at ($(trains) + (-1, 0)$);
+\coordinate (endbox) at ($(meanresults) + (1, 0)$);
 
 
 % Draw training data circle
@@ -69,7 +76,7 @@
 	\foreach \y in \csplist{
 		\node [draw, circle, name=filterbanknode\x, minimum size = \bs] at ($(filterbanks) + (0, \x)$) {};
 		\draw [->] (filterbank) -- (filterbanknode\x);
-		\node [draw, circle, name=cspovrnode\x\y, minimum size = \bs] at ($(filterbanknode\x) + (0, \y) + (linel)$) {};
+		\node [draw, circle, name=cspovrnode\x\y, minimum size = \bs] at ($(filterbanknode\x) + (0, \y) + 3/2*(linel)$) {};
 		\draw [->] (filterbanknode\x) -- (cspovrnode\x\y);
 }
 
@@ -81,7 +88,7 @@
 
 % Draw Feature selection nodes
 \foreach \x in \fblist{
-	\node [draw, circle, name=featurenode\x, minimum size = \bs] at ($(featureselections) + (0, \x)$) {};
+	\node [draw, circle, name=featurenode\x, minimum size = \bs] at ($(featureselections) + (0, \x) + 1/2*(linel)$) {};
 			
 }
 
@@ -110,31 +117,60 @@
 \node [draw, circle, name=meanresult, minimum size = \bs] at (meanresults) {};
 \draw [->] (result) -- (meanresult);
 
-\draw [->] (result) to[out=290, in=280, distance=200] (crossvalidation);
-\draw [->] (meanresult) to[out=270, in=270, distance=300] (crossvalidation);
+% Draw curved arrows
+\draw [->] (result) to[out=280, in=270, distance=180] (crossvalidation);
+\draw [->] (meanresult) to[out=270, in=270, distance=260] (crossvalidation);
+
+% Draw box around image and horizontal lines
+\draw ($(startbox) + (boxfloor)$) -- ($(endbox) + (boxfloor)$) -- ($(endbox) + (boxceil)$) -- ($(startbox) + (boxceil)$) -- cycle;
+
+\draw[loosely dotted] ($(trains) + (boxfloor) + 1/2*(linel)$) -- ($(trains) + (boxceil) + 1/2*(linel)$);
+\node[draw] at ($(trains) + (boxceil) - (0, 1)$) {1};
+
+\draw[loosely dotted] ($(crosss) + (boxfloor) + (linel)$) -- ($(crosss) + (boxceil) + (linel)$);
+\node[draw] at ($(crosss) + (boxceil) - (0, 1)$) {2};
+
+\draw[loosely dotted] ($(oacls) + (boxfloor) + (linel)$) -- ($(oacls) + (boxceil) + (linel)$);
+\node[draw] at ($(oacls) + (boxceil) - (0, 1)$) {3};
+
+\draw[loosely dotted] ($(filters) + (boxfloor) + (linel)$) -- ($(filters) + (boxceil) + (linel)$);
+\node[draw] at ($(filters) + (boxceil) - (0, 1)$) {4};
+
+\draw[loosely dotted] ($(filters) + (boxfloor) + 9/4*(linel)$) -- ($(filters) + (boxceil) + 9/4*(linel)$);
+\node[draw] at ($(filters) + (boxceil) - (0, 1) +7/4*(linel)$) {5};
+
+\draw[loosely dotted] ($(filterbanks) + (boxfloor) + 9/4*(linel)$) -- ($(filterbanks) + (boxceil) + 9/4*(linel)$);
+\node[draw] at ($(filterbanks) + (boxceil) - (0, 1) +3/2*(linel)$) {6};
+
+\draw[loosely dotted] ($(featureselections) + (boxfloor) + (linel)$) -- ($(featureselections) + (boxceil) + (linel)$);
+\node[draw] at ($(featureselections) + (boxceil) - (0, 1)$) {7};
+
+\draw[loosely dotted] ($(votings) + (boxfloor) + (linel)$) -- ($(votings) + (boxceil) + (linel)$);
+\node[draw] at ($(votings) + (boxceil) - (0, 1)$) {8};
+
+
 \end{tikzpicture}
 \end{adjustbox}
+\caption{Overview of program pipeline}
+\label{fig:ProgramPipeline}
 \end{figure*}
 
 \subsection{CSP}
+Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. \todo{Indsæt kilde - Emil} 
 
-Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. 
-
-CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in the test training and evaluation data, the assumption can be justified \cite{blankertz2008optimizing}.
-Formally CSP combines data trials with the same imagery task. Let $A$ and $B$ be matrices of combined trials for imagery task 1 and 2,
+CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in the training and evaluation data, this assumption can be justified \cite{blankertz2008optimizing}.
+Formally CSP combines data trials with the same imagery task. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for imagery task 1 and 2,
 
 \begin{equation}
 \label{eq:csp_data}
 \pmb{A}, \pmb{B} \in \mathbb{R}^{n*m}
 \end{equation}
-
 where $n$ and $m$ are the number of signals and samples respectively. CSP now calculates the covariance matrices for $\pmb{A}$ and $\pmb{B}$,
 
 \begin{equation}
 \label{eq:covariance_matrice}
 \pmb{A_{cov}} = \frac{(\pmb{A} \cdot \overline{\pmb{A}})^\mathsf{T}  \cdot (\pmb{A} \cdot \overline{\pmb{A}})}{m - 1}
 \end{equation}
-
 where $m$ is the number of samples in $\pmb{A}$, and elements of $\overline{\pmb{A}}$ is defined as,
 
 \begin{equation}
@@ -142,7 +178,7 @@ where $m$ is the number of samples in $\pmb{A}$, and elements of $\overline{\pmb
 \pmb{\overline{A}_{ij}} = \frac{\pmb{A_{i,1}} + \pmb{A_{i,2}} + ... + \pmb{A_{i,m}}}{m}
 \end{equation}
 
-By applying simultaneous diagonalization on $\pmb{A_{cov}}$ and $\pmb{B_{cov}}$, we form the eigenvectors $\pmb{P}$, which will be the spatial filters. $\pmb{P}$ is found when both of the following diagonalizations hold, 
+By applying simultaneous diagonalization between $\pmb{A_{cov}}$ and $\pmb{B_{cov}}$, we form the eigenvectors $\pmb{P}$, which will be the spatial filters for maximizing variance between class 1 and 2. $\pmb{P}$ is found when both of the following diagonalizations hold, 
 
 \begin{equation}
 \label{eq:diagonalization_A}
@@ -154,12 +190,19 @@ By applying simultaneous diagonalization on $\pmb{A_{cov}}$ and $\pmb{B_{cov}}$,
 \pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{n*n}
 \end{equation}
 
-Our spatial filter will now correspond to the first row of $\pmb{P}$, such that the spatial filter $\vec{w} = \pmb{P}^\mathsf{T}_{1}$ 
+The spatial filter will now correspond to the first row of $\pmb{P}$, such $\pmb{\vec{w}} = \pmb{P}^\mathsf{T}_{1}$ 
 
-$\pmb{P}$ can now be applied \todo{Hvordan skal den applies? - Emil} on signals, which maps them into a new space, where signal features are more discriminative. The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications requires a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
-
-\subsection{Multi Class CSP}
+$\pmb{P}$ can now be applied \todo{Hvordan skal den applies? - Emil} to signals, which maps these into a new space, where signal features are more discriminative. The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications requires a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
 
 \subsection{Filter Bank}
 We propose our solution to the CSP problem, which combines a filter-bank (FB) method, with a multi class (MC) CSP. CSP expects the user to know the frequency of importance for each imagery class. These frequencies are however seldom known beforehand. Our solution to this problem, introduces a step called filter bank (FB), which splits the data into filters of different frequencies, which will all be used in the classification stage. By splitting the data, the user can ignore the CSP requirement of knowing the right frequencies.
+
+\subsection{Multi Class CSP}
+We introduce MCCSP by the one versus rest (OVR) method. The method constructs one CSP per class, by choosing a class, and treating every other class as being the same. This way we get one CSP per imagery class, each constructed to create the maximum variance to all other classes. The method is depicted in \Cref{fig:ProgramPipeline} as step 6. The example figure shows a pipeline with 3 filter bands, and three classes, from which 9 CSP are created.
+
+
+
+
+
+
 
