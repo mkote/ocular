@@ -5,7 +5,8 @@ def get_all_params(path):
     result = []
     with open(path, 'rb') as fh:
         for line in fh:
-            result.append(line.split(' '))
+            if line[0] != 'P':
+                result.append(line.split(' '))
 
     return result
 
