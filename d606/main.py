@@ -30,7 +30,7 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     eog_test, runs = separate_eog_eeg(runs)
     thetas = None
 
-    if any([x == None for x in [oacl_ranges, m]]):
+    if not any([x == None for x in [oacl_ranges, m]]):
         thetas, runs = run_oacl(subject, runs, oacl_ranges, m)
 
     sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
