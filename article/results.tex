@@ -1,8 +1,46 @@
 \section{Experimental Results}
-In order to evaluate the Bayesian Optimized Ocular Artifact Correction, we train and test the technique on the BCI Competition dataset IV 2a of 4-Class motor imagery EEG data.
-The dataset consist of a labeled training and test-set. The training set consists of EEG measurements of 9 subjects. The 9 subjects participated each in 2 sessions of 6 runs. Runs consist of 48 labeled trials, divided between each of the 4 classes, which yields 12 trials for each label. Each trial measured the EEG signals of a subject on 22 EEG channels and 3 EOG channels. 
+In order to evaluate the Bayesian Optimized Ocular Artifact Correction, we train and test the technique on the BCI Competition dataset IV 2a of 4-Class motor imagery EEG data. The dataset consist of a labeled training and test-set. The training set consists of EEG measurements of 9 subjects. The 9 subjects each participated in 2 sessions of 6 runs. A run consist of 48 labeled trials, divided between each of the 4 classes, which yields 12 trials for each label. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We discarded the EOG channels since we are interested in correcting artifacts without any secondary signal sources.
 
-We discarded the EOG channels since we are interested in correcting artifacts only with EEG data. 
-
+To see the effects of OACL, we the following experiments were setup. Two pipelines were set up where pipeline 1 performs Bayesian Optimization on OACL with FBCSP and Random Forrest Classification and pipeline 2 is identical except without the OACL method applied.
+To investigate the generality properties, we performed 6-fold cross-validation on the dataset where each fold contains the data of a single run. We performed the experiments on individual subjects to obtain the respective classification accuracies for each pipeline.
+\begin{table}[H]
+	\centering
+	\caption{Accuracies and KAPPA score on the set S of subjects.}
+	\label{fig:results}
+	\begin{tabular}{@{}ccc|cc@{}}
+		\toprule
+		\textbf{S}             & \multicolumn{2}{c|}{\textbf{W. BO OACML}} & \multicolumn{2}{c}{\textbf{W/O BO OACML}} \\ \midrule
+		\multicolumn{1}{c|}{}  & Acc                   & KAPPA             & Acc                   & KAPPA             \\ \midrule
+		\multicolumn{1}{c|}{1} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{2} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{3} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{4} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{5} & \textbf{}             &                   & \textbf{}             &                   \\
+		\multicolumn{1}{c|}{6} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{7} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{8} &                       &                   &                       &                   \\
+		\multicolumn{1}{c|}{9} &                       &                   &                       &                   \\ \bottomrule
+	\end{tabular}
+\end{table}
+Figure \ref{fig:results} shows the obtained accuracies and KAPPA scores on each individual subject after cross-validation on the two pipelines.
+\begin{table}[H]
+	\centering
+	\caption{Rank Sum}
+	\label{fig:wilcoxon}
+	\begin{tabular}{@{}l|llll@{}}
+		\toprule
+		S & No OACL & OACL & Diff & Rank \\ \midrule
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\
+		&               &                 &      &      \\ \bottomrule
+	\end{tabular}
+\end{table}
+Table \ref{fig:wilcoxon} shows the ranks in the Wilcoxon. 
 \subsection{Discussion}
 Here we discuss the results given in section 3, and talk more about what the results imply/how it could be improved.

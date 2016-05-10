@@ -6,13 +6,6 @@
   "max":22,
   "size":1
 },
-  "n_trees" : {
-  "name":"n_trees",
-  "type":"int",
-  "min":10,
-  "max":48,
-  "size":1
-},
   "band_list" : {
     "name":"band_list",
     "type":"int",
