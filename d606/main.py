@@ -37,7 +37,7 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
 
     accuracies = []
     for train_index, test_index in sh:
-        transform_fold_data(train_index, test_index, train, test,
+        train, test = transform_fold_data(train_index, test_index, train, test,
                             oacl_ranges, thetas, m)
         accuracy = evaluate_fold(train, test, band_list, n_comp)
         print("Accuracy: " + str(accuracy * 100) + "%")
@@ -57,7 +57,6 @@ def run_oacl(subject, runs, oacl_ranges, m):
     if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
             runs, train_oacl = remake_trial(runs, m=m, oacl_ranges=oacl_ranges)
-
             thetas = train_oacl.trial_thetas
 
         # Save data, could be a method instead
@@ -121,9 +120,9 @@ def create_feature_vector_list(bands, csp_list):
     for x in zip(*feature_list):
         feature_vector_list.append(array([list(chain(*z)) for z in zip(*x)]))
 
-    comb = [list(chain(*z)) for z in zip(*feature_vector_list)]
+    combo = [list(chain(*z)) for z in zip(*feature_vector_list)]
 
-    return comb
+    return combo
 
 
 def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
