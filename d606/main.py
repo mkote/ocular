@@ -2,7 +2,6 @@ import time
 import os
 import filehandler
 import numpy as np
-import preprocessing.searchgrid as search
 from sklearn.ensemble import RandomForestClassifier
 from eval.timing import timed_block
 from featureselection.mnecsp import csp_one_vs_all
@@ -14,7 +13,6 @@ from sklearn import cross_validation
 from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
-from collections import namedtuple
 
 RUNS_WITH_EEG = array(range(3, 9))
 
@@ -58,7 +56,7 @@ def run_oacl(subject, runs, oacl_ranges, m):
     # If not run OACL and serialize, else load data from file
     if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
-            runs, train_oacl = remake_trial(runs)
+            runs, train_oacl = remake_trial(runs, m=m, oacl_ranges=oacl_ranges)
 
             thetas = train_oacl.trial_thetas
 
@@ -141,7 +139,7 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
         thetas, train = run_oacl(subject, train, oacl_ranges, m)
         oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
         oacl.theta = oacl.generalize_thetas(array(thetas))
-        test, _ = remake_trial(test, oacl)
+        test, _ = remake_trial(test, arg_oacl=oacl)
 
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]
