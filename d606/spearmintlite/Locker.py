@@ -24,7 +24,7 @@ import sys
 import time
 
 def safe_delete(filename):
-    cmd  = 'mv "%s" "%s.delete" && rm "%s.delete"' % (filename, filename, 
+    cmd  = ('move' if os.name == 'nt' else 'mv') + ' "%s" "%s.delete" && rm "%s.delete"' % (filename, filename,
                                                       filename)
     fail = os.system(cmd)
     return not fail
