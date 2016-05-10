@@ -2,7 +2,6 @@
 We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
 
 Let $x = \{s_0, ...,s_n\}$ where $s_t \in \mathbb{R}_{\geq 0}$ denote the raw EEG data for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
-\input{./figures/relheights.tex}
 From $x(t)$ we perform all steps in artifact detection and removal.
 
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
@@ -43,7 +42,6 @@ s(t)      & \quad \text{if } z_b \leq t < z_a\\
 \end{cases}
 \end{equation}
 where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in figure (todo: make figure).
-
 Recalling that we can use an arbitrary number of ranges in \ref{eq:ranges}, we obtain the set of artifact signals for a single channel of a single trial as:
 \begin{equation}
 A(t)=  \begin{pmatrix}
@@ -55,4 +53,13 @@ a_n(t)
 \end{equation}
 The idea behind this, is that different types of artifacts can be found by using different kinds of ranges. 
 \subsubsection{Artifact Removal}
-Explain how we use the artifact signals to remove artifacts from the eeg signal.
+With the artifact signal $a(t)$ extracted from the raw EEG data the next task is to remove the artifact characterized by $a(t)$ from the original signal $x(t)$. Since signals are closed under subtraction we can obtain the corrected signal by subtracting the artifact signal from the raw EEG signal:
+\begin{equation}
+\label{eq:correctedsignal}
+c(t) = x(t) - \Theta A(t)
+\end{equation}
+where $\Theta \in \mathbb{R}_{\geq 0}$ is the \emph{filtering parameter}. Intuitively, $\Theta$ is a factor that determines the "amount" of the artifact signal to subtract from the raw signal. 
+
+In order to find a value for $\Theta$, we minimize an objective function $O : \mathbb{R}_{\geq 0} \times \mathbb{R} \rightarrow \mathbb{R}$ where $O$ predicts with some probability the label of the trial in question. Such a mechanism is obtained by using logistic regression where we have modified the original OACL binary logistic regression to the multi-class case:
+
+By doing so, we can use the objective function to measure the error in label predictions and by minimizing it we obtain values for $\Theta$. The 
