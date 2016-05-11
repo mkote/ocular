@@ -181,7 +181,7 @@ class ExperimentGrid:
         fh.close()
 
         # Use an atomic move for better NFS happiness.
-        cmd = 'mv "%s" "%s"' % (fh.name, self.jobs_pkl)
+        cmd = ('move' if os.name == 'nt' else 'mv') + ' "%s" "%s"' % (fh.name, self.jobs_pkl)
         os.system(cmd) # TODO: Should check system-dependent return status.
     
     def _hypercube_grid(self, dims, size):

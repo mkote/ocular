@@ -1,10 +1,5 @@
 numpy
-ipython
 scipy
-sympy
-nose
-pylab
 scikit-learn
 mne
-sklearn
-matplotlib
+protobuf
