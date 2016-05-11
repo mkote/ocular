@@ -216,4 +216,5 @@ def main_controller(options, args):
 
 # And that's it
 if __name__ == '__main__':
+    sys.path.append(os.path.dirname(os.getcwd()))
     main()

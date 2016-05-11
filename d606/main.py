@@ -2,7 +2,6 @@ import time
 import os
 import filehandler
 import numpy as np
-import preprocessing.searchgrid as search
 from sklearn.ensemble import RandomForestClassifier
 from eval.timing import timed_block
 from featureselection.mnecsp import csp_one_vs_all
@@ -14,7 +13,6 @@ from sklearn import cross_validation
 from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
-from collections import namedtuple
 
 RUNS_WITH_EEG = array(range(3, 9))
 
@@ -39,9 +37,9 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
 
     accuracies = []
     for train_index, test_index in sh:
-        transform_fold_data(train_index, test_index, train, test,
+        _train, _test = transform_fold_data(train_index, test_index, train, test,
                             oacl_ranges, thetas, m)
-        accuracy = evaluate_fold(train, test, band_list, n_comp)
+        accuracy = evaluate_fold(_train, _test, band_list, n_comp)
         print("Accuracy: " + str(accuracy * 100) + "%")
         accuracies.append(accuracy)
 
@@ -58,8 +56,7 @@ def run_oacl(subject, runs, oacl_ranges, m):
     # If not run OACL and serialize, else load data from file
     if filehandler.file_is_present('runs' + filename_suffix) is False:
         with timed_block('Iteration '):
-            runs, train_oacl = remake_trial(runs)
-
+            runs, train_oacl = remake_trial(runs, m=m, oacl_ranges=oacl_ranges)
             thetas = train_oacl.trial_thetas
 
         # Save data, could be a method instead
@@ -123,9 +120,9 @@ def create_feature_vector_list(bands, csp_list):
     for x in zip(*feature_list):
         feature_vector_list.append(array([list(chain(*z)) for z in zip(*x)]))
 
-    comb = [list(chain(*z)) for z in zip(*feature_vector_list)]
+    combo = [list(chain(*z)) for z in zip(*feature_vector_list)]
 
-    return comb
+    return combo
 
 
 def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
@@ -141,7 +138,7 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
         thetas, train = run_oacl(subject, train, oacl_ranges, m)
         oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
         oacl.theta = oacl.generalize_thetas(array(thetas))
-        test, _ = remake_trial(test, oacl)
+        test, _ = remake_trial(test, arg_oacl=oacl)
 
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]

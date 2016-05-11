@@ -42,7 +42,7 @@ def file_write_safe(path, data):
     fh = tempfile.NamedTemporaryFile(mode='w', delete=False)
     fh.write(data)
     fh.close()
-    cmd = 'mv "%s" "%s"' % (fh.name, path)
+    cmd = ('move' if os.name == 'nt' else 'mv') + ' "%s" "%s"' % (fh.name, path)
     sh(cmd)
 
 

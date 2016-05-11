@@ -58,7 +58,7 @@ class CMAChooser:
         fh.close()
 
         # Use an atomic move for better NFS happiness.
-        cmd = 'mv "%s" "%s"' % (fh.name, self.state_pkl)
+        cmd = ('move' if os.name == 'nt' else 'mv') + ' "%s" "%s"' % (fh.name, self.state_pkl)
         os.system(cmd) # TODO: Should check system-dependent return status.
 
         self.locker.unlock(self.state_pkl)

@@ -1,6 +1,5 @@
 from sklearn.svm import SVC
 from preprocessing.dataextractor import d3_matrix_creator, csp_label_reformat
-import preprocessing.searchgrid as search
 from sklearn.preprocessing import StandardScaler
 from numpy import array
 
