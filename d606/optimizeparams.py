@@ -38,7 +38,7 @@ def optim_params():
             r2 = int(par[6])
             space = int(par[7])
             m = int(par[8]) * 2 + 1
-            oacl_ranges = ((s, s + r1), (space + s + r1 + 1, space + s + r1 + 1 + r2))
+            oacl_ranges = ((s, s + r1), (space + s + r1, space + s + r1 + r2))
 
             result, timestamp = main(n_comp, band_list, subject, oacl_ranges, m)
 
