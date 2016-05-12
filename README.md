@@ -1,7 +1,6 @@
 # dat6-d606-16
-Bayesian Optimization of Parameters for Ocular Artifact Removal and Detection and Classification of
-4-class motor-imagery EEG
-Data.
+Bayesian Optimization of Parameters for Ocular Artifact Detection and Removal, and Classification of
+4-class motor-imagery EEG data.
 
 ## Requirements
 
@@ -23,6 +22,14 @@ or
 Refer to the installation guides of each dependency to obtain their dependencies (or just use the anaconda2
 distribution.)
 
-### Usage
+## Setup
 
-(Explain here how to run the program)
+'sudo python d606/spearmint/setup.py install'
+
+## Usage
+
+Optimize hyperparameters:
+'python d606/optimizeparams.py'
+
+Evaluate:
+'python d606/main.py [params]'

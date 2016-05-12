@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 from sys import executable
-from main import main
+from main import main, translate_params
 from multiprocessing import freeze_support
 
 SVC_KERNELS = ['linear', 'rbf', 'poly']
@@ -29,10 +29,7 @@ def optim_params():
 
             params = get_params()
             par = params.split(' ')
-            n_comp = int(par[2])
-            band_range = int(par[3])
-            num_bands = int(36/band_range)
-            band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
+            n_comp, band_list = translate_params(par[2:])
 
             result, timestamp = main(n_comp, band_list, subject)
 
