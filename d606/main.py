@@ -14,7 +14,7 @@ from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
 
-RUNS_WITH_EEG = array(range(3, 9))
+RUNS_WITH_EEG = array(range(-6, 0))
 
 
 def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
