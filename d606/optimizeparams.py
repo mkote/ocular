@@ -27,7 +27,7 @@ def optim_params():
 
             os.chdir(old_path)
 
-            params = get_params()
+            params = get_params().rstrip()
             par = params.split(' ')
             n_comp, band_list, oacl_ranges, m = translate_params(par[2:])
 
