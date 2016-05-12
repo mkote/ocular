@@ -19,7 +19,7 @@ From the smoothed signal $s(t)$ OACL finds the changes in amplitude between the 
 \label{eq:relheights}
 \Delta (t) = max(|x(t)-x(t-1)|,|x(t+1) - x(t)|)
 \end{equation}
-Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization.
+Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization, discussed in \cref{sec:bayesianoptimization}
 For now, assume that we have some arbitrary ranges
 \begin{equation}
 \label{eq:ranges}
