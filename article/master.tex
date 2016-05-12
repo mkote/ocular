@@ -43,10 +43,8 @@
 \renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
 
 \usepackage{titlesec} % Allows customization of titles
-%\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
-%\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
-\titleformat*{\section}{\large\centering\bfseries} % Change the look of the section titles
-\titleformat*{\subsection}{\large\bfseries} % Change the look of the section titles
+\titleformat{\section}[block]{\large\bfseries\centering}{\thesection}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\normalsize\bfseries}{\thesubsection}{1em}{} % Change the look of the section titles
 
 \usepackage{fancyhdr} % Headers and footers
 \pagestyle{fancy} % All pages have headers and footers
@@ -62,7 +60,6 @@
 \usepackage{natbib}
 \pgfplotsset{compat=1.9}%compatability for tikz functionality
 \def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
-
 %----------------------------------------------------------------------------------------
 %	TITLE SECTION
 %----------------------------------------------------------------------------------------
