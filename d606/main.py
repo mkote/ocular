@@ -158,18 +158,28 @@ def translate_params(par):
     band_range = int(par[1])
     num_bands = int(36 / band_range)
     band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
+    if len(par) > 2:
+        s = int(par[2])
+        r1 = int(par[3])
+        r2 = int(par[4])
+        space = int(par[5])
+        m = int(par[6]) * 2 + 1
+        oacl_ranges = ((s, s + r1), (space + s + r1, space + s + r1 + r2))
+    else:
+        m = None
+        oacl_ranges = None
 
-    return n_comp, band_list
+    return n_comp, band_list, oacl_ranges, m
 
 
-# Input: subject, n_comp, band_range
+# Input: subject, n_comp, band_range[, s, r1, r2, space, m]
 if __name__ == '__main__':
     freeze_support()
     errors = []
     if len(sys.argv) > 1:
-        n_comp, band_list = translate_params(sys.argv[2:])
+        n_comp, band_list, oacl_ranges, m = translate_params(sys.argv[2:])
         subject = int(sys.argv[1])
-        evaluate(n_comp, band_list, subject)
+        evaluate(n_comp, band_list, subject, oacl_ranges, m)
     else:
         print("No arguments passed - continuing with default parameters.")
         evaluate(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3), (4, 5)), 7)

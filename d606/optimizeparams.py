@@ -29,9 +29,9 @@ def optim_params():
 
             params = get_params()
             par = params.split(' ')
-            n_comp, band_list = translate_params(par[2:])
+            n_comp, band_list, oacl_ranges, m = translate_params(par[2:])
 
-            result, timestamp = main(n_comp, band_list, subject)
+            result, timestamp = main(n_comp, band_list, subject, oacl_ranges, m)
 
             insert_result(result, timestamp)
 
