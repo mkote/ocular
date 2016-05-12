@@ -26,6 +26,9 @@ def optim_params():
         if resuming and not file_exists:
             print "failed to resume work of subject " + str(CURRENT_SUBJECT) + " on file " + expected_path + " (file does not exist). Exiting..."
             exit(0)
+        elif not resuming and file_exists:
+        	print "failed start new set of experiments. Result file already exist."
+        	exit(0)
             
         if not resuming:
             if os.path.isfile('braninpy/chooser.GPEIOptChooser.pkl'):
