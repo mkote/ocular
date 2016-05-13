@@ -1,5 +1,6 @@
 import time
 import os
+import sys
 import filehandler
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -9,7 +10,6 @@ from preprocessing.dataextractor import load_data, restructure_data, separate_eo
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
-from sklearn import cross_validation
 from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
@@ -33,10 +33,11 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     if not any([x == None for x in [oacl_ranges, m]]):
         thetas, train = run_oacl(subject, train, oacl_ranges, m)
 
-    sh = cross_validation.ShuffleSplit(6, n_iter=6, test_size=0.16)
+    test_indexes = [[i] for i in range(6)]
+    train_indexes = [range(i) + range(i+1, 6) for i in range(6)]
 
     accuracies = []
-    for train_index, test_index in sh:
+    for train_index, test_index in zip(train_indexes, test_indexes):
         _train, _test = transform_fold_data(train_index, test_index, train, test,
                             oacl_ranges, thetas, m)
         accuracy = evaluate_fold(_train, _test, band_list, n_comp)
@@ -71,7 +72,7 @@ def run_oacl(subject, runs, oacl_ranges, m):
 
 def transform_fold_data(train_index, test_index, train, test,
                         oacl_ranges=None, thetas=None, m=None):
-    train = array(train)[RUNS_WITH_EEG[sorted(train_index)]]
+    train = array(train)[RUNS_WITH_EEG[train_index]]
     test = array(test)[RUNS_WITH_EEG[test_index]]
 
     if not any([x == None for x in [oacl_ranges, thetas, m]]):
@@ -82,7 +83,7 @@ def transform_fold_data(train_index, test_index, train, test,
     return train, test
 
 
-def evaluate_fold(train, test, band_list, n_comp):
+def evaluate_fold(train, test, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
     filters = Filter(band_list)
 
     train_bands, train_labels = restructure_data(train, filters)
@@ -95,15 +96,19 @@ def evaluate_fold(train, test, band_list, n_comp):
     train_features = create_feature_vector_list(train_bands, csp_list)
     test_features = create_feature_vector_list(test_bands, csp_list)
 
-    rf = RandomForestClassifier(n_estimators=len(band_list) * 4 * n_comp)
-    rf.fit(train_features, train_labels)
+    accuracies = []
+    for seed in seeds:
+        rf = RandomForestClassifier(n_estimators=len(band_list) * 4 * n_comp, random_state=seed)
+        rf.fit(train_features, train_labels)
 
-    predictions = []
-    for y in test_features:
-        predictions.append(rf.predict(array(y).reshape(1, -1)))
+        predictions = []
+        for y in test_features:
+            predictions.append(rf.predict(array(y).reshape(1, -1)))
 
-    accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
-    return accuracy
+        accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
+        accuracies.append(accuracy)
+
+    return np.mean(accuracies)
 
 
 def create_feature_vector_list(bands, csp_list):
@@ -148,6 +153,33 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
     os.chdir(old_path)
 
 
+def translate_params(par):
+    n_comp = int(par[0])
+    band_range = int(par[1])
+    num_bands = int(36 / band_range)
+    band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
+    if len(par) > 2:
+        s = int(par[2])
+        r1 = int(par[3])
+        r2 = int(par[4])
+        space = int(par[5])
+        m = int(par[6]) * 2 + 1
+        oacl_ranges = ((s, s + r1), (space + s + r1, space + s + r1 + r2))
+    else:
+        m = None
+        oacl_ranges = None
+
+    return n_comp, band_list, oacl_ranges, m
+
+
+# Input: subject, n_comp, band_range[, s, r1, r2, space, m]
 if __name__ == '__main__':
     freeze_support()
-    evaluate(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3), (4, 5)), 7)
+    errors = []
+    if len(sys.argv) > 1:
+        n_comp, band_list, oacl_ranges, m = translate_params(sys.argv[2:])
+        subject = int(sys.argv[1])
+        evaluate(n_comp, band_list, subject, oacl_ranges, m)
+    else:
+        print("No arguments passed - continuing with default parameters.")
+        evaluate(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3), (4, 5)), 7)
