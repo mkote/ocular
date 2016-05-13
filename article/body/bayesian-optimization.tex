@@ -1,9 +1,20 @@
-\subsection{Bayesian Optimization}\label{sec:bayesianoptimization}
-Bayesian Optimization is a method for finding the extrema of expensive functions. In machine learning, we can see classification algorithms as functions to be optimized over their hyperparameters with respect to model accuracy, and thus Bayesian optimzation can be used to find the combination of hyperparameters that yields the highest performance in classification. \citet{snoek2012practical} shows that Bayesian Optimzation can be applied to existing problems to find even better parameters than the original authors, as well as outperform even experts at tuning machine learning algorithms. 
+\section{Bayesian Optimization}\label{sec:bayesianoptimization}
+Bayesian Optimization is a method for finding the extrema of expensive functions. In machine learning, we can see classification algorithms as functions to be optimized over their hyperparameters with respect to model accuracy, and thus Bayesian optimzation can be used to find the combination of hyperparameters that yields the highest performance in classification. \citet{snoek2012practical} shows that Bayesian Optimization can be applied to existing problems to find even better parameters than the original authors presented, as well as outperform even experts at tuning machine learning algorithms. 
 
-%- Motivation
-%- Overview
-%- Gaussian Processes
-%- Acquisition function
-%- Choosing Candidate Parameter Combinations (Expected Improvement)
+Overview
+
+\subsection{Gaussian Processes}
+A random variable is a probability distribution over an event. One example is the random variable $CoinFlip = (0.5, 0.5)$ with a 50\% chance of either heads or tails. Such probability distributions can be gaussian, e.g. the outcomes of the event tend to cluster around some mean value and distribute evenly on either side of the mean. Generalizing the notion of gaussians, two random variables can also be jointly gaussian or multivariate gaussian in their covariances. A gaussian process over a set S, is a set of random variables $GP = (Z_t | t \in S)$ such that all linear combinations of $Z_t$ are multivariate gaussian. This means that we can interpret a gaussian process as a probability distribution over (gaussian) functions e.g. given a $t \in S$ we can get the function describing the probability distribution of variable $Z_t$. Since a gaussian is defined by the mean value $\mu$ and variance $\sigma^2$, we can consider a gaussian process as a function $GP : X \rightarrow \mathbb{R} \times \mathbb{R}$ where X is the set of combinations of hyperparameters:
+
+\begin{equation}\label{gaussian-process}
+GP(x) = (m(x), k(x, x'))
+\end{equation}
+where $m : X \rightarrow \mathbb{R}$ is the mean function, and $k : X \times X \rightarrow R^n$ is the \emph{covariance function} (also called the kernel function) of the gaussian process.
+
+An example of a gaussian process over one hyperparameter x is seen in figure x. 
+
+\subsection{Acquisition function}
+
+Choosing Candidate Parameter Combinations (Expected Improvement)
+
 %- Combining posterior and refit the GP
