@@ -1,7 +1,8 @@
 \section{Experimental Results}
-In order to evaluate the Bayesian Optimized Ocular Artifact Correction, we train and test the technique on the BCI Competition dataset IV 2a of 4-Class motor imagery EEG data. The dataset consist of a labeled training and test-set. The training set consists of EEG measurements of 9 subjects. The 9 subjects each participated in 2 sessions of 6 runs. A run consist of 48 labeled trials, divided between each of the 4 classes, which yields 12 trials for each label. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We discarded the EOG channels since we are interested in correcting artifacts without any secondary signal sources.
+In order to evaluate the Bayesian Optimized Ocular Artifact Correction, we train and test the technique on the BCI Competition dataset IV 2a of 4-class motor imagery EEG data. The dataset consist of labeled training and test sets. The training set consists of EEG measurements for 9 subjects. The 9 subjects each participated in 2 sessions of 6 runs. A run consist of 48 labeled trials, divided between each of the 4 classes, which yields 12 trials for each label. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We discarded the EOG channels since we are interested in correcting artifacts without any secondary signal sources.
 
-To see the effects of OACL, we the following experiments were setup. Two pipelines were set up where pipeline 1 performs Bayesian Optimization on OACL with FBCSP and Random Forrest Classification and pipeline 2 is identical except without the OACL method applied.
+To see the effects of OACL, we the following experiments were setup. Two pipelines were set up where pipeline 1 performs Bayesian Optimization on OACL with FBCSP and Random Forest Classification and pipeline 2 is identical except without the OACL method applied.
+
 To investigate the generality properties, we performed 6-fold cross-validation on the dataset where each fold contains the data of a single run. We performed the experiments on individual subjects to obtain the respective classification accuracies for each pipeline.
 \begin{table}[H]
 	\centering
@@ -22,7 +23,7 @@ To investigate the generality properties, we performed 6-fold cross-validation o
 		\multicolumn{1}{c|}{9} &                       &                   &                       &                   \\ \bottomrule
 	\end{tabular}
 \end{table}
-Figure \ref{fig:results} shows the obtained accuracies and KAPPA scores on each individual subject after cross-validation on the two pipelines.
+\Cref{fig:results} shows the obtained accuracies and KAPPA scores on each individual subject after cross-validation on the two pipelines.
 \begin{table}[H]
 	\centering
 	\caption{Rank Sum}
@@ -41,7 +42,8 @@ Figure \ref{fig:results} shows the obtained accuracies and KAPPA scores on each 
 		&               &                 &      &      \\ \bottomrule
 	\end{tabular}
 \end{table}
-Table \ref{fig:wilcoxon} shows the ranks in the Wilcoxon. 
+\Cref{fig:wilcoxon} shows the ranks in the Wilcoxon test.
+
 \subsection{Discussion}
 Here we discuss the results given in section 3, and talk more about what the results imply/how it could be improved.
 Remember to discuss the issues of complexity of experiment vs. how much effort we put into selecting the "best" candidate in Bayesian Optimization
