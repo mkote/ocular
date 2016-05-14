@@ -1,4 +1,17 @@
-\subsection{Ocular Artifact Correction}
+\begin{figure*}%[!hbtp]
+\centering
+\begin{adjustbox}{width=\textwidth}
+	\newlength\figureheight
+	\newlength\figurewidth
+	\setlength\figureheight{6cm}
+	\setlength\figurewidth{\textwidth}
+	\input{figures/oacl-signals.tex}
+\end{adjustbox}
+\vspace{-2em}
+\label{fig:oacl-signals}
+\caption{Smoothed and artifact signal superimposed on the raw EEG signal for a single channel.}
+\end{figure*}
+\section{Ocular Artifact Correction}
 We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
 
 Let $x = \{s_0, ...,s_n\}$ where $s_t \in \mathbb{R}_{\geq 0}$ denote the raw EEG data for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
@@ -6,8 +19,8 @@ From $x(t)$ we perform all steps in artifact detection and removal.
 
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
-\subsubsection{Artifact Detection}
-The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$. A moving average filter at time t, is computed as the average of $\frac{m}{2}$ samples on either side of the tth sample:
+\subsection{Artifact Detection}
+The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of $\frac{m}{2}$ the samples on either side of the tth sample:
 \begin{equation}
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
@@ -17,9 +30,9 @@ where $m$ is the number of neighboring points used.
 From the smoothed signal $s(t)$ OACL finds the changes in amplitude between the samples, which could indicate eye movement. Therefore, we proceed by computing the relative heights between samples as the maximal difference in amplitude between a sample at time $t$ and its neighboring samples.
 \begin{equation}
 \label{eq:relheights}
-\Delta (t) = max(|x(t)-x(t-1)|,|x(t+1) - x(t)|)
+\Delta (t) = max(|s(t)-s(t-1)|,|s(t+1) - s(t)|)
 \end{equation}
-Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization, discussed in \cref{sec:bayesianoptimization}
+Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization, discussed in \cref{sec:bayesianoptimization}.
 For now, assume that we have some arbitrary ranges
 \begin{equation}
 \label{eq:ranges}
@@ -42,7 +55,7 @@ s(t)      & \quad \text{if } z_b \leq t < z_a\\
 \end{cases}
 \end{equation}
 where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in figure (todo: make figure).
-Recalling that we can use an arbitrary number of ranges in \ref{eq:ranges}, we obtain the set of artifact signals for a single channel of a single trial as:
+Recalling that we can use an arbitrary number of ranges in \cref{eq:ranges}, we obtain the set of artifact signals for a single channel of a single trial as:
 \begin{equation}
 A(t)=  \begin{pmatrix}
 a_1(t) \\
@@ -52,7 +65,7 @@ a_n(t)
 \end{pmatrix}
 \end{equation}
 The idea behind this, is that different types of artifacts can be found by using different kinds of ranges. 
-\subsubsection{Artifact Removal}
+\subsection{Artifact Removal}
 With the artifact signal $a(t)$ extracted from the raw EEG data the next task is to remove the artifact characterized by $a(t)$ from the original signal $x(t)$. Since signals are closed under subtraction we can obtain the corrected signal by subtracting the artifact signal from the raw EEG signal:
 \begin{equation}
 \label{eq:correctedsignal}

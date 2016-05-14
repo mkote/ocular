@@ -1,16 +1,11 @@
-\subsection{Classification}
-With the feature vector $\mathbf{X}$ extracted by the multi-class CSP algorithm, we can now train a classifier for multi-class motor imagery.
+\section{Random Forest Classification}
 
-Several algorithms have seen popularity for classifying EEG data. The survey by \citet{chan2015systematic} on the performance of ensemble methods in EEG context argues that Random Forrests more accurately classifies EEG data than other well-known methods such as k nearest neighbors and Support Vector Machines. \citet{sun2007experimental} also surveys the effectiveness of ensemble methods, but argues that the results are subject to the choice of base classifier as weak learners.
+With the feature vector $\mathbf{X}$ extracted by the multi-class CSP algorithm as the training set, we train a classifier for multi-class motor imagery.
 
-To evaluate the results we train Random Forrest classifiers to see if there are any significant difference by these algorithms. We use the classification/standardization/scaling algorithms from the Scikit-Learn library for Python [\cite{scikit-learn}].  
+Several algorithms have seen popularity for classifying EEG data. The survey by \citet{chan2015systematic} on the performance of ensemble methods in EEG context argues that Random Forests more accurately classifies EEG data than other well-known methods such as k nearest neighbors and Support Vector Machines. \citet{sun2007experimental} also surveys the effectiveness of ensemble methods, but argues that performance is subject to the choice of base classifier as weak learners. To evaluate the results we train a Random Forrest classifier. We use the implementation from the Scikit-Learn library for Python \citep{scikit-learn}.   
 
-%\subsubsection{Support Vector Machines}
-%The Support Vector Machine classification is a supervised machine learning algorithm that works by finding a hyperplane that discriminates samples but also maximizes the margin between the different classes. In the case of multi-class classification, we use a "one-vs-rest" approach where we for 4 classes construct 4 binary classifiers that classifies one class against all others. This scheme is aggregated into the final decision function for classifying future trials.
+The Random Forrest learning algorithm works by splitting the training set $T$ into $n$ subsets $\{t_1,…,t_n \quad | \quad t_i \subset S\}$ and trains $n$ decision trees for each subset $t_i$. The splitting is done randomly by drawing a \emph{bootstrap sample} with replacement e.g. sets are constructed by uniformly chosing samples, with the possibility that one sample is drawn more than once. When classifying new samples, the Random Forrest classifies on each of its decision trees and returns the mode result. Intuitively, the weak learners 'vote' on the result.
 
-%For the SVM we perform Bayesian optimization with respect to the regularization parameter $C$ and choice of kernel as well as the $y$ parameter in the case of RBF kernel. Since SVMs are not scale invariant, we scale and standardize the feature vector $\mathbf{X}$ before training, such that the model is not dominated by a few features.
+The decision trees are constructed by randomly splitting the training subset $t_i$ on the features to obtain the training subset $t’_i \subset t_i$ containing the feature values of the randomly chosen features, in the given subset. The decision tree is then constructed according to the C4.5 algorithm which constructs a node on the split with the highest information gain, and finally pruned for features which do not provide any improvements in model accuracy.
 
-\subsubsection{Random Forrest}
-The Random Forrest learning algorithm works by randomly splitting the training set into $n$ subsets and trains $n$ \emph{weak learners} (such as Decision Trees) on one training subset each. When classifying new samples, the Random Forrest classifies on each weak learner and returns the mode result. Intuitively, the weak learners 'vote' on the result.
-
-For training the Random Forrest classifier, we perform Bayesian optimization on the number of weak learners used.
+The hyperparameters in a Random Forest classifier is the number of weak learners used to build the classifier. Generally, the more weak learners used the better the model accuracy and for this reason we use one tree for each feature in our feature space given by the CSP algorithm. 
