@@ -1,3 +1,16 @@
+\begin{figure*}%[!hbtp]
+\centering
+\begin{adjustbox}{width=\textwidth}
+	\newlength\figureheight
+	\newlength\figurewidth
+	\setlength\figureheight{6cm}
+	\setlength\figurewidth{\textwidth}
+	\input{figures/oacl-signals.tex}
+\end{adjustbox}
+\vspace{-2em}
+\label{fig:oacl-signals}
+\caption{Smoothed and artifact signal superimposed on the raw EEG signal for a single channel.}
+\end{figure*}
 \section{Ocular Artifact Correction}
 We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
 
@@ -7,7 +20,7 @@ From $x(t)$ we perform all steps in artifact detection and removal.
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
 \subsection{Artifact Detection}
-The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$. A moving average filter at time t, is computed as the average of $\frac{m}{2}$ samples on either side of the tth sample:
+The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of $\frac{m}{2}$ the samples on either side of the tth sample:
 \begin{equation}
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)

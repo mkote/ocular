@@ -1,7 +1,7 @@
 \section{Multi Class Filter Bank CSP}
 We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data, since the individual parts have shown valid by other studies. CSP assumes we know which frequency ranges contains important data for different imagery classes. Since one rarely knows this, we have chosen to use filter bank, as a step before CSP, as this automatically chooses frequency ranges from EEG data. CSP can in it's original form only be used on binary classification problems, but the extension explained in this paper, multi class CSP (MCCSP), can be used on a more. Since MCCSP makes use of the original binary CSP, we first explain how CSP works, and then extend it with multi class.
 
-\begin {figure*}%[!hbtp]
+\begin{figure*}%[!hbtp]
 \centering
 \begin{adjustbox}{width=\textwidth}
 \begin{tikzpicture}

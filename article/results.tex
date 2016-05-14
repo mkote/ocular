@@ -1,4 +1,4 @@
-\section{Experimental Results}
+\section{Experimental Results}\todo{add that we train on subject basis, because BCI systems most often har triained for individuals}
 In order to evaluate the Bayesian Optimized Ocular Artifact Correction, we train and test the technique on the BCI Competition dataset IV 2a of 4-Class motor imagery EEG data. The dataset consist of a labeled training and test-set. The training set consists of EEG measurements of 9 subjects. The 9 subjects each participated in 2 sessions of 6 runs. A run consist of 48 labeled trials, divided between each of the 4 classes, which yields 12 trials for each label. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We discarded the EOG channels since we are interested in correcting artifacts without any secondary signal sources.
 
 To see the effects of OACL, we the following experiments were setup. Two pipelines were set up where pipeline 1 performs Bayesian Optimization on OACL with FBCSP and Random Forrest Classification and pipeline 2 is identical except without the OACL method applied.
