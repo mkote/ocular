@@ -16,114 +16,119 @@ We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP
 \pgfmathsetmacro{\boxh}{1};
 \pgfmathsetmacro{\ll}{1};
 \coordinate (blength) at (0.5, 0);
-\coordinate (linel) at (2, 0);
+\coordinate (linel) at (1, 0);
 \coordinate (bh) at (0, 1);
 \coordinate (bl) at (2, 0);
 \newcommand*{\fblist}{-3, 0, 3}
 \newcommand*{\csplist}{-1, 0, 1}
-\def\filterbands{{"[4 - 8]","[8 - 12],"[12 - 16]"}}
+\newcommand*{\ovrlist}{{af},{bo},{co}}
+	
 
 % Coordinate for start circle
 \coordinate (trains) at (0, 0);
 
-% Coordinate for cross validation
-\coordinate (crosss) at ($(trains) + (blength) + (linel) + 1/2*(bl)$);
+% Coordinate for Bayesian Optimization
+\coordinate (bos) at ($(trains) + (blength) + 3/2*(linel)$);
 
-% Coordinate for OACL
+% Coordinate for cross validation
+\coordinate (crosss) at ($(bos) + (blength) + 3/2*(linel) + 1/2*(bl)$);
+
+% Coordinate for Ocular Articaft Correction
 \coordinate (oacls) at ($(crosss) + (bl) + (linel)$);
 
 % Coordinate for Filter Bank
 \coordinate (filters) at ($(oacls) + (bl) + (linel)$);
 
 % Coordinate for filterbank nodes
-\coordinate (filterbanks) at ($(filters) + 1/2*(bl) + (linel) + 1/2*(blength)$);
+\coordinate (filterbanks) at ($(filters) + 1/2*(bl) + 1.5*(linel) + 1/2*(blength)$);
 
 % Coordinate for csp ovr nodes
 \coordinate (cspovrs) at ($(filterbanks) + 1/2*(blength) + (linel)$);
 
-% Coordinate for Feature selection nodes
-\coordinate (featureselections) at ($(cspovrs) + 1/2*(blength) + 3/2*(linel)$);
-
-% Coordinate for voting box
-\coordinate (votings) at ($(featureselections) + 1/2*(blength) + 3/2*(linel) + 1/2*(bl)$);
+% Coordinate for Random Forest Learner nodes
+\coordinate (randomforestlearner) at ($(cspovrs) + 1/2*(blength) + 3.5*(linel)$);
 
 % Coordinate for result node
-\coordinate (results) at ($(votings) + 1/2*(bl) + 1/2*(blength) + (linel)$);
+\coordinate (results) at ($(randomforestlearner) + 1/2*(bl) + 1/2*(blength) + (linel)$);
 
 % Coordinate for mean results
 \coordinate (meanresults) at ($(results) + (blength) + (linel)$);
 
 % Cooordinates for start and end of step box
 \coordinate (boxceil) at (0, 6);
-\coordinate (boxfloor) at (0, -9);
+\coordinate (boxfloor) at (0, -6);
 \coordinate (startbox) at ($(trains) + (-1, 0)$);
 \coordinate (endbox) at ($(meanresults) + (1, 0)$);
 
 
 % Draw training data circle
-\node [draw, circle, name=traincircle, minimum size = \bs] at (trains) {};
+\node [draw, label={Train Data}, circle, name=traincircle, minimum size = \bs] at (trains) {};
+
+% Draw Bayesian Optimization Box
+\node (bo) at (bos) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {BO};
+\draw [->] (traincircle) -- (bo);
 
 % Draw Cross validation box
-\node (crossvalidation) at (crosss) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Crossvalidation};
-\draw [->] (traincircle) -- (crossvalidation);
+\node (crossvalidation) at (crosss) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {CV};
+\draw [->] (bo) -- (crossvalidation);
 
 % Draw oacl box
-\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Ocular Artifact Correction};
+\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {OAC};
 \draw [->] (crossvalidation) -- (oacl);
 
 % Draw Filter Bank
-\node (filterbank) at (filters) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Filter Bank};
+\node (filterbank) at (filters) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {FB};
 \draw [->] (oacl) -- (filterbank);
+
+% Draw filterbank nodes
+\foreach \x in \fblist{
+	\node [draw, circle, name=filterbanknode\x, minimum size = \bs] at ($(filterbanks) + (0, \x)$) {};
+}
+
+\draw [->] (filterbank) -- node[above] {[4, 8]} (filterbanknode-3);
+\draw [->] (filterbank) -- node[above] {[8, 12]} (filterbanknode0);
+\draw [->] (filterbank) -- node[above] {[12, 16]} (filterbanknode3);
 
 % Draw Filter Bank Nodes and CSP OVR nodes
 \foreach \x in \fblist
 	\foreach \y in \csplist{
-		\node [draw, circle, name=filterbanknode\x, minimum size = \bs] at ($(filterbanks) + (0, \x)$) {};
-		\draw [->] (filterbank) -- (filterbanknode\x);
-		\node [draw, circle, name=cspovrnode\x\y, minimum size = \bs] at ($(filterbanknode\x) + (0, \y) + 3/2*(linel)$) {};
+		\node [draw, circle, name=cspovrnode\x\y, minimum size = \bs] at ($(filterbanknode\x) + (0, \y) + 2*(linel)$) {};
 		\draw [->] (filterbanknode\x) -- (cspovrnode\x\y);
 }
 
+% Draw names of csp
+\foreach \x in \fblist{
+	\draw [->] (filterbanknode\x) -- node[above] {1-23} (cspovrnode\x-1);
+	\draw [->] (filterbanknode\x) -- node[above] {2-13} (cspovrnode\x0);
+	\draw [->] (filterbanknode\x) -- node[above] {3-12} (cspovrnode\x1);
+}
+
+
 % Draw filter bands
 \noindent\foreach [count=\i] \x in \fblist{
-	\draw [->] (filterbank) -- node[above] {[$4*\i$ - 8]} (filterbanknode\x);
+	\draw [->] (filterbank) -- node[above] {} (filterbanknode\x);
 }
 
+% Draw random forest classifier node
+\node (randomforestnode) at (randomforestlearner) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {RFC};
 
-% Draw Feature selection nodes
-\foreach \x in \fblist{
-	\node [draw, circle, name=featurenode\x, minimum size = \bs] at ($(featureselections) + (0, \x) + 1/2*(linel)$) {};
-			
-}
-
-% Draw feature selection arrows
-\foreach \x in \fblist{
-	\draw [->] (cspovrnode\x1) -- (featurenode3);
-}
-\foreach \x in \fblist{
-	\draw [->] (cspovrnode\x0) -- (featurenode0);
-}
-\foreach \x in \fblist{
-	\draw [->] (cspovrnode\x-1) -- (featurenode-3);
-}
-
-% Draw voting node and arrows
-\node (votingbox) at (votings) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Voting};
-\foreach \x in \fblist{
-	\draw [->] (featurenode\x) -- (votingbox);	
+% Draw CSP OVR arrows to classifier node
+\foreach \x in \fblist
+\foreach \y in \csplist{
+	\draw [->] (cspovrnode\x\y) -- (randomforestnode);
 }
 
 % Draw result node
-\node [draw, circle, name=result, minimum size = \bs] at (results) {};
-\draw [->] (votingbox) -- (result);
+\node [draw, label={Fold result}, circle, name=result, minimum size = \bs] at (results) {};
+\draw [->] (randomforestnode) -- (result);
 
 % Draw mean result node
-\node [draw, circle, name=meanresult, minimum size = \bs] at (meanresults) {};
+\node [draw, label={south:Mean Result}, circle, name=meanresult, minimum size = \bs] at ($(meanresults) + (0, -1)$) {};
 \draw [->] (result) -- (meanresult);
 
 % Draw curved arrows
-\draw [->] (result) to[out=280, in=270, distance=180] (crossvalidation);
-\draw [->] (meanresult) to[out=270, in=270, distance=260] (crossvalidation);
+\draw [->] (result) to[out=270, in=270, distance=165] (crossvalidation);
+\draw [->] (meanresult) to[out=270, in=270, distance=180] (bo);
 
 % Draw box around image and horizontal lines
 \draw ($(startbox) + (boxfloor)$) -- ($(endbox) + (boxfloor)$) -- ($(endbox) + (boxceil)$) -- ($(startbox) + (boxceil)$) -- cycle;
@@ -131,27 +136,31 @@ We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP
 \draw[loosely dotted] ($(trains) + (boxfloor) + 1/2*(linel)$) -- ($(trains) + (boxceil) + 1/2*(linel)$);
 \node[draw] at ($(trains) + (boxceil) - (0, 1)$) {1};
 
-\draw[loosely dotted] ($(crosss) + (boxfloor) + (linel)$) -- ($(crosss) + (boxceil) + (linel)$);
-\node[draw] at ($(crosss) + (boxceil) - (0, 1)$) {2};
+\draw[loosely dotted] ($(bos) + (boxfloor) + 3/2*(linel)$) -- ($(bos) + (boxceil) + 3/2*(linel)$);
+\node[draw] at ($(bos) + (boxceil) - (0, 1)$) {2};
 
-\draw[loosely dotted] ($(oacls) + (boxfloor) + (linel)$) -- ($(oacls) + (boxceil) + (linel)$);
-\node[draw] at ($(oacls) + (boxceil) - (0, 1)$) {3};
+\draw[loosely dotted] ($(crosss) + (boxfloor) + 3/2*(linel)$) -- ($(crosss) + (boxceil) + 3/2*(linel)$);
+\node[draw] at ($(crosss) + (boxceil) - (0, 1)$) {3};
 
-\draw[loosely dotted] ($(filters) + (boxfloor) + (linel)$) -- ($(filters) + (boxceil) + (linel)$);
-\node[draw] at ($(filters) + (boxceil) - (0, 1)$) {4};
+\draw[loosely dotted] ($(oacls) + (boxfloor) + 3/2*(linel)$) -- ($(oacls) + (boxceil) + 3/2*(linel)$);
+\node[draw] at ($(oacls) + (boxceil) - (0, 1)$) {4};
 
-\draw[loosely dotted] ($(filters) + (boxfloor) + 9/4*(linel)$) -- ($(filters) + (boxceil) + 9/4*(linel)$);
-\node[draw] at ($(filters) + (boxceil) - (0, 1) +7/4*(linel)$) {5};
+\draw[loosely dotted] ($(filters) + (boxfloor) + 3/2*(linel)$) -- ($(filters) + (boxceil) + 3/2*(linel)$);
+\node[draw] at ($(filters) + (boxceil) - (0, 1)$) {5};
 
-\draw[loosely dotted] ($(filterbanks) + (boxfloor) + 9/4*(linel)$) -- ($(filterbanks) + (boxceil) + 9/4*(linel)$);
-\node[draw] at ($(filterbanks) + (boxceil) - (0, 1) +3/2*(linel)$) {6};
+\draw[loosely dotted] ($(filters) + (boxfloor) + 15/4*(linel)$) -- ($(filters) + (boxceil) + 15/4*(linel)$);
+\node[draw] at ($(filters) + (boxceil) - (0, 1) +11/4*(linel)$) {6};
 
-\draw[loosely dotted] ($(featureselections) + (boxfloor) + (linel)$) -- ($(featureselections) + (boxceil) + (linel)$);
-\node[draw] at ($(featureselections) + (boxceil) - (0, 1)$) {7};
+\draw[loosely dotted] ($(filterbanks) + (boxfloor) + 3*(linel)$) -- ($(filterbanks) + (boxceil) + 3*(linel)$);
+\node[draw] at ($(filterbanks) + (boxceil) - (0, 1) +2*(linel)$) {7};
 
-\draw[loosely dotted] ($(votings) + (boxfloor) + (linel)$) -- ($(votings) + (boxceil) + (linel)$);
-\node[draw] at ($(votings) + (boxceil) - (0, 1)$) {8};
+\draw[loosely dotted] ($(randomforestlearner) + (boxfloor) + 3/2*(linel)$) -- ($(randomforestlearner) + (boxceil) + 3/2*(linel)$);
+\node[draw] at ($(randomforestlearner) + (boxceil) - (0, 1)$) {8};
 
+\draw[loosely dotted] ($(result) + (boxfloor) + 2/3*(linel)$) -- ($(result) + (boxceil) + 2/3*(linel)$);
+\node[draw] at ($(result) + (boxceil) - (0, 1)$) {9};
+
+\node[draw] at ($(meanresults) + (boxceil) - (0, 1)$) {10};
 
 \end{tikzpicture}
 \end{adjustbox}
