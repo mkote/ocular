@@ -11,7 +11,7 @@ FIRST_SUBJECT = 6
 LAST_SUBJECT = 6
 CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 200
-resuming = False       # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
+resuming = True     # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
 
 
@@ -52,14 +52,14 @@ def optim_params():
             while condition:
                 old_path = os.getcwd()
                 os.chdir('spearmintlite')
-                subprocess.check_call([executable, 'spearmintlite.py', '--results', 'results_subject' + str(CURRENT_SUBJECT) + '.dat', '../braninpy'], cwd=os.getcwd())
+                subprocess.check_call([executable, 'spearmintlite.py', '--method-args=noiseless=1,mcmc_iters=1000', '--results', 'results_subject' + str(CURRENT_SUBJECT) + '.dat', '../braninpy'], cwd=os.getcwd())
                 os.chdir(old_path)		
                 params = get_params().rstrip()
                 par = params.split(' ')	
                 condition = any_params_out_of_bounds(par)
 
-            n_comp, band_list, max_depth, min_samples, oacl_ranges, m = translate_params(par[2:])
-            result, timestamp = main(n_comp, band_list, subject, max_depth, min_samples, oacl_ranges, m)
+            n_comp, band_list, max_depth, oacl_ranges, m = translate_params(par[2:])
+            result, timestamp = main(n_comp, band_list, subject, max_depth, oacl_ranges, m)
             insert_result(result, timestamp)
         
         # done with subject, set resuming to false.

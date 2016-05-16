@@ -19,12 +19,5 @@
     "min":3,
     "max":336,
     "size":1
-  },
-  "min_samples" : {
-    "name":"min_samples",
-    "type":"int",
-    "min":2,
-    "max":10,
-    "size":1
   }
 }

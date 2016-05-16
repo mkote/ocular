@@ -2,7 +2,7 @@
 from decimal import Decimal, getcontext
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
-from scipy.optimize import basinhopping
+from scipy.import basinhopping
 from scipy.optimize._basinhopping import Metropolis
 from dataextractor import extract_trials_single_channel
 from numpy import exp, array, cov, mean, inf, mat, copy, seterr, shape, frombuffer
