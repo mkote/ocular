@@ -16,11 +16,10 @@ def get_all_params(path):
 
 
 path = './results.dat'
-if len(sys.argv) > 1:
-    if len(sys.argv[1]) > 1:
-        path = sys.argv[1]
-    else:
-        path = './results' + str(sys.argv[1]) + '.dat'
+if len(sys.argv) < 2:
+    print("Not enough arguments: enter a number corresponding to a subject")
+    sys.exit(0)
+path = './results_subject' + str(sys.argv[1]) + '.dat'
 
 params = get_all_params(path)
 
@@ -42,4 +41,4 @@ best_error = min(errors)
 best_params = [p for p in params if float(p[0]) == best_error]
 
 print("Best accuracy: " + str(100 - best_error))
-print("Best parameters: " + str(best_params))
+print("Best parameters: " + str(set([' '.join(p[2:]).rstrip() for p in best_params])))
