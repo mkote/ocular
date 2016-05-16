@@ -17,9 +17,9 @@ from preprocessing.oaclbase import OACL
 RUNS_WITH_EEG = array(range(-6, 0))
 
 
-def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
+def main(n_comp, band_list, subject, max_depth, min_samples, oacl_ranges=None, m=None):
     print 'Running with following args \n'
-    print n_comp, band_list, subject, oacl_ranges, m
+    print n_comp, band_list, max_depth, min_samples, subject, oacl_ranges, m
 
     old_path = os.getcwd()
     os.chdir('..')
@@ -40,7 +40,7 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     for train_index, test_index in zip(train_indexes, test_indexes):
         _train, _test = transform_fold_data(train_index, test_index, train, test,
                             oacl_ranges, thetas, m)
-        accuracy = evaluate_fold(_train, _test, band_list, n_comp)
+        accuracy = evaluate_fold(_train, _test, max_depth, min_samples, band_list, n_comp)
         print("Accuracy: " + str(accuracy * 100) + "%")
         accuracies.append(accuracy)
 
@@ -83,7 +83,7 @@ def transform_fold_data(train_index, test_index, train, test,
     return train, test
 
 
-def evaluate_fold(train, test, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
+def evaluate_fold(train, test, max_depth, min_samples, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
     filters = Filter(band_list)
 
     train_bands, train_labels = restructure_data(train, filters)
@@ -98,7 +98,7 @@ def evaluate_fold(train, test, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
 
     accuracies = []
     for seed in seeds:
-        rf = RandomForestClassifier(n_estimators=len(band_list) * 4 * n_comp, random_state=seed)
+        rf = RandomForestClassifier(n_estimators=len(band_list) * 4 * n_comp, random_state=seed, bootstrap=False, max_depth=max_depth, min_samples_split=min_samples)
         rf.fit(train_features, train_labels)
 
         predictions = []
@@ -130,7 +130,7 @@ def create_feature_vector_list(bands, csp_list):
     return combo
 
 
-def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
+def evaluate(n_comp, band_list, max_depth, min_samples, subject, oacl_ranges=None, m=None):
     old_path = os.getcwd()
     os.chdir('..')
 
@@ -147,7 +147,7 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
 
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]
-    accuracy = evaluate_fold(train, test, band_list, n_comp)
+    accuracy = evaluate_fold(train, test, band_list, max_depth, min_samples, n_comp)
     print("Accuracy: " + str(accuracy * 100) + "%")
 
     os.chdir(old_path)
@@ -158,7 +158,9 @@ def translate_params(par):
     band_range = int(par[1])
     num_bands = int(36 / band_range)
     band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
-    if len(par) > 2:
+    max_depth = int(par[2])
+    min_samples = int(par[3])
+    if len(par) > 4:
         s = int(par[2])
         r1 = int(par[3])
         r2 = int(par[4])
@@ -169,7 +171,7 @@ def translate_params(par):
         m = None
         oacl_ranges = None
 
-    return n_comp, band_list, oacl_ranges, m
+    return n_comp, band_list, max_depth, min_samples, oacl_ranges, m
 
 
 # Input: subject, n_comp, band_range[, s, r1, r2, space, m]
@@ -177,7 +179,7 @@ if __name__ == '__main__':
     freeze_support()
     errors = []
     if len(sys.argv) > 1:
-        n_comp, band_list, oacl_ranges, m = translate_params(sys.argv[2:])
+        n_comp, band_list, max_depth, min_samples, oacl_ranges, m = translate_params(sys.argv[2:])
         subject = int(sys.argv[1])
         evaluate(n_comp, band_list, subject, oacl_ranges, m)
     else:
