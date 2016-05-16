@@ -1,5 +1,19 @@
+\begin{figure*}%[!hbtp]
+\centering
+\begin{adjustbox}{width=\textwidth}
+	\newlength\figureheight
+	\newlength\figurewidth
+	\setlength\figureheight{6cm}
+	\setlength\figurewidth{\textwidth}
+	\input{figures/oacl-signals.tex}
+\end{adjustbox}
+\vspace{-2em}
+\label{fig:oacl-signals}
+\caption{Smoothed and artifact signal superimposed on the raw EEG signal for a single channel.}
+\end{figure*}
 \section{Ocular Artifact Correction}
-We adapt the  Ocular Artifact Correction (OACL) technique developed in (add reference) for multi-class datasets. The OACL method consists of two parts. First, we analyse the raw EEG signals to obtain the artifact signals, representing the parts of the raw signal that was determined to be noise. Then we find the filtering parameter of each the artifact signal, which determines "how much" of each signal that should be removed from the raw signal. 
+The OACL method consists of two parts. First, the raw EEG signals are processed to obtain the artifact signals, representing the parts of the signal that are artifacts. Then we find the \emph{filtering parameter} $\Theta$ for each the artifact signals, which determines the amount of each signal that are to be removed from the raw signal in order to obtain the corrected signal. 
+Since the original OACL method \citep{li2015ocular} was devised for binary class datasets, we generalize the algorithm for multi-class datasets. 
 
 Let $x = \{s_0, ...,s_n\}$ where $s_t \in \mathbb{R}_{\geq 0}$ denote the raw EEG data for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
 From $x(t)$ we perform all steps in artifact detection and removal.
@@ -7,29 +21,30 @@ From $x(t)$ we perform all steps in artifact detection and removal.
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
 \subsection{Artifact Detection}
-The goal of artifact detection is to find some artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$. A moving average filter at time t, is computed as the average of $\frac{m}{2}$ samples on either side of the tth sample:
+The goal of artifact detection is to find the artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that are noise. Before finding the artifact signal $s(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$, in order to smooth out short-term fluctuations from e.g. external interference. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of the $\frac{m}{2}$ samples on either side of the tth sample. 
 \begin{equation}
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
 \end{equation}
-where $m$ is the number of neighboring points used.
+where $m$ is the number of neighboring points used. The smoothed signal $s(t)$ shown together with the raw signal $x(t)$ are illustrated in \cref{fig:oacl-signals}.
 
 From the smoothed signal $s(t)$ OACL finds the changes in amplitude between the samples, which could indicate eye movement. Therefore, we proceed by computing the relative heights between samples as the maximal difference in amplitude between a sample at time $t$ and its neighboring samples.
-\begin{equation}
-\label{eq:relheights}
-\Delta (t) = max(|s(t)-s(t-1)|,|s(t+1) - s(t)|)
-\end{equation}
-Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization, discussed in \cref{sec:bayesianoptimization}.
+\begin{align*}
+\Delta (t) = max(&|s(t)-s(t-1)|,\\
+				 &|s(t+1) - s(t)|) \numberthis \label{eq:relheights}
+\end{align*}
+where we can consider $\Delta(t)$ as the describing the fluctuations in the signal.
+
+Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) between $[30\mu V-50\mu V]$ and $[70\mu V-150\mu V]$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization, discussed in \cref{sec:bayesian-optimization}.
 For now, assume that we have some arbitrary ranges
-\begin{equation}
-\label{eq:ranges}
+\begin{equation}\label{ranges}
 R=[l, u] \quad  l,u \in \mathbb{N}_{\geq 0}
 \end{equation}
-then we can find the points in time where $\Delta (t)$  lies in the range $R$:
-\begin{equation}
-\label{eq:peaks}
-P = \{t \quad | \quad \frac{m}{2} < t < n-\frac{m}{2} \quad \textnormal{and} \quad l < \Delta (t) < u\}
-\end{equation}
+then we can find the sample indexes $t$ where $\Delta (t)$  lies in the range $R$:
+\begin{align*}
+P = \{t \quad | \quad &\frac{m}{2} < t < n-\frac{m}{2}  \quad \textnormal{and} \\
+& l < \Delta (t) < u\} \numberthis \label{eq:peaks}
+\end{align*}
 where $P$ is the indexes of the samples of the smoothed signal, where a change in amplitude lies within the range that characterizes an ocular artifact.
 
 We now have the peaks of the ocular artifacts in $s(t)$, but we still need all of the artifact before we can correct it. The approach in the OACL method is to define the artifact to be from the closest zero point to the peak, before the peak, to the closest zero point after the peak. We can now find the artifact signal 
@@ -41,7 +56,7 @@ s(t)      & \quad \text{if } z_b \leq t < z_a\\
 0  & \quad \text{otherwise}\\
 \end{cases}
 \end{equation}
-where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in figure (todo: make figure).
+where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in figure \todo{modify figure to show the concept of zero points}.
 Recalling that we can use an arbitrary number of ranges in \cref{eq:ranges}, we obtain the set of artifact signals for a single channel of a single trial as:
 \begin{equation}
 A(t)=  \begin{pmatrix}
@@ -53,13 +68,23 @@ a_n(t)
 \end{equation}
 The idea behind this, is that different types of artifacts can be found by using different kinds of ranges. 
 \subsection{Artifact Removal}
-With the artifact signal $a(t)$ extracted from the raw EEG data the next task is to remove the artifact characterized by $a(t)$ from the original signal $x(t)$. Since signals are closed under subtraction we can obtain the corrected signal by subtracting the artifact signal from the raw EEG signal:
+With the artifact signal $a(t)$ extracted from the raw EEG data the next task is to remove the artifacts characterized by $a(t)$ from the original signal $x(t)$. Since signals are closed under subtraction we can obtain the corrected signal by subtracting the artifact signal from the raw EEG signal:
 \begin{equation}
 \label{eq:correctedsignal}
 c(t) = x(t) - \Theta A(t)
 \end{equation}
 where $\Theta \in \mathbb{R}_{\geq 0}$ is the \emph{filtering parameter}. Intuitively, $\Theta$ is a factor that determines the "amount" of the artifact signal to subtract from the raw signal. 
-
-In order to find a value for $\Theta$, we minimize an objective function $O : \mathbb{R}_{\geq 0} \times \mathbb{R} \rightarrow \mathbb{R}$ where $O$ predicts with some probability the label of the trial in question. Such a mechanism is obtained by using logistic regression where we have modified the original OACL binary logistic regression to the multi-class case:
-
-By doing so, we can use the objective function to measure the error in label predictions and by minimizing it we obtain values for $\Theta$. The 
+\todo{insert derivation of z here and explain how we minimize}
+In order to find a value for $\Theta$, we minimize an objective function $O : \mathbb{R}_{\geq 0} \times \mathbb{R} \rightarrow \mathbb{R}$ where $O$ predicts with some probability the label of the trial in question. Such a mechanism is in the original OACL method obtained by training a binary logistic regression classifier. To accommodate multiclass datasets, we modify the objective function to multiclass logistic regression by implementing the "one-vs-rest" approach. In the one-vs-rest approach, we train 4 binary logistic regression classifiers: 
+\begin{align}
+h_i(z) = \frac{1}{\sqrt{1+e^{-z}}}
+\end{align} for each class label $y_i$, and for new classification, output the class of the classifier with highest certainty. That is,
+\begin{align}
+\max_{i}h_i(z) \quad \forall y_i \in Y
+\end{align}
+where $Y$ is the set of classes.
+By doing so, we can use the objective function to measure the error in label predictions and by minimizing it we obtain values for $\Theta$. The multiclass log loss objective function is then:
+\begin{align}
+L(\Theta, b) = -\frac{1}{n}\sum_{i=1}^{n}\sum_{j=1}^{|Y|}y_{i,j} log(h_i(z))
+\end{align}
+which we minimize by the basin hopping algorithm. \todo{explain further}

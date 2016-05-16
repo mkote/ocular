@@ -1,5 +1,9 @@
-\section{Multi Class Filter Bank CSP}
-We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data, since the individual parts have shown valid by other studies. CSP assumes we know which frequency ranges contains important data for different imagery classes. Since one rarely knows this, we have chosen to use filter bank, as a step before CSP, as this automatically chooses frequency ranges from EEG data. CSP can in it's original form only be used on binary classification problems, but the extension explained in this paper, multi class CSP (MCCSP), can be used on a more. Since MCCSP makes use of the original binary CSP, we first explain how CSP works, and then extend it with multi class.
+\subsection{Filter bank multi class CSP}
+
+You should describe a bit more about Filter Bank and Multi Class CSP, at least 2 paragraphs for each technique.
+
+
+We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data. The CSP algorithm has been used in many EEG classification studies within recent years, as in \cite{ang2012filter}. In all studies, CSP were considered a step of improvement to the classification of EEG classes. Based on these results, we chose to incorporate CSP as part of the classification pipeline. CSP assumes the user knows which frequency ranges contains important features for different imagery classes. Since one rarely knows of these ranges, we have implemented the filter bank algorithm, as a step before CSP, as this automatically chooses frequency ranges from EEG data. Filter bank is also a well studied algorithm, which is often used in conjunction with CSP, as in \cite{ang2008filter}. CSP can in its original form, only be used in binary classification problems, but the extension explained in this paper, multi class CSP (MCCSP), does not have that restriction. Since MCCSP makes use of the original binary CSP, we first explain how CSP works, and then extend it with multi class.
 
 \begin {figure*}%[!hbtp]
 \centering
@@ -64,7 +68,7 @@ We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP
 \draw [->] (traincircle) -- (crossvalidation);
 
 % Draw oacl box
-\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {OACL};
+\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Ocular Artifact Correction};
 \draw [->] (crossvalidation) -- (oacl);
 
 % Draw Filter Bank
@@ -156,10 +160,8 @@ We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP
 \end{figure*}
 
 \subsection{Common Spatial Patterns}\label{sec:csp}
-Common spatial patterns (CSP), is well known as a valid way of finding spatial information among  relevant EEG signals. \todo{Indsæt kilde - Emil} 
-
 CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in the training and evaluation data, this assumption can be justified \cite{blankertz2008optimizing}.
-Formally CSP combines data trials with the same imagery task. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for imagery task 1 and 2,
+Formally CSP combines data trials with the same imagery task. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for imagery task 1 and 2 respectively,
 
 \begin{equation}
 \label{eq:csp_data}
@@ -190,15 +192,15 @@ By applying simultaneous diagonalization between $\pmb{A_{cov}}$ and $\pmb{B_{co
 \pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{n*n}
 \end{equation}
 
-The spatial filter will now correspond to the first row of $\pmb{P}$, such $\pmb{\vec{w}} = \pmb{P}^\mathsf{T}_{1}$ 
+The spatial filter will now correspond to the first row of $\pmb{P}$, such that $\pmb{\vec{w}} = \pmb{P}^\mathsf{T}_{1}$ 
 
-$\pmb{P}$ can now be applied \todo{Hvordan skal den applies? - Emil} to signals, which maps these into a new space, where signal features are more discriminative. The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications requires a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
+$\pmb{P}$ can now be used as a linear transformation which when applied to EEG signals, maps these into a new space, where signal features are more discriminative. The drawback of CSP is that the method only works on 2 imagery classes, whereas many real world applications requires a greater number of classes, for the application to be useful. CSP also assumes we know in which frequency the important features of each imagery class is.
 
 \subsection{Filter Bank}
-We propose our solution to the CSP problem, which combines a filter-bank (FB) method, with a multi class (MC) CSP. CSP expects the user to know the frequency of importance for each imagery class. These frequencies are however seldom known beforehand. Our solution to this problem, introduces a step called filter bank (FB), which splits the data into filters of different frequencies, which will all be used in the classification stage. By splitting the data, the user can ignore the CSP requirement of knowing the right frequencies.
+We propose our solution to the CSP problem, which combines a filter-bank method, with a multi class (MC) CSP. CSP expects the user to know the frequency of importance for each imagery class. These frequencies are however seldom known beforehand. Our solution to this problem, introduces a step called filter-bank (FB), which splits the data into filters of different frequencies, which will all be used in the classification stage. By splitting the data, the user can ignore the CSP requirement of knowing the right frequencies, since all data will be used in the phase of classification. FB can be seen in \cref{fig:ProgramPipeline} as step 4. Filters are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account.\todo{Indsæt kilde på dette - Emil} Individual filters are chosen with a span of $n \in \{3,..,8\}$. As an example, say we choose a span of $4$, then the following set $F$ of filters are created, $F \in \{[4, 8], [8, 16],...,[36, 40]\}$. Every filter will be used in the creation of CSP's, which will form the basis of feature creation.   
 
 \subsection{Multi Class CSP}
-We introduce MCCSP by the one versus rest (OVR) method. The method constructs one CSP per class, by choosing a class, and treating every other class as being the same. This way we get one CSP per imagery class, each constructed to create the maximum variance to all other classes. The method is depicted in \Cref{fig:ProgramPipeline} as step 6. The example figure shows a pipeline with 3 filter bands, and three classes, from which 9 CSP are created.
+We introduce MCCSP by the one versus rest (OVR) method. The method constructs one CSP per class, by choosing a class, and treating every other class as being the same. This way we get one CSP per imagery class, each constructed to create the maximum variance to all other classes. The method is depicted in \Cref{fig:ProgramPipeline} as step 6. The example figure shows a pipeline with 3 filter bands, and three classes, from which 9 CSP are created. EEG features can now be found, by applying the spatial filters from CSP, to EEG trials. Our approach is to apply each CSP, to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $n$ components. By applying all CSP to the same trial, and combining their feature vectors, we get a trial with $n * m$ features. We apply this method on all trials in the dataset, from where $n * m$ features are found, for every trial. These can now be used to train a random forest classifier.     
 
 
 
