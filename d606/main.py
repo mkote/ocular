@@ -3,6 +3,7 @@ import os
 import sys
 import filehandler
 import numpy as np
+from skll import metrics
 from sklearn.ensemble import RandomForestClassifier
 from eval.timing import timed_block
 from featureselection.mnecsp import csp_one_vs_all
@@ -36,16 +37,20 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     test_indexes = [[i] for i in range(6)]
     train_indexes = [range(i) + range(i+1, 6) for i in range(6)]
 
+    kappas = []
     accuracies = []
     for train_index, test_index in zip(train_indexes, test_indexes):
         _train, _test = transform_fold_data(train_index, test_index, train, test,
                             oacl_ranges, thetas, m)
-        accuracy = evaluate_fold(_train, _test, band_list, n_comp)
+        accuracy, kappa = evaluate_fold(_train, _test, band_list, n_comp)
         print("Accuracy: " + str(accuracy * 100) + "%")
+        print("Kappa: " + str(kappa))
+        kappas.append(kappa)
         accuracies.append(accuracy)
 
     os.chdir(old_path)
     print "Mean accuracy: " + str(np.mean(accuracies) * 100)
+    print "Mean kappa: " + str(np.mean(kappas))
     return np.mean(accuracies) * 100, time.time()
 
 
@@ -96,6 +101,7 @@ def evaluate_fold(train, test, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
     train_features = create_feature_vector_list(train_bands, csp_list)
     test_features = create_feature_vector_list(test_bands, csp_list)
 
+    kappas = []
     accuracies = []
     for seed in seeds:
         rf = RandomForestClassifier(n_estimators=len(band_list) * 4 * n_comp, random_state=seed)
@@ -105,10 +111,13 @@ def evaluate_fold(train, test, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
         for y in test_features:
             predictions.append(rf.predict(array(y).reshape(1, -1)))
 
+        kappa = metrics.kappa(test_labels, predictions)
         accuracy = np.mean([a == b for (a, b) in zip(predictions, test_labels)])
+
+        kappas.append(kappa)
         accuracies.append(accuracy)
 
-    return np.mean(accuracies)
+    return np.mean(accuracies), np.mean(kappas)
 
 
 def create_feature_vector_list(bands, csp_list):
@@ -147,8 +156,10 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
 
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]
-    accuracy = evaluate_fold(train, test, band_list, n_comp)
+    accuracy, kappa = evaluate_fold(train, test, band_list, n_comp)
+    
     print("Accuracy: " + str(accuracy * 100) + "%")
+    print("Kappa: " + str(kappa))
 
     os.chdir(old_path)
 
@@ -177,8 +188,8 @@ if __name__ == '__main__':
     freeze_support()
     errors = []
     if len(sys.argv) > 1:
-        n_comp, band_list, oacl_ranges, m = translate_params(sys.argv[2:])
         subject = int(sys.argv[1])
+        n_comp, band_list, oacl_ranges, m = translate_params(sys.argv[2:])
         evaluate(n_comp, band_list, subject, oacl_ranges, m)
     else:
         print("No arguments passed - continuing with default parameters.")
