@@ -46,6 +46,7 @@ To determine the significance of these results we use the Wilcoxon signed-rank t
 \end{table}
 
 \subsection{Discussion}\label{sec:discussion}
+\todo{discuss that optimal filterbank ranges are different from subject to subject}
 In the original OACL paper by \citep{li2015ocular}, the relative heights ranges specified in \cref{eq:ranges} were determined by manual inspection of the characteristics of ocular artifacts. Since we generalised this as an optimization of hyperparameter, the found ranges are no longer guaranteed to be optimal in regards to ocular artifacts, but instead optimized correcting the noise that most negatively affects the classification results. In fact, since we optimize the ranges for maximal classification accuracy, the method may be removing parts of the signal that is technically not artifacts, but removing them increases the performance of the classification model.
 
 Moreover, we have run the Bayesian Optimization with the default settings with regards to exploration vs. exploitation. Since running experiments on the pipeline in \cref{fig:ProgramPipeline} is quite expensive, it would be ideal to tune the bayesian optimization to spend more time on selecting the best candidate future sample to perform the next experiment on. 
