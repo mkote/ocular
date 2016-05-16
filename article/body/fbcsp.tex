@@ -1,8 +1,5 @@
-\subsection{Filter bank multi class CSP}
-
-You should describe a bit more about Filter Bank and Multi Class CSP, at least 2 paragraphs for each technique.
-
-
+\section{Filter Bank Common Spatial Patterns}
+\todo{You should describe a bit more about Filter Bank and Multi Class CSP, at least 2 paragraphs for each technique.}
 We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data. The CSP algorithm has been used in many EEG classification studies within recent years, as in \cite{ang2012filter}. In all studies, CSP were considered a step of improvement to the classification of EEG classes. Based on these results, we chose to incorporate CSP as part of the classification pipeline. CSP assumes the user knows which frequency ranges contains important features for different imagery classes. Since one rarely knows of these ranges, we have implemented the filter bank algorithm, as a step before CSP, as this automatically chooses frequency ranges from EEG data. Filter bank is also a well studied algorithm, which is often used in conjunction with CSP, as in \cite{ang2008filter}. CSP can in its original form, only be used in binary classification problems, but the extension explained in this paper, multi class CSP (MCCSP), does not have that restriction. Since MCCSP makes use of the original binary CSP, we first explain how CSP works, and then extend it with multi class.
 
 \begin {figure*}%[!hbtp]
@@ -165,7 +162,7 @@ Formally CSP combines data trials with the same imagery task. Let $\pmb{A}$ and 
 
 \begin{equation}
 \label{eq:csp_data}
-\pmb{A}, \pmb{B} \in \mathbb{R}^{n*m}
+\pmb{A}, \mathbf{B} \in \mathbb{R}^{n*m}
 \end{equation}
 where $n$ and $m$ are the number of signals and samples respectively. CSP now calculates the covariance matrices for $\pmb{A}$ and $\pmb{B}$,
 
