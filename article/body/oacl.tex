@@ -77,7 +77,7 @@ where $\Theta \in \mathbb{R}_{\geq 0}$ is the \emph{filtering parameter}. Intuit
 \todo{insert derivation of z here and explain how we minimize}
 In order to find a value for $\Theta$, we minimize an objective function $O : \mathbb{R}_{\geq 0} \times \mathbb{R} \rightarrow \mathbb{R}$ where $O$ predicts with some probability the label of the trial in question. Such a mechanism is in the original OACL method obtained by training a binary logistic regression classifier. To accommodate multiclass datasets, we modify the objective function to multiclass logistic regression by implementing the "one-vs-rest" approach. In the one-vs-rest approach, we train 4 binary logistic regression classifiers: 
 \begin{align}
-h_i(z) = \frac{1}{\sqrt{1+e^{-z}}}
+h_i(z) = \frac{1}{1+e^{-z}}
 \end{align} for each class label $y_i$, and for new classification, output the class of the classifier with highest certainty. That is,
 \begin{align}
 \max_{i}h_i(z) \quad \forall y_i \in Y
