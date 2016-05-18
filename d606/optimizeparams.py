@@ -3,6 +3,7 @@ import subprocess
 import time
 import collections
 import json
+import GPyOpt
 from sys import executable, exit
 from main import main, translate_params, MainWrapper
 from multiprocessing import freeze_support
@@ -28,23 +29,22 @@ def get_init_data():
 
 def new_optim_params():
     global resuming
-    bounds = {'n_comp': (2, 22), 'band_range': (3, 8)}
+    bounds = [(2, 22), (3, 8)]
 
     for subject in range(FIRST_SUBJECT, LAST_SUBJECT + STEP, STEP):
         num_iterations = NUM_ITERATIONS
         print("\n\nOptimizing hyperparameters for subject %i" % subject)
         wrapper = MainWrapper(subject)
-        bo = BayesianOptimization(wrapper.main_aux, bounds)
+        bo = GPyOpt.methods.BayesianOptimization(wrapper.main_aux, bounds)
 
-        if resuming:
-            init_knowledge = get_init_data()
-            bo.initialize(init_knowledge)
-            num_iterations = NUM_ITERATIONS - len(init_knowledge)
-            resuming = False
+        #if resuming:
+        #    init_knowledge = get_init_data()
+        #    bo.initialize(init_knowledge)
+        #    num_iterations = NUM_ITERATIONS - len(init_knowledge)
+        #    resuming = False
 
-        bo.maximize(acq='ei', n_iter=num_iterations)
-        print('Result: %f %s' % (bo.res['max']['max_val'], bo.res['max']['max_params']))
-        print(zip(bo.res['all']['values'], bo.res['all']['params']))
+        bo.run_optimization(num_iterations)
+        print(str(bo.fx_opt) + " with params " + str(bo.x_opt))
 
 
 def optim_params():

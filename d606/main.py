@@ -23,14 +23,16 @@ class MainWrapper(object):
     def __init__(self, subject):
         self.subject = subject
 
-    def main_aux(self, n_comp, band_range):
-        n_comp, band_list, oacl_ranges, m = translate_params([n_comp, band_range])
+    def main_aux(self, *args):
+        if len(args) == 1 and isinstance(args[0], np.ndarray):
+            return array([self.main_aux(a, b) for a, b in args[0]])
+        n_comp, band_list, oacl_ranges, m = translate_params(args)
         accuracy, timestamp = main(n_comp, band_list, self.subject)
-        return accuracy
+        return 100 - accuracy
 
 
 def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
-    print 'Running with following args \n'
+    print '\nRunning with following args'
     print n_comp, band_list, subject, oacl_ranges, m
 
     old_path = os.getcwd()
