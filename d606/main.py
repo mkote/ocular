@@ -18,6 +18,17 @@ from preprocessing.oaclbase import OACL
 RUNS_WITH_EEG = array(range(-6, 0))
 
 
+class MainWrapper(object):
+
+    def __init__(self, subject):
+        self.subject = subject
+
+    def main_aux(self, n_comp, band_range):
+        n_comp, band_list, oacl_ranges, m = translate_params([n_comp, band_range])
+        accuracy, timestamp = main(n_comp, band_list, self.subject)
+        return accuracy
+
+
 def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     print 'Running with following args \n'
     print n_comp, band_list, subject, oacl_ranges, m

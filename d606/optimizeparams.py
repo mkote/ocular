@@ -4,8 +4,9 @@ import time
 import collections
 import json
 from sys import executable, exit
-from main import main, translate_params
+from main import main, translate_params, MainWrapper
 from multiprocessing import freeze_support
+from bayes_opt import BayesianOptimization
 
 FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
@@ -13,6 +14,37 @@ CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 200
 resuming = True       # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
+
+
+def get_init_data():
+    data = {}
+    with open('../initdata.txt', 'rb') as fh:
+        for line in fh:
+            line_data = line.split(' ')
+            data[line_data[0]] = {'band_range': line_data[1], 'n_comp': line_data[2]}
+
+    return data
+
+
+def new_optim_params():
+    global resuming
+    bounds = {'n_comp': (2, 22), 'band_range': (3, 8)}
+
+    for subject in range(FIRST_SUBJECT, LAST_SUBJECT + STEP, STEP):
+        num_iterations = NUM_ITERATIONS
+        print("\n\nOptimizing hyperparameters for subject %i" % subject)
+        wrapper = MainWrapper(FIRST_SUBJECT)
+        bo = BayesianOptimization(wrapper.main_aux, bounds)
+
+        if resuming:
+            init_knowledge = get_init_data()
+            bo.initialize(init_knowledge)
+            num_iterations = NUM_ITERATIONS - len(init_knowledge)
+            resuming = False
+
+        bo.maximize(acq='ei', n_iter=num_iterations)
+        print('Result: %f %s' % (bo.res['max']['max_val'], bo.res['max']['max_params']))
+        print(zip(bo.res['all']['values'], bo.res['all']['params']))
 
 
 def optim_params():
@@ -27,9 +59,9 @@ def optim_params():
             print "failed to resume work of subject " + str(CURRENT_SUBJECT) + " on file " + expected_path + " (file does not exist). Exiting..."
             exit(0)
         elif not resuming and file_exists:
-        	print "failed start new set of experiments. Result file already exist."
-        	exit(0)
-            
+            print "failed start new set of experiments. Result file already exist."
+            exit(0)
+
         if not resuming:
             if os.path.isfile('braninpy/chooser.GPEIOptChooser.pkl'):
                 os.remove('braninpy/chooser.GPEIOptChooser.pkl')
@@ -37,7 +69,7 @@ def optim_params():
                 os.remove('braninpy/chooser.GPEIOptChooser_hyperparameters.txt')
             if os.path.isfile(expected_path):
                 os.rename(expected_path, expected_path + '.' + str(time.time()))
-                
+
         num_iter_done = 0;
         if os.path.isfile(expected_path):
             with open(expected_path) as f:
@@ -101,4 +133,4 @@ def insert_result(result, time):
 
 if __name__ == '__main__':
     freeze_support()
-    optim_params()
+    new_optim_params()
