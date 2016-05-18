@@ -12,7 +12,7 @@ FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
 CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 200
-resuming = True       # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
+resuming = False       # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
 
 
@@ -33,7 +33,7 @@ def new_optim_params():
     for subject in range(FIRST_SUBJECT, LAST_SUBJECT + STEP, STEP):
         num_iterations = NUM_ITERATIONS
         print("\n\nOptimizing hyperparameters for subject %i" % subject)
-        wrapper = MainWrapper(FIRST_SUBJECT)
+        wrapper = MainWrapper(subject)
         bo = BayesianOptimization(wrapper.main_aux, bounds)
 
         if resuming:
