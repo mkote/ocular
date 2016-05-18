@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import time
 import os
 import sys
@@ -14,8 +15,14 @@ from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
 from preprocessing.oacl import find_artifact_signals, extract_trials_array
+from autograd import grad
+from autograd.util import quick_grad_check
+import autograd.numpy as auto
 
 RUNS_WITH_EEG = array(range(-6, 0))
+inputs = 0
+raw_signal = 0
+targets = 0
 
 
 def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
@@ -50,12 +57,56 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     return np.mean(accuracies) * 100, time.time()
 
 
+def sigmoid(x):
+    return 1 / (1 + auto.exp(-x))
+
+
+def logistic_predictions(weights, inputs, raw_signal):
+    # Outputs probability of a label being true according to logistic model.
+
+    # A dot At
+    term1 = auto.dot(inputs, np.transpose(inputs))
+    term2 = auto.dot(auto.transpose(weights[1:]), term1)
+    term3 = auto.dot(term2, weights[1:])
+
+    # A dot X0
+    term4 = auto.dot(inputs, auto.transpose(raw_signal))
+    term5 = auto.dot(2 * auto.transpose(weights[1:]), term4)
+
+    # r0 + b
+    term6 = auto.var(raw_signal) + weights[0]
+
+    # Full term
+    fullterm = term3 - term5 + term6
+
+    return sigmoid(fullterm)
+
+
+def training_loss(weights):
+    # Training loss is the negative log-likelihood of the training labels.
+    preds = logistic_predictions(weights, inputs, raw_signal)
+    label_probabilities = preds * targets + (1 - preds) * (1 - targets)
+    return -auto.sum(auto.log(label_probabilities))
+
+
+def rearrange_target(target, label):
+    new_targets = []
+    for tar in target:
+        if tar == label:
+            new_targets.append(True)
+        else:
+            new_targets.append(False)
+    return np.array(new_targets)
+
+
 def generate_thetas(runs, ranges, m):
+    global inputs, raw_signal, targets
     raw_signals = np.array([], dtype=float).reshape(22, 0)
     labels = []
     artifact_list = []
     start_trial_times = runs[3][1]
     new_start_times = []
+    weight_list = []
     with timed_block("Extract Trials!"):
         for i, run in enumerate(runs[3:]):
             tri = run[0]
@@ -71,10 +122,30 @@ def generate_thetas(runs, ranges, m):
                 artifact_list.append(find_artifact_signals(raw_signals[i], m, ranges))
 
         for i, channel in enumerate(raw_signals):
-            trial_signals = np.mat(extract_trials_array(channel, new_start_times))
-            trial_artifact_signals = [extract_trials_array(artifact_list[i][k], new_start_times)for k in xrange(len(ranges))]
-            print "morten"
+            raw_signal = []
+            raw_signal = extract_trials_array(channel, new_start_times)
+            #for raw in temp_raw_signal:
+            #    raw_signal.extend(raw)
+            trial_artifact_signals = [extract_trials_array(artifact_list[i][k], new_start_times) for k in xrange(len(ranges))]
+            combined_artifact_signals = []
+            temp_artifact_signal = []
+            for range_signal in trial_artifact_signals:
+                for elements in range_signal:
+                    temp_artifact_signal.extend(elements)
+                combined_artifact_signals.append(temp_artifact_signal)
+                temp_artifact_signal = []
+            inputs = combined_artifact_signals
+            for target in set(labels):
+                weights = np.array([0.0, 0.0, 0.0])
+                targets = rearrange_target(labels, target)
+                training_gradient_fun = grad(training_loss)
+                quick_grad_check(training_loss, weights)
 
+                for i in range(100):
+                    weights -= training_gradient_fun(weights) * 0.01
+
+                print(weights)
+                weight_list.append(weights)
 
 
 def run_oacl(subject, runs, oacl_ranges, m):

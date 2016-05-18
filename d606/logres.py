@@ -67,13 +67,13 @@ weight_list = []
 # Build a function that returns gradients of training loss using autograd.
 
 # Run OVRRR!!!
-for target in set(old_targets .tolist()):
+for target in set(old_targets.tolist()):
     targets = rearrange_target(old_targets, target)
     training_gradient_fun = grad(training_loss)
 
     # Check the gradients numerically, just to be safe.
     weights = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
-    quick_grad_check(training_loss, weights)
+    quick_grad_check(training_loss, 0)
 
     # Optimize weights using gradient descent.
     # print("Initial loss:", training_loss(weights))

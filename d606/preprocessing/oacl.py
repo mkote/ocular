@@ -13,7 +13,6 @@ from ctypes import c_float, c_int
 from itertools import product
 from eval.timing import timed_block
 from bisect import bisect_left
-from log
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
