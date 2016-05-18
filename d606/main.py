@@ -2,6 +2,9 @@ from __future__ import absolute_import
 import time
 import os
 import sys
+
+from IPython.core import magic
+
 import filehandler
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -18,6 +21,8 @@ from preprocessing.oacl import find_artifact_signals, extract_trials_array
 from autograd import grad
 from autograd.util import quick_grad_check
 import autograd.numpy as auto
+
+from real_main import magic
 
 RUNS_WITH_EEG = array(range(-6, 0))
 inputs = 0
@@ -126,26 +131,11 @@ def generate_thetas(runs, ranges, m):
             raw_signal = extract_trials_array(channel, new_start_times)
             #for raw in temp_raw_signal:
             #    raw_signal.extend(raw)
-            trial_artifact_signals = [extract_trials_array(artifact_list[i][k], new_start_times) for k in xrange(len(ranges))]
-            combined_artifact_signals = []
-            temp_artifact_signal = []
-            for range_signal in trial_artifact_signals:
-                for elements in range_signal:
-                    temp_artifact_signal.extend(elements)
-                combined_artifact_signals.append(temp_artifact_signal)
-                temp_artifact_signal = []
-            inputs = combined_artifact_signals
+            inputs = raw_signal
+
+            # Here we do one vs rest
             for target in set(labels):
-                weights = np.array([0.0, 0.0, 0.0])
-                targets = rearrange_target(labels, target)
-                training_gradient_fun = grad(training_loss)
-                quick_grad_check(training_loss, weights)
-
-                for i in range(100):
-                    weights -= training_gradient_fun(weights) * 0.01
-
-                print(weights)
-                weight_list.append(weights)
+                magic(inputs, labels, m, ranges)
 
 
 def run_oacl(subject, runs, oacl_ranges, m):
