@@ -6,13 +6,14 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from eval.timing import timed_block
 from featureselection.mnecsp import csp_one_vs_all
-from preprocessing.dataextractor import load_data, restructure_data, separate_eog_eeg, d3_matrix_creator
+from preprocessing.dataextractor import load_data, restructure_data, separate_eog_eeg, d3_matrix_creator, extract_trials_two
 from preprocessing.filter import Filter
 from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
 from itertools import chain
 from multiprocessing import freeze_support
 from numpy import array
 from preprocessing.oaclbase import OACL
+from preprocessing.oacl import find_artifact_signals, extract_trials_array
 
 RUNS_WITH_EEG = array(range(-6, 0))
 
@@ -49,8 +50,36 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     return np.mean(accuracies) * 100, time.time()
 
 
+def generate_thetas(runs, ranges, m):
+    raw_signals = np.array([], dtype=float).reshape(22, 0)
+    labels = []
+    artifact_list = []
+    start_trial_times = runs[3][1]
+    new_start_times = []
+    with timed_block("Extract Trials!"):
+        for i, run in enumerate(runs[3:]):
+            tri = run[0]
+            labels.extend(run[2])
+            raw_signals = np.concatenate((raw_signals, np.array(tri)), axis=1)
+
+        appender = len(runs[3][0][0])
+        for i in xrange(6):
+            new_start_times.extend([x + (appender * i) for x in start_trial_times])
+
+        for i in xrange(2):
+            with timed_block('One signal'):
+                artifact_list.append(find_artifact_signals(raw_signals[i], m, ranges))
+
+        for i, channel in enumerate(raw_signals):
+            trial_signals = np.mat(extract_trials_array(channel, new_start_times))
+            trial_artifact_signals = [extract_trials_array(artifact_list[i][k], new_start_times)for k in xrange(len(ranges))]
+            print "morten"
+
+
+
 def run_oacl(subject, runs, oacl_ranges, m):
     # Generate a name for serializing of file
+    generate_thetas(runs, oacl_ranges, m)
     filename_suffix = filehandler.generate_filename(oacl_ranges, m, subject)
 
     # Check whether the data is already present as serialized data
@@ -138,7 +167,6 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
     _, train = separate_eog_eeg(train)
     test = load_data(subject, "E")
     _, test = separate_eog_eeg(test)
-
     if not any([x == None for x in [oacl_ranges, m]]):
         thetas, train = run_oacl(subject, train, oacl_ranges, m)
         oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
@@ -182,4 +210,4 @@ if __name__ == '__main__':
         evaluate(n_comp, band_list, subject, oacl_ranges, m)
     else:
         print("No arguments passed - continuing with default parameters.")
-        evaluate(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3), (4, 5)), 7)
+        evaluate(4, [[4, 8], [8, 12], [12, 16], [16, 20], [20, 24], [24, 28], [28, 32], [32, 36], [36, 40]], 5, ((2, 3), (3 , 30)), 7)

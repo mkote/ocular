@@ -11,7 +11,7 @@ FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
 CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 200
-resuming = True       # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
+resuming = True      # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
 
 
@@ -66,6 +66,7 @@ def optim_params():
         resuming = False
         # os.rename('braninpy/results.dat', 'braninpy/results' + str(subject) + '.dat')
 
+
 def any_params_out_of_bounds(p):
     variables = json.load(open('braninpy/config.json'), object_pairs_hook=collections.OrderedDict).items()
     v = [var[1] for var in variables]
@@ -73,6 +74,7 @@ def any_params_out_of_bounds(p):
                                     for i in range(len(v))])
     return are_params_out_of_bounds
     
+
 def get_params():
     with open('braninpy/results_subject' + str(CURRENT_SUBJECT) + '.dat', 'rb') as fh:
         last_line = ''

@@ -12,6 +12,8 @@ from multiprocessing import Pool, Array, cpu_count
 from ctypes import c_float, c_int
 from itertools import product
 from eval.timing import timed_block
+from bisect import bisect_left
+from log
 
 
 def _fixed_accept_reject(self, energy_new, energy_old):
@@ -82,12 +84,36 @@ def find_relative_height(smooth_signal, time):
     return rel_height
 
 
+def zero_index(smooth_signal, i):
+    a = smooth_signal[i]
+    b = smooth_signal[i + 1]
+
+    if b >= len(smooth_signal):
+        # No polarity changes. So we just go with last element in the list.
+        return True, i
+    if a == 0.0:
+        return True, i
+
+    if a > 0 > b or a < 0 < b:
+        m = min(a, b)
+        if m == a:
+            return True, i
+        else:
+            return True, i + 1
+    else:
+        return False, i
+
+
 def find_relative_heights(smooth_signal):
     relative_heights = []
+    zero_indexes = []
     for i in range(1, len(smooth_signal)-1):
         next_rel_height = find_relative_height(smooth_signal, i)
+        zi = zero_index(smooth_signal, i)
+        if zi[0] is True:
+            zero_indexes.append(zi[1])
         relative_heights.append(next_rel_height)
-    return relative_heights
+    return relative_heights, zero_indexes
 
 
 def find_peak_indexes(relative_heights, peak_range):
@@ -101,31 +127,59 @@ def find_peak_indexes(relative_heights, peak_range):
     return pt
 
 
-def find_artifact_ranges(smooth_signal, peak_indexes):
+def find_artifact_ranges(smooth_signal, peak_indexes, zero_indexes):
     ranges = []
     latest_range = 0
     for peak in peak_indexes:
         if peak >= latest_range:
-            artifact_range = find_artifact_range(smooth_signal, peak)
-            latest_range = artifact_range[1]
+            artifact_range = find_artifact_range(smooth_signal, peak, zero_indexes)
+            if artifact_range[1] is None:
+                latest_range = artifact_range[0]
+                continue
+            else:
+                latest_range = artifact_range[1] + 25
             ranges.append(artifact_range)
     return ranges
 
 
-def find_artifact_range(signal_smooth, peak):
-    left = signal_smooth[0:peak]
-    left.reverse()
-    right = signal_smooth[peak+1:len(signal_smooth)]
-    before_i = nearest_zero_point(left, 0, 1)
-    after_i = nearest_zero_point(right, 0, 1)
-    before = (peak-1) - before_i
-    after = (peak+1) + after_i
+def take_closest(zero_indexes, peak):
+    """
+    Assumes myList is sorted. Returns closest values to myNumber.
+    """
+    pos = bisect_left(zero_indexes, peak)
+    if pos == 0:
+        return zero_indexes[0], zero_indexes[1]
+    if pos == len(zero_indexes):
+        return zero_indexes[-2], zero_indexes[-1]
+    before = zero_indexes[pos - 1]
+    after = zero_indexes[pos]
+
     return before, after
 
 
-def find_artifact_signal(peak_indexes, smooth_signal):
+def find_artifact_range(signal_smooth, peak, zero_indexes):
+    before, after = take_closest(zero_indexes, peak)
+    #left = signal_smooth[0:peak]
+    #left.reverse()
+    #right = signal_smooth[peak+1:len(signal_smooth)]
+    #before_i = nearest_zero_point(left, 0, 1)
+    #after_i = nearest_zero_point(right, 0, 1)
+    #before = (peak-1) - before_i
+    #after = (peak+1) + after_i
+    if peak - before >= 62.5:
+        return after + 25, None
+    if peak - before <= 25:
+        return peak + 25 - peak - before, None
+    if after - peak >= 62.5:
+        return after + 25, None
+    if after - peak <= 25:
+        return after + 25, None
+    return before, after
+
+
+def find_artifact_signal(peak_indexes, smooth_signal, zero_indexes):
     artifact_signal = [0.0 for x in range(0, len(smooth_signal))]
-    ranges = sorted(find_artifact_ranges(smooth_signal, peak_indexes), key=lambda z: z[0])
+    ranges = sorted(find_artifact_ranges(smooth_signal, peak_indexes, zero_indexes), key=lambda z: z[0])
     for r in ranges:
         nzp_b = r[0]+1
         nzp_a = r[1]
@@ -136,10 +190,10 @@ def find_artifact_signal(peak_indexes, smooth_signal):
 def find_artifact_signals(raw_signal, m, range_list):
     artifact_signals = []
     smooth_signal = moving_avg_filter(raw_signal, m)
-    rh = find_relative_heights(smooth_signal)
+    rh, zi = find_relative_heights(smooth_signal)
     for range in range_list:
         peaks = find_peak_indexes(rh, range)
-        artifact_signal = find_artifact_signal(peaks, smooth_signal)
+        artifact_signal = find_artifact_signal(peaks, smooth_signal, zi)
         artifact_signals.append(artifact_signal)
     return array(artifact_signals)
 
@@ -288,7 +342,8 @@ def special_purpose_theta(args):
     print run, channel
 
     raw_signal = shared_array_oacl[start:end]
-    artifact_signals = find_artifact_signals(raw_signal, m, range_list)
+    with timed_block('Finding signals'):
+        artifact_signals = find_artifact_signals(raw_signal, m, range_list)
     trial_signals = mat(extract_trials_array(raw_signal, trials_start_oacl[run*n_trials:(run+1)*n_trials]))
     trial_artifact_signals = [extract_trials_array(artifact_signals[i],
                                                    trials_start_oacl[run*n_trials:(run+1)*n_trials])
@@ -307,7 +362,6 @@ def special_purpose_theta(args):
                               niter_success=25)
     filtering_param = array([[min_result.x[k]] for k in xrange(len(min_result.x) - 1)])
     # b = min_result.x[len(min_result.x) - 1]
-
     return index, filtering_param, artifact_signals
 
 
