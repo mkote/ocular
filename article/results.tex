@@ -1,6 +1,6 @@
 \section{Experimental Results}
 
-In order to evaluate our method, we use the BCI Competition IV dataset 2a \citep{brunner2008bci}, which contains 4-class motor imagery EEG data from 9 subjects. Each subject participated in two sessions of 6 runs on different days. The training data is from the first session, and the test data is from the second. A run consist of 48 labeled trials, divided evenly between the 4 classes. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We disregard the EOG channels since we are interested in correcting artifacts without any reference signals. Examples of trials, channels, runs, and sessions are shown in \cref{fig:dataset}.
+In order to evaluate our method, we use the BCI Competition IV dataset 2a \citep{brunner2008bci}, which contains 4-class motor imagery EEG data from 9 subjects. Each subject participated in two sessions of 6 runs on different days. The training data is from the first session, and the test data is from the second. A run consist of 48 labeled trials, divided evenly between the 4 classes. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We disregard the EOG channels since we are interested in correcting artifacts without any reference signals. Examples of trials, channels, runs, and sessions are shown in \cref{fig:dataset}. What we refer to as a trial is three second span (750 samples) of motor imagery, i.e., without the cue, break, etc. in between.
 
 \begin{figure*}
 	\centering
