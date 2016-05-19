@@ -27,8 +27,6 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
 
     train = load_data(subject, "T")
     _, train = separate_eog_eeg(train)
-    test = load_data(subject, "T")
-    _, test = separate_eog_eeg(test)
 
     oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True, trials=False)
     oacl.theta = thetas
@@ -41,8 +39,7 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     kappas = []
     accuracies = []
     for train_index, test_index in zip(train_indexes, test_indexes):
-        _train, _test = transform_fold_data(train_index, test_index, train, test,
-                            oacl_ranges, thetas, m)
+        _train, _test = transform_fold_data(train_index, test_index, train)
         accuracy, kappa = evaluate_fold(_train, _test, band_list, n_comp)
         print("Accuracy: " + str(accuracy * 100) + "%")
         print("Kappa: " + str(kappa))
@@ -76,17 +73,11 @@ def run_oacl(subject, runs, oacl_ranges, m):
     return thetas, runs
 
 
-def transform_fold_data(train_index, test_index, train, test,
-                        oacl_ranges=None, thetas=None, m=None):
-    train = array(train)[RUNS_WITH_EEG[train_index]]
-    test = array(test)[RUNS_WITH_EEG[test_index]]
+def transform_fold_data(train_index, test_index, train):
+    new_train = array(train)[RUNS_WITH_EEG[train_index]]
+    new_test = array(train)[RUNS_WITH_EEG[test_index]]
 
-    if not any([x == None for x in [oacl_ranges, thetas, m]]):
-        oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
-        oacl.theta = thetas
-        test = remake_single_run_transform(test, oacl)
-
-    return train, test
+    return new_train, new_test
 
 
 def evaluate_fold(train, test, band_list, n_comp, seeds=(4, 8, 15, 16, 23, 42)):
