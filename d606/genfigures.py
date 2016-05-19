@@ -8,8 +8,8 @@ import numpy as np
 def plot_example1():
     # load the data.
     eeg_data = load_data(1, 'T')
-    sigfrom = 1500
-    sigto = 2250
+    sigfrom = 750*5
+    sigto = sigfrom+750
     raw_signal = eeg_data[3][0][0][sigfrom:sigto]
     eog_signal1 = eeg_data[3][0][22][sigfrom:sigto]
     eog_signal2 = eeg_data[3][0][23][sigfrom:sigto]
@@ -20,10 +20,12 @@ def plot_example1():
 
     # DATA PREPROCESSING
     filtered = moving_avg_filter(raw_signal, m)
-    padded_fsignal= [0]*(m/2)
+    padding = [0]*(m/2)
+    padded_fsignal= list(padding)
     padded_fsignal.extend(filtered)
+    padded_fsignal.extend(padding)
     rh, zero_indexes = find_relative_heights(filtered)
-    ti = find_peak_indexes(rh, (5, 7))
+    ti = find_peak_indexes(rh, (4, 7))
 
     artifacts = [0]*(m/2)
     a = find_artifact_signal(ti, filtered, zero_indexes)
@@ -38,17 +40,19 @@ def plot_example1():
     ax[0].plot([x for x in range(0, len(artifacts))], artifacts, 'r', label='artifacts: a(t)')
     yax = [0]*len(zero_indexes)
     zero_indexesp = [x + m/2 for x in zero_indexes]
-    ax[0].scatter(zero_indexesp, yax)
+    ax[0].scatter(zero_indexesp, yax, color='red')
     ax[1].plot([x for x in range(0, len(eog_signal1))], eog_signal1, 'r', label='EOG 1')
     ax[1].plot([x for x in range(0, len(eog_signal2))], eog_signal2, 'b', label='EOG 2')
     ax[1].plot([x for x in range(0, len(eog_signal3))], eog_signal3, 'g', label='EOG 3')
-    ax[0].legend(bbox_to_anchor=(0., 1.02, 1., .102),loc=3,ncol=3,mode="expand",borderaxespad=0)
-    ax[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=3, mode="expand", borderaxespad=0)
+    ax[0].legend(bbox_to_anchor=(0., 1.02, 1., .102),loc=4, prop={'size':8}, ncol=3,mode="expand",borderaxespad=0)
+    ax[1].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=1, prop={'size':8}, ncol=3, mode="expand", borderaxespad=0)
     plt.ylabel('amplitude')
     plt.xlabel('time (t)')
-    #plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+    ax[0].axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+    ax[1].axis([0, len(raw_signal), min([min(eog_signal1), min(eog_signal2), min(eog_signal3)]),
+                max([max(eog_signal1), max(eog_signal2), max(eog_signal3)])])
     plt.plot()
-    plt.show()
+    plt.show() # showing the plot affects tikz save
     tikz_save('oacl-signals.tex',figureheight = '\\figureheight',figurewidth = '\\figurewidth')
 
 def generate_zero_point_example():
