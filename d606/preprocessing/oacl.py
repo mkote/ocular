@@ -216,9 +216,8 @@ def objective_function(theta, b, labels, n_trials, trial_artifact_signals,
 
 def remove_ocular_artifacts(raw_signal, theta, artifact_signals):
     A = theta.transpose().dot(artifact_signals).transpose()
-    A = A[..., 0].tolist()
     m = (len(raw_signal) - len(A)) / 2
-    A = [0] * m + A + [0] * m
+    A = [0] * m + A.tolist() + [0] * m
     corrected_signal = (array(raw_signal) - array(A))
     return corrected_signal
 

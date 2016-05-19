@@ -18,7 +18,7 @@ from preprocessing.oaclbase import OACL
 RUNS_WITH_EEG = array(range(-6, 0))
 
 
-def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
+def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     print 'Running with following args \n'
     print n_comp, band_list, subject, oacl_ranges, m
 
@@ -29,10 +29,11 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     _, train = separate_eog_eeg(train)
     test = load_data(subject, "T")
     _, test = separate_eog_eeg(test)
-    thetas = None
 
-    if not any([x == None for x in [oacl_ranges, m]]):
-        thetas, train = run_oacl(subject, train, oacl_ranges, m)
+    oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True, trials=False)
+    oacl.theta = thetas
+
+    train, _ = remake_trial(train, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
 
     test_indexes = [[i] for i in range(6)]
     train_indexes = [range(i) + range(i+1, 6) for i in range(6)]
@@ -82,7 +83,7 @@ def transform_fold_data(train_index, test_index, train, test,
 
     if not any([x == None for x in [oacl_ranges, thetas, m]]):
         oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
-        oacl.theta = oacl.generalize_thetas(array(thetas)[train_index])
+        oacl.theta = thetas
         test = remake_single_run_transform(test, oacl)
 
     return train, test
@@ -171,16 +172,16 @@ def translate_params(par):
     band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
     if len(par) > 2:
         s = int(par[2])
-        r1 = int(par[3])
-        r2 = int(par[4])
-        space = int(par[5])
-        m = int(par[6]) * 2 + 1
-        oacl_ranges = ((s, s + r1), (space + s + r1, space + s + r1 + r2))
+        r = int(par[3])
+        m = int(par[4]) * 2 + 1
+        oacl_range = ((s, r), )
+        thvals = [array([float(par[x])]) for x in xrange(5, 27)]
     else:
         m = None
-        oacl_ranges = None
+        oacl_range = None
+        thvals = None
 
-    return n_comp, band_list, oacl_ranges, m
+    return n_comp, band_list, oacl_range, m, thvals
 
 
 # Input: subject, n_comp, band_range[, s, r1, r2, space, m]
@@ -193,4 +194,4 @@ if __name__ == '__main__':
         evaluate(n_comp, band_list, subject, oacl_ranges, m)
     else:
         print("No arguments passed - continuing with default parameters.")
-        evaluate(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3), (4, 5)), 7)
+        main(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3),), 7, [array([0.1]) for x in range(22)])
