@@ -1,28 +1,29 @@
 from matplotlib import pyplot as plt
 from matplotlib import style
-from preprocessing.oacl import moving_avg_filter, find_relative_heights, find_peak_indexes, find_artifact_signal
+from preprocessing.oacl import moving_avg_filter, find_relative_heights, find_peak_indexes, find_artifact_signal, zero_index
 from preprocessing.dataextractor import load_data
 from matplotlib2tikz import save as tikz_save
 import numpy as np
 
-def plot_example():
-	# load the data.
+def plot_example1():
+    # load the data.
     eeg_data = load_data(1, 'T')
-    raw_signal = eeg_data[5][0][4]
-    raw_signal = raw_signal[1000:1500]
-    labels = eeg_data[5][2]
-    n_trials = 48
+    raw_signal = eeg_data[3][0][4]
+    #labels = eeg_data[5][2]
+    #n_trials = 48
     m = 11
 
     # DATA PREPROCESSING
-    raw = raw_signal
+    raw = raw_signal[0:750]
     filtered = moving_avg_filter(raw_signal, m)
     padded_fsignal= [0]*(m/2)
     padded_fsignal.extend(filtered)
-    rh = find_relative_heights(filtered)
-    ti = find_peak_indexes(rh, (3, 15))
+    rh, zero_indexes = find_relative_heights(filtered)
+    ti = find_peak_indexes(rh, (2, 3))
+
     artifacts = [0]*(m/2)
-    artifacts.extend(find_artifact_signal(ti, filtered))
+    a = find_artifact_signal(ti, filtered, zero_indexes)
+    artifacts.extend(a)
     num_samples = len(raw)
     # prepare plot
     fig, ax = plt.subplots()
@@ -36,7 +37,45 @@ def plot_example():
     plt.xlabel('time (t)')
     #plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
     plt.plot()
-    #plt.show()
+    plt.show()
     tikz_save('oacl-signals.tex',figureheight = '\\figureheight',figurewidth = '\\figurewidth')
 
-plot_example()
+def generate_zero_point_example():
+    # load the data.
+    eeg_data = load_data(1, 'T')
+    raw_signal = eeg_data[5][0][4]
+    raw_signal = raw_signal[1000:1020]
+    labels = eeg_data[5][2]
+    n_trials = 48
+    m = 11
+
+    # DATA PREPROCESSING
+    raw = raw_signal
+    filtered = moving_avg_filter(raw_signal, m)
+    padded_fsignal= [0]*(m/2)
+    padded_fsignal.extend(filtered)
+    rh = find_relative_heights(filtered)
+    ti = find_peak_indexes(rh, (3, 15))
+    zero_indexes = []
+    for x in xrange(len(filtered)-1):
+        zero_indexes.append(zero_index(filtered, x))
+    artifacts = [0]*(m/2)
+    artifacts.extend(find_artifact_signal(ti, filtered, zero_indexes))
+    print str(artifacts)
+    num_samples = len(raw)
+    # prepare plot
+    fig, ax = plt.subplots()
+    #plt.subplot(211)
+    # plot shit
+    ax.plot([x for x in range(0, len(raw_signal))], raw_signal, 'b--', label='raw signal: x(t)')
+    ax.plot([x for x in range(0, len(padded_fsignal))], padded_fsignal, 'g', label='smoothed signal: s(t)')
+    ax.plot([x for x in range(0, len(artifacts))], artifacts, 'r', label='artifacts: a(t)')
+    ax.plot(zero_indexes, [0]*len(zero_indexes), 'ro', label='zero indexes')
+    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102),loc=3,ncol=3,mode="expand",borderaxespad=0)
+    plt.ylabel('amplitude')
+    plt.xlabel('time (t)')
+    #plt.axis([0, len(raw_signal), min(raw_signal), max(raw_signal)])
+    plt.plot()
+    plt.show()
+    tikz_save('oacl-signals.tex',figureheight = '\\figureheight',figurewidth = '\\figurewidth')
+plot_example1()
