@@ -14,6 +14,7 @@ from itertools import product
 from eval.timing import timed_block
 from bisect import bisect_left
 
+
 def _fixed_accept_reject(self, energy_new, energy_old):
     z = (energy_new - energy_old) * self.beta
     if z < -1:

@@ -6,6 +6,7 @@ import json
 from sys import executable, exit
 from main import main, translate_params
 from multiprocessing import freeze_support
+from eval.timing import timed_block
 
 FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
@@ -61,9 +62,10 @@ def optim_params():
                 par = params.split(' ')
                 condition = any_params_out_of_bounds(par)
 
-            n_comp, band_list, oacl_range, m, thvals = translate_params(par[2:])
-            result, timestamp = main(n_comp, band_list, subject, oacl_range, m, thvals)
-            insert_result(result, timestamp)
+            with timed_block('Itteration Took'):
+                n_comp, band_list, oacl_range, m, thvals = translate_params(par[2:])
+                result, timestamp = main(n_comp, band_list, subject, oacl_range, m, thvals)
+                insert_result(result, timestamp)
 
         # done with subject, set resuming to false.
         resuming = False

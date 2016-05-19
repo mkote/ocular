@@ -165,7 +165,7 @@ def translate_params(par):
         s = int(par[2])
         r = int(par[3])
         m = int(par[4]) * 2 + 1
-        oacl_range = ((s, r), )
+        oacl_range = ((s, s + r), )
         thvals = [array([float(par[x])]) for x in xrange(5, 27)]
     else:
         m = None
