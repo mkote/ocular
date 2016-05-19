@@ -35,7 +35,7 @@ def logistic_predictions(weights, inputs):
         # Compute z with weights (thetas)
         term1 = np.dot(np.dot(np.transpose(theta), covar), theta)
         term2 = np.dot(2*np.transpose(theta), corr)
-        z = term1 + term2 + var + b
+        z = term1 - term2 + var + b
         z_values.append(z)
 
     # Outputs probability of a label being true according to logistic model.
@@ -68,7 +68,7 @@ def magic(trials_from_runs, labels, m, range_list):
     targets = np.array(labels)
     mov = m
     ranges = range_list
-    w = np.array([0.0, 0.0, 0.0])
+    w = np.array([-100.0, 0.0, 0.0])
     weight_list = []
     # Fit a logistic classifier for each class (4) one-vs-rest
     for target in set(targets.tolist()):
@@ -77,28 +77,18 @@ def magic(trials_from_runs, labels, m, range_list):
         labels = rearrange_target(old_targets, target) # Rearrange labels for one-vs-rest
         fit_logit(inputs, labels)
 
-    # Define a function that returns gradients of training loss using autograd.
-    training_gradient_fun = grad(training_loss)
-
-    # Optimize weights using gradient descent.
-    print "Initial loss:", training_loss(w)
-    for i in xrange(100):
-        print "gradient dankness", i
-        w -= training_gradient_fun(w) * 0.01
-
-    print str(w)
-    print  "Trained loss:", training_loss(w)
-
 def fit_logit(inputs, target):
     global w
+    global targets
+    targets = target
     weight_list = []
-    old_targets = targets
     training_gradient_fun = grad(training_loss)  # get derivative of loss function.
     # Optimize weights using gradient descent.
     print("Initial loss:", training_loss(w))
     for i in range(100):
         print("Optimizing: " + str(i))
         w -= training_gradient_fun(w) * 0.01
+        print(w)
 
     print("Trained loss:", training_loss(w))
     print(w)
