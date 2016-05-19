@@ -173,7 +173,7 @@ def find_artifact_range(signal_smooth, peak, zero_indexes):
     #    return after + 25, None
     #if after - peak <= 25:
     #    return after + 25, None
-    if not 50 <= after - before <= 125:
+    if not 30 <= after - before <= 125:
         return after, None
     return before, after
 
