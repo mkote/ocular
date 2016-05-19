@@ -11,7 +11,7 @@
 	\label{fig:oacl-signals}
 	\caption{Smoothed and artifact signal superimposed on the raw EEG signal for a single channel in part of a single trial.}
 \end{figure*}
-\section{Ocular Artifact Correction}
+\section{Ocular Artifact Correction}\label{sec:oacl}
 The OACL method consists of two parts. First, the raw EEG signals are processed to obtain the artifact signals, representing the parts of the signal that are artifacts. Then we find the \emph{filtering parameter} $\Theta$ for each the artifact signals, which determines the amount of each signal that are to be removed from the raw signal in order to obtain the corrected signal. 
 Since the original OACL method \citep{li2015ocular} was devised for binary class datasets, we generalize the algorithm for multi-class datasets. 
 
