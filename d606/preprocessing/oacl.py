@@ -130,13 +130,13 @@ def find_artifact_ranges(smooth_signal, peak_indexes, zero_indexes):
     ranges = []
     latest_range = 0
     for peak in peak_indexes:
-        if peak >= latest_range:
+        if peak > latest_range:
             artifact_range = find_artifact_range(smooth_signal, peak, zero_indexes)
             if artifact_range[1] is None:
                 latest_range = artifact_range[0]
                 continue
             else:
-                latest_range = artifact_range[1] + 25
+                latest_range = artifact_range[1]
             ranges.append(artifact_range)
     return ranges
 
@@ -165,14 +165,16 @@ def find_artifact_range(signal_smooth, peak, zero_indexes):
     #after_i = nearest_zero_point(right, 0, 1)
     #before = (peak-1) - before_i
     #after = (peak+1) + after_i
-    if peak - before >= 62.5:
-        return after + 25, None
-    if peak - before <= 25:
-        return peak + 25 - peak - before, None
-    if after - peak >= 62.5:
-        return after + 25, None
-    if after - peak <= 25:
-        return after + 25, None
+    #if peak - before >= 62.6:
+    #    return after + 25, None
+    #if peak - before <= 25:
+    #    return peak + 25 - peak - before, None
+    #if after - peak >= 62.5:
+    #    return after + 25, None
+    #if after - peak <= 25:
+    #    return after + 25, None
+    if not 50 <= after - before <= 125:
+        return after, None
     return before, after
 
 

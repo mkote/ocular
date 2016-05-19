@@ -7,6 +7,9 @@ from sys import executable, exit
 from main import main, translate_params
 from multiprocessing import freeze_support
 from eval.timing import timed_block
+import warnings
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
