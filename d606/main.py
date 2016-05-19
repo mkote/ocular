@@ -9,10 +9,11 @@ from eval.timing import timed_block
 from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, separate_eog_eeg, d3_matrix_creator
 from preprocessing.filter import Filter
-from preprocessing.trial_remaker import remake_trial, remake_single_run_transform
+from preprocessing.trial_remaker import remake_trial
 from itertools import chain
 from multiprocessing import freeze_support
 from numpy import array
+from resultparser import best_subject_params
 from preprocessing.oaclbase import OACL
 
 RUNS_WITH_EEG = array(range(-6, 0))
@@ -131,7 +132,7 @@ def create_feature_vector_list(bands, csp_list):
     return combo
 
 
-def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
+def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     old_path = os.getcwd()
     os.chdir('..')
 
@@ -140,11 +141,11 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None):
     test = load_data(subject, "E")
     _, test = separate_eog_eeg(test)
 
-    if not any([x == None for x in [oacl_ranges, m]]):
-        thetas, train = run_oacl(subject, train, oacl_ranges, m)
-        oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True)
-        oacl.theta = oacl.generalize_thetas(array(thetas))
-        test, _ = remake_trial(test, arg_oacl=oacl)
+    oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True, trials=False)
+    oacl.theta = thetas
+
+    train, _ = remake_trial(train, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
+    test, _ = remake_trial(test, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
 
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]
@@ -181,8 +182,9 @@ if __name__ == '__main__':
     errors = []
     if len(sys.argv) > 1:
         subject = int(sys.argv[1])
-        n_comp, band_list, oacl_ranges, m = translate_params(sys.argv[2:])
-        evaluate(n_comp, band_list, subject, oacl_ranges, m)
+        error, params = best_subject_params(subject)
+        n_comp, band_list, oacl_range, m, thvals = translate_params(params[0][2:])
+        evaluate(n_comp, band_list, subject, oacl_range, m, thvals)
     else:
         print("No arguments passed - continuing with default parameters.")
         main(12, [[4, 9], [9, 14], [14, 19], [19, 24], [24, 29], [29, 34], [34, 39]], 1, ((2, 3),), 7, [array([0.1]) for x in range(22)])
