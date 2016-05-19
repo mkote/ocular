@@ -138,7 +138,15 @@ def find_artifact_ranges(smooth_signal, peak_indexes, zero_indexes):
             else:
                 latest_range = artifact_range[1]
             ranges.append(artifact_range)
+            residual_range = find_residuals(smooth_signal, artifact_range[1] + 5, zero_indexes)
+            ranges.append(residual_range)
+            latest_range = residual_range[1]
     return ranges
+
+
+def find_residuals(smooth_signal, peak, zero_indexes):
+    before, after = take_closest(zero_indexes, peak)
+    return before, after
 
 
 def take_closest(zero_indexes, peak):
