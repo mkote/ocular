@@ -1,11 +1,13 @@
 import autograd.numpy as np
 from autograd import grad
+from autograd.util import quick_grad_check
+
 from preprocessing.oacl import find_artifact_signals, extract_trials_array
 
 
 global inputs
 global targets
-global weights
+global w
 global mov
 global ranges
 
@@ -18,7 +20,6 @@ def logistic_predictions(weights, inputs):
     # Construct z
     theta = weights[1:3]
     b = weights[0]
-    # 1. Construct artifact signals for every trial
     z_values = []
     for trial in inputs:
         A = find_artifact_signals(trial, mov, r)
@@ -46,27 +47,62 @@ def training_loss(weights):
     label_probabilities = preds * targets + (1 - preds) * (1 - targets)
     return -np.sum(np.log(label_probabilities))
 
+def rearrange_target(target, label):
+    new_targets = []
+    for tar in target:
+        if tar == label:
+            new_targets.append(True)
+        else:
+            new_targets.append(False)
+    return np.array(new_targets)
+
 def magic(trials_from_runs, labels, m, range_list):
     # Compute inputs
+
     global inputs
     global targets
-    global weights
+    global w
     global ranges
     global mov
     inputs = trials_from_runs
     targets = np.array(labels)
     mov = m
     ranges = range_list
-    weights = np.array([0.0, 0.0, 0.0])
+    w = np.array([0.0, 0.0, 0.0])
+    weight_list = []
+    # Fit a logistic classifier for each class (4) one-vs-rest
+    for target in set(targets.tolist()):
+        print("fitting logistic regression for class: " + str(target))
+        old_targets = targets
+        labels = rearrange_target(old_targets, target) # Rearrange labels for one-vs-rest
+        fit_logit(inputs, labels)
 
     # Define a function that returns gradients of training loss using autograd.
     training_gradient_fun = grad(training_loss)
 
     # Optimize weights using gradient descent.
-    print "Initial loss:", training_loss(weights)
+    print "Initial loss:", training_loss(w)
     for i in xrange(100):
         print "gradient dankness", i
-        weights -= training_gradient_fun(weights) * 0.01
+        w -= training_gradient_fun(w) * 0.01
 
-    print str(weights)
-    print  "Trained loss:", training_loss(weights)
+    print str(w)
+    print  "Trained loss:", training_loss(w)
+
+def fit_logit(inputs, target):
+    global w
+    weight_list = []
+    old_targets = targets
+    training_gradient_fun = grad(training_loss)  # get derivative of loss function.
+    # Optimize weights using gradient descent.
+    print("Initial loss:", training_loss(w))
+    for i in range(100):
+        print("Optimizing: " + str(i))
+        w -= training_gradient_fun(w) * 0.01
+
+    print("Trained loss:", training_loss(w))
+    print(w)
+    weight_list.append(w)
+
+    print("ALl weights: ")
+    print(weight_list)

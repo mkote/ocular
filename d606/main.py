@@ -62,38 +62,6 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None):
     return np.mean(accuracies) * 100, time.time()
 
 
-def sigmoid(x):
-    return 1 / (1 + auto.exp(-x))
-
-
-def logistic_predictions(weights, inputs, raw_signal):
-    # Outputs probability of a label being true according to logistic model.
-
-    # A dot At
-    term1 = auto.dot(inputs, np.transpose(inputs))
-    term2 = auto.dot(auto.transpose(weights[1:]), term1)
-    term3 = auto.dot(term2, weights[1:])
-
-    # A dot X0
-    term4 = auto.dot(inputs, auto.transpose(raw_signal))
-    term5 = auto.dot(2 * auto.transpose(weights[1:]), term4)
-
-    # r0 + b
-    term6 = auto.var(raw_signal) + weights[0]
-
-    # Full term
-    fullterm = term3 - term5 + term6
-
-    return sigmoid(fullterm)
-
-
-def training_loss(weights):
-    # Training loss is the negative log-likelihood of the training labels.
-    preds = logistic_predictions(weights, inputs, raw_signal)
-    label_probabilities = preds * targets + (1 - preds) * (1 - targets)
-    return -auto.sum(auto.log(label_probabilities))
-
-
 def rearrange_target(target, label):
     new_targets = []
     for tar in target:
@@ -122,10 +90,6 @@ def generate_thetas(runs, ranges, m):
         for i in xrange(6):
             new_start_times.extend([x + (appender * i) for x in start_trial_times])
 
-        for i in xrange(2):
-            with timed_block('One signal'):
-                artifact_list.append(find_artifact_signals(raw_signals[i], m, ranges))
-
         for i, channel in enumerate(raw_signals):
             raw_signal = []
             raw_signal = extract_trials_array(channel, new_start_times)
@@ -133,9 +97,7 @@ def generate_thetas(runs, ranges, m):
             #    raw_signal.extend(raw)
             inputs = raw_signal
 
-            # Here we do one vs rest
-            for target in set(labels):
-                magic(inputs, labels, m, ranges)
+            magic(inputs, labels, m, ranges)
 
 
 def run_oacl(subject, runs, oacl_ranges, m):

@@ -90,7 +90,7 @@ def insert_result(result, time):
     # read the file into a list of lines
     lines = open(file, 'r').readlines()
 
-    # now edit the last line of the list of lines
+    # now edit the last line of the lisft of lines
     last_line_list = lines[-1].rstrip().split(' ')
     last_line_list[0] = 100 - result
     last_line_list[1] = time
