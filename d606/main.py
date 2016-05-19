@@ -20,7 +20,7 @@ RUNS_WITH_EEG = array(range(-6, 0))
 
 def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     print 'Running with following args \n'
-    print n_comp, band_list, subject, oacl_ranges, m
+    print n_comp, band_list, subject, oacl_ranges, m, thetas
 
     old_path = os.getcwd()
     os.chdir('..')
