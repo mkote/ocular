@@ -15,6 +15,8 @@ from multiprocessing import freeze_support
 from numpy import array
 from resultparser import best_subject_params
 from preprocessing.oaclbase import OACL
+from multiprocessing import Process, Queue
+
 
 RUNS_WITH_EEG = array(range(-6, 0))
 
@@ -34,23 +36,37 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
 
     train, _ = remake_trial(train, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
 
+    jobs = []
     test_indexes = [[i] for i in range(6)]
     train_indexes = [range(i) + range(i+1, 6) for i in range(6)]
-
-    kappas = []
-    accuracies = []
+    kappas = Queue()
+    accuracies = Queue()
     for train_index, test_index in zip(train_indexes, test_indexes):
-        _train, _test = transform_fold_data(train_index, test_index, train)
-        accuracy, kappa = evaluate_fold(_train, _test, band_list, n_comp)
-        print("Accuracy: " + str(accuracy * 100) + "%")
-        print("Kappa: " + str(kappa))
-        kappas.append(kappa)
-        accuracies.append(accuracy)
+        p = Process(target=find_results, args=(train_index, test_index, train, band_list, n_comp, kappas, accuracies))
+        jobs.append(p)
+        p.start()
+
+    for pro in jobs:
+        pro.join()
 
     os.chdir(old_path)
-    print "Mean accuracy: " + str(np.mean(accuracies) * 100)
-    print "Mean kappa: " + str(np.mean(kappas))
-    return np.mean(accuracies) * 100, time.time()
+    ac = []
+    ka = []
+    for i in xrange(6):
+        ac.append(accuracies.get())
+        ka.append(kappas.get())
+    print "Mean accuracy: " + str(np.mean(ac) * 100)
+    print "Mean kappa: " + str(np.mean(ka))
+    return np.mean(ac) * 100, time.time()
+
+
+def find_results(train_index, test_index, train, band_list, n_comp, kappas, accuracies):
+    _train, _test = transform_fold_data(train_index, test_index, train)
+    accuracy, kappa = evaluate_fold(_train, _test, band_list, n_comp)
+    print("Accuracy: " + str(accuracy * 100) + "%")
+    print("Kappa: " + str(kappa))
+    kappas.put(kappa)
+    accuracies.put(accuracy)
 
 
 def run_oacl(subject, runs, oacl_ranges, m):
@@ -151,7 +167,7 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]
     accuracy, kappa = evaluate_fold(train, test, band_list, n_comp)
-    
+
     print("Accuracy: " + str(accuracy * 100) + "%")
     print("Kappa: " + str(kappa))
 
