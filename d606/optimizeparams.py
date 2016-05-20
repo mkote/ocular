@@ -65,7 +65,7 @@ def optim_params():
                 par = params.split(' ')
                 condition = any_params_out_of_bounds(par)
 
-            with timed_block('Itteration Took'):
+            with timed_block('Iteration took'):
                 n_comp, band_list, oacl_range, m, thvals = translate_params(par[2:])
                 result, timestamp = main(n_comp, band_list, subject, oacl_range, m, thvals)
                 insert_result(result, timestamp)
