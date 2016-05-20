@@ -6,7 +6,7 @@
 	\caption{Smoothed and artifact signal superimposed on the raw EEG signal for a single channel in part of a single trial.}
 \end{figure*}
 \section{Ocular Artifact Correction}\label{sec:oacl}
-The OACL method consists of two parts. First, the raw EEG signals are processed to obtain the artifact signals, representing the parts of the signal that are artifacts. Then we find the \emph{filtering parameter} $\Theta$ for each the artifact signals, which determines the amount of each signal that are to be removed from the raw signal in order to obtain the corrected signal. 
+The OACL method consists of two parts: artifact detection and artifact removal. First, the raw EEG signals are processed to obtain the artifact signals, representing the parts of the signal that are artifacts. Then we find the \emph{filtering parameter} $\Theta$ for each of the artifact signals, which determines the amount of each signal that needs to be removed from the raw signal in order to obtain the corrected signal. 
 Since the original OACL method \citep{li2015ocular} was devised for binary class datasets, we generalize the algorithm for multi-class datasets. 
 
 Let $x = \{s_0, ...,s_n\}$ where $s_t \in \mathbb{R}_{\geq 0}$ denote the raw EEG data for some arbitrary channel. For simplicity, we can interpret $x$ as a function $x : \mathbb{N}_{\geq 0} \rightarrow \mathbb{R}_{\geq 0}$ where $x(t)$ denotes the amplitude of $x$ at time $t$. 
@@ -15,14 +15,15 @@ From $x(t)$ we perform all steps in artifact detection and removal.
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
 \subsection{Artifact Detection}
-The goal of artifact detection is to find the artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that contains ocular artifactsare noise. Before finding the artifact signal $as(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$, in order to smooth out short-term fluctuations from e.g. external interference. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of the $\frac{m}{2}$ samples on either side of the tth sample. 
+The goal of artifact detection is to find the artifact signal $a(t)$ from $x(t)$ that represents which parts of $x(t)$ that contains ocular artifacts. Before finding the artifact signal $as(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$, in order to smooth out short-term fluctuations from e.g. external interference. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of the $\frac{m}{2}$ samples on either side of the t\textsuperscript{th} sample.
 \begin{equation}
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
 \end{equation}
 where $m$ is the number of neighboring points used. The smoothed signal $s(t)$ shown together with the raw signal $x(t)$ are illustrated in \cref{fig:oacl-signals}.
 
-From the smoothed signal $s(t)$ the OACL methodOACL finds the changes in amplitude between the samples, which could indicate eye movement. Therefore, we proceed by computing the relative heights between samples as the maximal difference in amplitude between a sample at time $t$ and its neighboring samples.
+From the smoothed signal $s(t)$ the OACL method finds the changes in amplitude between the samples, which could indicate eye movement. Therefore, we proceed by computing the relative heights between samples as the maximal difference in amplitude between a sample at time $t$ and its neighboring samples.
+
 \begin{align*}
 \Delta (t) = max(&|s(t)-s(t-1)|,\\
 &|s(t+1) - s(t)|) \numberthis \label{eq:relheights}
@@ -81,7 +82,7 @@ c(t) = x(t) - \theta A(t)
 \end{equation}
 where $\theta \in \mathbb{R}_{\geq 0}$ is the \emph{filtering parameter}. Intuitively, $\theta$ is a factor that determines the "amount" of the artifact signal to subtract from the raw signal. 
 
-The original approach of OACL is to obtain the $\theta$ parameter by training a binary logistic regression classifier with a modified hypothesis function with the latent variable derived from the power of the raw signal. Instead of this approach, we consider $\theta$ parameters as hyperparameters to the ocular artifact detection, which means that we can find the values for $\theta$ by optimizing them through the Bayesian Optimization algorithm. In short, this means that find the corrected signals for one subject as
+The original approach of OACL is to obtain the $\theta$ parameter by training a binary logistic regression classifier with a modified hypothesis function with the latent variable derived from the power of the raw signal. Instead of this approach, we consider $\theta$ parameters as hyperparameters to the ocular artifact detection, which means that we can find the values for $\theta$ by optimizing them through the Bayesian optimization algorithm. In short, this means that find the corrected signals for one subject as
 \begin{align}\label{eq:corrected-signal}
 C(t)=  \begin{pmatrix}
 c_1(t) \\
@@ -89,5 +90,5 @@ c_1(t) \\
 c_{k}(t) 
 \end{pmatrix}
 \end{align}
-where $kY$ is the number of channels of classes. By \cref{eq:corrected-signal} this means that we optimize over $k \times n$ $\theta$ parameters in bayesian optimization, where $n$ is the number of artifact sigals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constraint the domain of the $\theta$ parameter to be between 0 and 1.  
+where $kY$ is the number of channels of classes. By \cref{eq:corrected-signal} this means that we optimize over $k \times n$ $\theta$ parameters in Bayesian optimization, where $n$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constraint the domain of the $\theta$ parameter to be between 0 and 1.  
 
