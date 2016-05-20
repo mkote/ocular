@@ -9,6 +9,7 @@ Bayesian Optimization of Parameters for Ocular Artifact Detection and Removal, a
 - [Anaconda 2.7 python packages](https://www.continuum.io/downloads) (recommended)
 - mne
 - protobuf
+- skll
 
 or
 
@@ -18,9 +19,10 @@ or
 - Scikit-Learn
 - mne
 - protobuf
+- skll
 
-Refer to the installation guides of each dependency to obtain their dependencies (or just use the anaconda2
-distribution.)
+Refer to the installation guides of each dependency (or just use the anaconda2
+distribution).
 
 ## Setup
 
@@ -32,4 +34,4 @@ Optimize hyperparameters:
 'python d606/optimizeparams.py'
 
 Evaluate:
-'python d606/main.py [params]'
+'python d606/main.py [subject]'
