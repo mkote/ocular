@@ -4,7 +4,6 @@
 % https://github.com/nschloe/matplotlib2tikz
 % 
 % where you can also submit bug reports and leavecomments.
-% 
 \begin{tikzpicture}
 
 \begin{groupplot}[group style={group size=1 by 2}]
@@ -14,11 +13,11 @@ ymin=-35.009765625, ymax=30.908203125,
 axis on top,
 width=\figurewidth,
 height=\figureheight,
-legend entries={{raw signal: x(t)},{smoothed signal: s(t)},{artifacts: a(t)}},
+legend entries={{\footnotesize raw signal: x(t)},{\footnotesize smoothed signal: s(t)},{\footnotesize artifacts: a(t)}},
 legend cell align={left},
 legend style={at={(0.97,0.03)}, anchor=south east}
 ]
-\addplot [draw=red, fill=red, mark=*, only marks] table {%
+\addplot [draw=red, mark=*, only marks] table {%
 18 0
 27 0
 41 0

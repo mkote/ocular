@@ -56,7 +56,7 @@ s(t)      & \quad \text{if } z_b \leq t < z_a\\
 0  & \quad \text{otherwise}\\
 \end{cases}
 \end{equation}
-where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in \cref{fig:zero-points}figure \todo{modify figure to show the concept of zero points}.
+where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in \cref{fig:oacl-signals}.
 
 Zero points are found from the smoothed signal, by iterating through the list, finding crossovers from sample to sample. 
 Let again $s(t)$ be the function for the smoothed signal defined in \cref{eq:movavg}. We now iterate through all values of $t$, where $t \in \{0,...,n\}$, finding all points $P$ where one of the following two conditions are true.

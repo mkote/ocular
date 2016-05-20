@@ -13,26 +13,6 @@ In order to evaluate our method, we use the BCI Competition IV dataset 2a \citep
 
 We set up two pipelines to be compared. The first consists of OACL, followed by FBCSP and Random Forest. The second is without the OACL step, i.e., just FBCSP and Random Forest. We perform 6-fold cross-validation on the training data using five runs for training and one for validation. We ran 200 iterations of Bayesian Optimization of select hyperparameters for each pipeline. The best hyperparameters for each pipeline is then used for the final evaluation where we try to predict the labels for the test data. We repeat this for each subject. \Cref{fig:results} shows the obtained accuracies and KAPPA scores for each subject.
 
-\begin{table}[H]
-	\centering
-	\caption{Accuracy and KAPPA score for each subject.}
-	\label{fig:results}
-	\begin{tabular}{@{}c|cc|cc@{}}
-		\toprule
-		\textbf{S}             & \multicolumn{2}{c|}{\textbf{No OACL}} & \multicolumn{2}{c}{\textbf{OACL}} \\ \midrule
-		\multicolumn{1}{c|}{}  & Acc                   & KAPPA             & Acc                   & KAPPA             \\ \midrule
-		1 &                       &                   &                       &                   \\
-		2 &                       &                   &                       &                   \\
-		3 &                       &                   &                       &                   \\
-		4 &                       &                   &                       &                   \\
-		5 & \textbf{}             &                   & \textbf{}             &                   \\
-		6 &                       &                   &                       &                   \\
-		7 &                       &                   &                       &                   \\
-		8 &                       &                   &                       &                   \\
-		9 &                       &                   &                       &                   \\ \bottomrule
-	\end{tabular}
-\end{table}
-
 To determine the significance of these results we use the Wilcoxon signed-rank test. \Cref{fig:wilcoxon} shows the results of the test.
 
 \begin{table}[H]
@@ -42,15 +22,15 @@ To determine the significance of these results we use the Wilcoxon signed-rank t
 	\begin{tabular}{@{}l|llll@{}}
 		\toprule
 		S & No OACL & OACL & Diff & Rank \\ \midrule
-		1 &               &                 &      &      \\
-		2 &               &                 &      &      \\
-		3 &               &                 &      &      \\
-		4 &               &                 &      &      \\
-		5 &               &                 &      &      \\
-		6 &               &                 &      &      \\
-		7 &               &                 &      &      \\
-		8 &               &                 &      &      \\
-		9 &               &                 &      &      \\ \bottomrule
+		1 &   83,04            &                 &      &      \\
+		2 &   57,18            &                 &      &      \\
+		3 &   78,18            &                 &      &      \\
+		4 &   65,74            &                 &      &      \\
+		5 &   58,85            &                 &      &      \\
+		6 &   50,23            &                 &      &      \\
+		7 &   68,75            &                 &      &      \\
+		8 &   74,54            &                 &      &      \\
+		9 &   75,64            &                 &      &      \\ \bottomrule
 	\end{tabular}
 \end{table}
 
