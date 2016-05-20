@@ -24,13 +24,9 @@ Refer to the installation guide of each dependency (or just use the anaconda2 di
 
 ## Setup
 
-1. Install spearmint
+1. Install spearmint: `sudo python d606/spearmint/setup.py install`
 
-```sudo python d606/spearmint/setup.py install```
-
-2. Get the data
-
-[Download the dataset](http://bnci-horizon-2020.eu/database/data-sets), then create a folder called 'matfiles' and move the .mat files there.
+2. Get the data: [Download the dataset](http://bnci-horizon-2020.eu/database/data-sets), then create a folder called 'matfiles' and move the .mat files there.
 
 ## Usage
 
