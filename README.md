@@ -26,7 +26,7 @@ Refer to the installation guide of each dependency (or just use the anaconda2 di
 
 1. Install spearmint
 
-    sudo python d606/spearmint/setup.py install
+'''sudo python d606/spearmint/setup.py install'''
 
 2. Get the data
 
