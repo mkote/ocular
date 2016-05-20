@@ -26,12 +26,12 @@ distribution).
 
 ## Setup
 
-'sudo python d606/spearmint/setup.py install'
+    sudo python d606/spearmint/setup.py install
 
 ## Usage
 
 Optimize hyperparameters:
-'python d606/optimizeparams.py'
+    python d606/optimizeparams.py
 
 Evaluate:
-'python d606/main.py [subject]'
+    python d606/main.py [subject]
