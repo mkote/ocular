@@ -11,11 +11,11 @@ import warnings
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-FIRST_SUBJECT = 2
+FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
 CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 200
-resuming = True # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
+resuming = False # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
 
 
