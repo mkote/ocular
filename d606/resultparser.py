@@ -10,12 +10,11 @@ def get_all_params(path):
     with open(path, 'rb') as fh:
         for line in fh:
             if line[0] != 'P':
-                result.append(line.split(' '))
+                result.append(line.rstrip().split(' '))
 
     return result
 
 def best_subject_params(subject):
-    path = './braninpy/results.dat'
     if len(sys.argv) < 2:
         print("Not enough arguments: enter a number corresponding to a subject")
         sys.exit(0)

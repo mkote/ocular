@@ -141,11 +141,12 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     test = load_data(subject, "E")
     _, test = separate_eog_eeg(test)
 
-    oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True, trials=False)
-    oacl.theta = thetas
+    if not any([x is None for x in [oacl_ranges, m, thetas]]):
+        oacl = OACL(ranges=oacl_ranges, m=m, multi_run=True, trials=False)
+        oacl.theta = thetas
 
-    train, _ = remake_trial(train, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
-    test, _ = remake_trial(test, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
+        train, _ = remake_trial(train, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
+        test, _ = remake_trial(test, m=m, oacl_ranges=oacl_ranges, arg_oacl=oacl)
 
     train = array(train)[RUNS_WITH_EEG]
     test = array(test)[RUNS_WITH_EEG]
