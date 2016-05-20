@@ -14,8 +14,8 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 FIRST_SUBJECT = 1
 LAST_SUBJECT = 9
 CURRENT_SUBJECT = FIRST_SUBJECT
-NUM_ITERATIONS = 200
-resuming = False  # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
+NUM_ITERATIONS = 300
+resuming = False # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
 
 
@@ -47,11 +47,11 @@ def optim_params():
         if os.path.isfile(expected_path):
             with open(expected_path) as f:
                 num_iter_done = sum(1 for _ in f if _[0] != 'P')  # count number of lines in result file.
-        if num_iter_done == 200:
-            print "200 iterations already done for this subject. Exiting..."
+        if num_iter_done == NUM_ITERATIONS:
+            print(str(NUM_ITERATIONS) + " iterations already done for this subject. Exiting...")
             exit(0)
 
-        for iteration in range(NUM_ITERATIONS if not resuming else 200 - num_iter_done):
+        for iteration in range(NUM_ITERATIONS if not resuming else NUM_ITERATIONS - num_iter_done):
             par = []
             condition = True
             while condition:
@@ -65,7 +65,7 @@ def optim_params():
                 par = params.split(' ')
                 condition = any_params_out_of_bounds(par)
 
-            with timed_block('Itteration Took'):
+            with timed_block('Iteration took'):
                 n_comp, band_list, oacl_range, m, thvals = translate_params(par[2:])
                 result, timestamp = main(n_comp, band_list, subject, oacl_range, m, thvals)
                 insert_result(result, timestamp)

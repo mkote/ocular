@@ -11,27 +11,7 @@ In order to evaluate our method, we use the BCI Competition IV dataset 2a \citep
 	\label{fig:dataset}
 \end{figure*}
 
-We set up two pipelines to be compared. The first consists of OACL, followed by FBCSP and Random Forest. The second is without the OACL step, i.e., just FBCSP and Random Forest. We perform 6-fold cross-validation on the training data using five runs for training and one for validation. We ran 200 iterations of Bayesian Optimization of select hyperparameters for each pipeline. The best hyperparameters for each pipeline is then used for the final evaluation where we try to predict the labels for the test data. We repeat this for each subject. \Cref{fig:results} shows the obtained accuracies and KAPPA scores for each subject.
-
-\begin{table}[H]
-	\centering
-	\caption{Accuracy and KAPPA score for each subject.}
-	\label{fig:results}
-	\begin{tabular}{@{}c|cc|cc@{}}
-		\toprule
-		\textbf{S}             & \multicolumn{2}{c|}{\textbf{No OACL}} & \multicolumn{2}{c}{\textbf{OACL}} \\ \midrule
-		\multicolumn{1}{c|}{}  & Acc                   & KAPPA             & Acc                   & KAPPA             \\ \midrule
-		1 &                       &                   &                       &                   \\
-		2 &                       &                   &                       &                   \\
-		3 &                       &                   &                       &                   \\
-		4 &                       &                   &                       &                   \\
-		5 & \textbf{}             &                   & \textbf{}             &                   \\
-		6 &                       &                   &                       &                   \\
-		7 &                       &                   &                       &                   \\
-		8 &                       &                   &                       &                   \\
-		9 &                       &                   &                       &                   \\ \bottomrule
-	\end{tabular}
-\end{table}
+We set up two pipelines to be compared. The first consists of OACL, followed by FBCSP and Random Forest. The second is without the OACL step, i.e., just FBCSP and Random Forest. We run Random Forest with six predefined seeds and return the mean to ensure reproducibility. We perform 6-fold cross-validation on the training data using five runs for training and one for validation. We ran 200 iterations of Bayesian Optimization of select hyperparameters for each pipeline. The best hyperparameters for each pipeline is then used for the final evaluation where we try to predict the labels for the test data. We repeat this for each subject. \Cref{fig:results} shows the obtained accuracies and KAPPA scores for each subject.
 
 To determine the significance of these results we use the Wilcoxon signed-rank test. \Cref{fig:wilcoxon} shows the results of the test.
 
@@ -42,21 +22,23 @@ To determine the significance of these results we use the Wilcoxon signed-rank t
 	\begin{tabular}{@{}l|llll@{}}
 		\toprule
 		S & No OACL & OACL & Diff & Rank \\ \midrule
-		1 &               &                 &      &      \\
-		2 &               &                 &      &      \\
-		3 &               &                 &      &      \\
-		4 &               &                 &      &      \\
-		5 &               &                 &      &      \\
-		6 &               &                 &      &      \\
-		7 &               &                 &      &      \\
-		8 &               &                 &      &      \\
-		9 &               &                 &      &      \\ \bottomrule
+		1 &   83,04            &                 &      &      \\
+		2 &   57,18            &                 &      &      \\
+		3 &   78,18            &                 &      &      \\
+		4 &   65,74            &                 &      &      \\
+		5 &   58,85            &                 &      &      \\
+		6 &   50,23            &                 &      &      \\
+		7 &   68,75            &                 &      &      \\
+		8 &   74,54            &                 &      &      \\
+		9 &   75,64            &                 &      &      \\ \bottomrule
 	\end{tabular}
 \end{table}
 
 \subsection{Discussion}\label{sec:discussion}
 \todo{discuss that optimal filterbank ranges are different from subject to subject}
-In the original OACL paper by \citep{li2015ocular}, the relative heights ranges specified in \cref{eq:ranges} were determined by manual inspection of the characteristics of ocular artifacts. Since we generalised this as an optimization of hyperparameter, the found ranges are no longer guaranteed to be optimal in regards to ocular artifacts, but instead optimized for correcting the noise that most negatively affects the classification results. In fact, since we optimize the ranges for maximal classification accuracy, the method may be removing parts of the signal that are technically not artifacts, but removing them increases the performance of the classification model.
+In the original OACL paper by \citep{li2015ocular}, the relative heights ranges specified in \cref{eq:ranges} were determined by manual inspection of the characteristics of ocular artifacts. Since we generalized this as an optimization of hyperparameter, the found ranges are no longer guaranteed to be optimal in regards to ocular artifacts, but instead optimized for correcting the noise that most negatively affects the classification results. In fact, since we optimize the ranges for maximal classification accuracy, the method may be removing parts of the signal that are technically not artifacts, but removing them increases the performance of the classification model.
 
-Moreover, we have run the Bayesian optimization with the default settings with regards to exploration vs. exploitation. Since running experiments on the pipeline in \cref{fig:ProgramPipeline} is quite expensive, it would be ideal to tune the Bayesian optimization to spend more time on selecting the best candidate future sample to perform the next experiment on.
-\todo{skriv at man kunne håndtere residuals evt. ved kald til subroutine in konstruktionen af et artifact signal.}
+
+Moreover, we have run the Bayesian optimization with the default settings with regards to exploration vs. exploitation. Since running experiments on the pipeline with OACL is quite expensive, it would be better to tune the Bayesian optimization to spend more time on selecting the best candidate future sample to perform the next experiment on.
+
+As explained in \cite{hoffmann2008correction}, residual artifacts were still present after noise reduction methods were applied. We have also observed that residual artifacts are present, this can be seen in \cref{fig:oacl-signals}, where an event is registered around $x \approx 170$, but the following desynchronization/synchronization is not registered. A way that this could be handled was to run a sub-functionality whenever an artifact is registered that checks if a residual artifact is present, and mark it. These signals might need another $\theta$, since the signature of these artifacts are quite different from the artifacts introduced by eye blinks.
