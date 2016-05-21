@@ -33,6 +33,7 @@
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
 \usepackage{booktabs} % Horizontal rules in tables
 \usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage[toc,page]{appendix}
 \usepackage{tabularx}
 \usepackage{hyperref} % For hyperlinks in the PDF
 \usepackage{cleveref} % For clever referencing
@@ -63,7 +64,6 @@
 \usepackage{natbib}
 \pgfplotsset{compat=1.9}%compatability for tikz functionality
 \def\citeapos#1{\citeauthor{#1}'s (\citeyear{#1})}
-\usepgfplotslibrary{groupplots}
 \usetikzlibrary{arrows.meta}
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 %----------------------------------------------------------------------------------------
@@ -126,11 +126,15 @@
 %----------------------------------------------------------------------------------------
 %	REFERENCE LIST
 %----------------------------------------------------------------------------------------
-\bibliographystyle{te}
-\bibliography{references}
+
 
 %----------------------------------------------------------------------------------------
-
+\bibliographystyle{te}
+\bibliography{references}
 \end{multicols}
+\begin{appendices}
+\chapter{1}
+\input{appendix/obtained-hyperparameters.tex}
+\end{appendices}
 \listoftodos
 \end{document}
