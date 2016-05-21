@@ -158,17 +158,18 @@ def evaluate(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
     os.chdir(old_path)
 
 
-def translate_params(par):
-    n_comp = int(par[0])
-    band_range = int(par[1])
+def translate_params(subject, par):
+    comp_band_list = [[22, 4], [18, 3], [4, 6], [13, 6], [18, 3], [6, 4], [12, 5], [7, 5], [10, 5]]
+    n_comp = int(comp_band_list[subject-1][0])
+    band_range = int(comp_band_list[subject-1][1])
     num_bands = int(36 / band_range)
     band_list = [[4 + band_range * x, 4 + band_range * (x + 1)] for x in range(num_bands)]
     if len(par) > 2:
-        s = int(par[2])
-        r = int(par[3])
-        m = int(par[4]) * 2 + 1
+        s = int(par[0])
+        r = int(par[1])
+        m = int(par[2]) * 2 + 1
         oacl_range = ((s, s + r), )
-        thvals = [array([float(par[x])]) for x in xrange(5, 27)]
+        thvals = [array([float(par[x])]) for x in xrange(3, 25)]
     else:
         m = None
         oacl_range = None

@@ -1,18 +1,4 @@
 {
-  "n_comp" : {
-  "name":"n_comp",
-  "type":"int",
-  "min":2,
-  "max":22,
-  "size":1
-},
-  "band_list" : {
-    "name":"band_list",
-    "type":"int",
-    "min":3,
-    "max":8,
-    "size":1
-  },
   "s" : {
     "name":"s",
     "type":"int",
