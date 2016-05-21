@@ -11,13 +11,12 @@ import warnings
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-FIRST_SUBJECT = 1
-LAST_SUBJECT = 9
+FIRST_SUBJECT = 6
+LAST_SUBJECT = 6
 CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 300
 resuming = False # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
 STEP = 1 if FIRST_SUBJECT < LAST_SUBJECT else -1
-
 
 def optim_params():
     global resuming
@@ -66,7 +65,7 @@ def optim_params():
                 condition = any_params_out_of_bounds(par)
 
             with timed_block('Iteration took'):
-                n_comp, band_list, oacl_range, m, thvals = translate_params(par[2:])
+                n_comp, band_list, oacl_range, m, thvals = translate_params(subject, par[2:])
                 result, timestamp = main(n_comp, band_list, subject, oacl_range, m, thvals)
                 insert_result(result, timestamp)
 
