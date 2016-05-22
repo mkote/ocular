@@ -138,13 +138,10 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
 
     shared_label_array[:] = array(array(train_label_pool).flat)
 
-    init(shared_train_array, shared_label_array)
-
     accuracies = []
     kappas = []
     for train_idx, test_idx in rs:
-        extract_and_classify([train_idx, test_idx, 0, 3, TRIAL_LENGTH,  n_trials * num_channels * TRIAL_LENGTH, num_channels * TRIAL_LENGTH])
-        pool = Pool(processes=cpu_count())
+    	pool = Pool(processes=cpu_count(), initializer=init, initargs=(shared_train_array, shared_label_array))
         out = pool.map(extract_and_classify, [(train_idx, test_idx, band, n_comp, TRIAL_LENGTH,
                                                n_trials * num_channels * TRIAL_LENGTH, num_channels * TRIAL_LENGTH)
                                               for band in range(num_bands)], chunksize=1)
@@ -153,8 +150,8 @@ def main(n_comp, band_list, subject, oacl_ranges=None, m=None, thetas=None):
 
         train_features = [list(chain(*y)) for y in zip(*[x[0] for x in out])]
         test_features = [list(chain(*y)) for y in zip(*[x[1] for x in out])]
-        train_labels = label_data[train_idx]
-        test_labels = label_data[test_idx]
+        train_labels = array(train_label_pool)[train_idx]
+        test_labels = array(train_label_pool)[test_idx]
         acc, kap = randforest(train_features, train_labels, test_features, test_labels, n_comp)
         accuracies.append(acc)
         kappas.append(kap)
