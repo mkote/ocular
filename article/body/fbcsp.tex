@@ -165,8 +165,8 @@ We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP
 \end{figure*}
 
 \subsection{Common Spatial Patterns}\label{sec:csp}
-CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Assuming we are classifying on motor imagery for different body parts, as we are in the training and evaluation data, this assumption can be justified \citep{blankertz2008optimizing}.
-Formally CSP combines data trials with the same imagery task. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for imagery task 1 and 2 respectively,
+CSP finds spatial filters, which when applied to signals, gives the maximal mutual information between these, with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Since we are classifying on motor imagery for different body parts, this assumption can be justified \citep{blankertz2008optimizing}.
+Formally, CSP combines data trials with the same imagery task. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for imagery task 1 and 2 respectively,
 
 \begin{equation}
 \label{eq:csp_data}
