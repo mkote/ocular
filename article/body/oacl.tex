@@ -91,5 +91,5 @@ c_1(t) \\
 c_{k}(t) 
 \end{pmatrix}
 \end{align}
-where $kY$ is the number of channels of classes. By \cref{eq:corrected-signal} this means that we optimize over $k \times n$ $\theta$ parameters in Bayesian optimization, where $n$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constraint the domain of the $\theta$ parameter to be between 0 and 1.  
+where $kY$ is the number of channels of classes. By \cref{eq:corrected-signal} this means that the number of $\theta$ parameters in Bayesian optimization we optimize over is $k \times n$, where $n$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain the domain of the $\theta$ parameter to be between 0 and 1.  
 
