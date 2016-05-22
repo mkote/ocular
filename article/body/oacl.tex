@@ -41,7 +41,7 @@ then we can find the sample indexes $t$ where $\Delta (t)$  lies in the range $R
 P = \{t \quad | \quad &\frac{m}{2} < t < n-\frac{m}{2}  \quad \textnormal{and} \\
 & l < \Delta (t) < u\} \numberthis \label{eq:peaks}
 \end{align*}
-where $P$ is the indexes of the samples of the smoothed signal, where a change in amplitude lies within the range that characterizes an ocular artifact.
+where $n$ is the number of samples in $x(t)$, and $P$ contains the indexes of samples in $s(t)$ where a change in amplitude lies within the range that characterizes an ocular artifact.
 
 We now have the peaks of the ocular artifacts in $s(t)$, but we still need all of the artifact before we can correct it. The approach in the OACL method is to define the artifact to be from the closest zero point to the peak, before the peak, to the closest zero point after the peak. We can now find the artifact signal 
 \begin{equation}
