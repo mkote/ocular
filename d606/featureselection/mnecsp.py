@@ -8,7 +8,9 @@ def run_csp(run_data, label, n_comp):
     if len(run_data) == 2:
         d3_data, labels = run_data
     else:
-        d3_data, trials, labels = run_data
+        matrix, trials, labels = run_data
+        num_trials = len(labels)
+        d3_data = d3_matrix_creator(matrix, num_trials)
 
     labels = csp_label_reformat(labels, label)
     csp = CSP(n_components=n_comp)
