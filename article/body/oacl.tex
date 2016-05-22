@@ -55,16 +55,16 @@ s(t)      & \quad \text{if } z_b \leq t < z_a\\
 where $z_b, z_a$ are the zero points after and before respectively. The concept of zero points of an artifact are illustrated in \cref{fig:oacl-signals}, where zero points can be seen as red dots on the artifact signal. 
 
 Zero points are found from the smoothed signal, by iterating through the list, finding crossovers from sample to sample. 
-Let again $s(t)$ be the function for the smoothed signal defined in \cref{eq:movavg}. We now iterate through all values of $t$, where $t \in \{0,...,n\}$, finding all points $P$ where one of the following two conditions are true. 
+Let again $s(t)$ be the function for the smoothed signal defined in \cref{eq:movavg}. We now iterate through all values of $t$, where $t \in \{0,...,n\}$, finding all points $Z$ where one of the following two conditions are true. 
 \begin{equation}
 \label{eq:zero_points}
-P =
+Z =
 \begin{cases}
 s(t)      & \quad \text{if } s(t) \leq 0 \leq s(t + 1)\\
 s(t + 1)  & \quad \text{if } s(t) \geq 0 \geq s(t + 1)\\
 \end{cases}
 \end{equation}
-$P$ will then be a list of zero points $\{p_1,...p_m\}$, which are used as the indexes $z_a$ and $z_b$ in \cref{eq:artifactsignal}, to find artifact signals.
+$Z$ will then be a list of zero points $\{z_1,...z_m\}$, which are used as the indexes $z_a$ and $z_b$ in \cref{eq:artifactsignal}, to find artifact signals.
 
 Recalling that we can use an arbitrary number of ranges in \cref{eq:ranges}, we obtain the set of artifact signals for a single channel of a single trial as:
 \begin{equation}\label{eq:artifact-signals}
