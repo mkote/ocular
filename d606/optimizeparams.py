@@ -4,15 +4,16 @@ import time
 import collections
 import json
 from sys import executable, exit
-from main import main, translate_params
+from main import translate_params
+from preprocessing.test_dataext import main
 from multiprocessing import freeze_support
 from eval.timing import timed_block
 import warnings
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-FIRST_SUBJECT = 1
-LAST_SUBJECT = 9
+FIRST_SUBJECT = 7
+LAST_SUBJECT = 7
 CURRENT_SUBJECT = FIRST_SUBJECT
 NUM_ITERATIONS = 300
 resuming = False # set to True if you are starting from existing work. DONT RESUME ON WORK FROM OTHER SUBJECTS.
