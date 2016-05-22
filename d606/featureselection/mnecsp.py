@@ -5,7 +5,10 @@ from preprocessing.dataextractor import *
 
 def run_csp(run_data, label, n_comp):
     # transform data
-    d3_data, labels = run_data
+    if len(run_data) == 2:
+        d3_data, labels = run_data
+    else:
+        d3_data, trials, labels = run_data
 
     labels = csp_label_reformat(labels, label)
     csp = CSP(n_components=n_comp)
