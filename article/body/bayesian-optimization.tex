@@ -21,5 +21,5 @@ An example of a gaussian process over one hyperparameter x is seen in figure x.
 
 \subsection{Acquisition function}
 When Bayesian Optimzation builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function}, which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. \todo{explain with figure} Another approach is to consider the expected improvement which not only takes into consideration the  probability of improvement, but also the uncertainty e.g. the variance of the gaussian distribution at the given input.
-
+\todo{explain expected improvement}
 %- Combining posterior and refit the GP
