@@ -185,7 +185,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         subject = int(sys.argv[1])
         error, params = best_subject_params(subject)
-        n_comp, band_list, oacl_range, m, thvals = translate_params(params[0][2:])
+        n_comp, band_list, oacl_range, m, thvals = translate_params(subject, params[0][2:])
         evaluate(n_comp, band_list, subject, oacl_range, m, thvals)
     else:
         print("No arguments passed - continuing with default parameters.")
