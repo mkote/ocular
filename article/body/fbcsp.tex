@@ -1,4 +1,4 @@
-\section{Filter Bank Common Spatial Patterns}\label{sec:fbcsp}
+\section{Feature Extraction}\label{sec:fbcsp}
 \todo{You should describe a bit more about Filter Bank and Multi Class CSP, at least 2 paragraphs for each technique.}
 We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data. The CSP algorithm has been used in many EEG classification studies within recent years, as in \cite{ang2012filter}. In all studies,\todo{source?} CSP were considered a step of improvement to the classification of EEG classes. Based on these results, we chose to incorporate CSP as part of the classification pipeline. CSP assumes the user knows which frequency ranges contains important features for different imagery classes. Since one rarely knows of these ranges, we have implemented the filter bank algorithm, as a step before CSP, as this automatically chooses frequency ranges from EEG data. Filter bank is also a well studied algorithm, which is often used in conjunction with CSP, as in \cite{ang2008filter}. CSP can in its original form, only be used in binary classification problems, but the extension explained in this paper, multi class CSP (MCCSP), does not have that restriction. Since MCCSP makes use of the original binary CSP, we first explain how CSP works, and then extend it with multi class.
 
@@ -163,6 +163,10 @@ We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP
 \caption{Overview of program pipeline}
 \label{fig:ProgramPipeline}
 \end{figure*}
+\subsection{Filter bank}
+Finding good frequency bands for each subject can be quite time-consuming when done manually. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as step 5.
+
+The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter will be used in the creation of CSPs, which will form the basis of feature extraction.
 
 \subsection{Common Spatial Patterns}\label{sec:csp}
 However, since EEG data is measured in the high dimensional space $\mathbb{R}^{c \times s}$ where $c$ is the number of channels and $s$ the number of samples measured on each channel, it is necessary to reduce the time series that samples in a channel represents to components representing the features. For this purpose, we use the popular \emph{Common Spatial Patterns} algorithm which constructs spatial filters from the dataset and projects the data into a subspace describing the features.
@@ -204,19 +208,7 @@ The spatial filter will now correspond to the first row of $\pmb{P}$, such that 
 
 $\pmb{P}$ can now be used as a linear transformation which when applied to EEG signals, maps these into a new space, where signal features are more discriminative. The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}. Furthermore, CSP only works for two classes, whereas many real world applications require a greater number of classes.
 
-\subsection{Filter bank}
-Finding good frequency bands for each subject can be quite time-consuming when done manually. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as step 5.
-
-The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter will be used in the creation of CSPs, which will form the basis of feature extraction.
-
 \subsection{Multi-class CSP}
 We introduce MCCSP by the \emph{one versus rest} (OVR) method. The method constructs one CSP per class, by choosing a class, and treating every other class as being the same. This way we get one CSP per imagery class, each constructed to create the maximum variance to all other classes. Step 6 in \Cref{fig:ProgramPipeline} depicts the creation of four CSPs (one for each class versus the rest) in each sub-band for a total of 12 CSPs. Features can now be extracted by applying the spatial filters from CSP to EEG trials.
 
-Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $n$ components. By applying all CSP to the same trial, and combining their feature vectors, we get a trial with $n * m$ features. We apply this method on all trials in the dataset, from where $n * m$ features are found, for every trial. These can now be used to train a random forest classifier.     
-
-
-
-
-
-
-
+Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $n$ components. By applying all CSP to the same trial, and combining their feature vectors, we get a trial with $n * m$ features. We apply this method on all trials in the dataset, from where $n * m$ features are found, for every trial. These can now be used to train a random forest classifier. 

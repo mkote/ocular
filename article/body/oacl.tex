@@ -22,7 +22,7 @@ The goal of artifact detection is to find an artifact signal $a(t)$ from $x(t)$ 
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
 \end{equation}
-where $m$ is the number of neighboring points used to smooth the signal. The raw signal $x(t)$ and the corresponding smoothed signal $s(t)$ are illustrated in \cref{fig:oacl-signals}. 
+where $m$ is an odd number of neighboring points used to smooth the signal. The raw signal $x(t)$ and the corresponding smoothed signal $s(t)$ are illustrated in \cref{fig:oacl-signals}. 
 
 From the smoothed signal $s(t)$ the OACL method finds the changes in amplitude between the samples, which could indicate eye movement. Therefore, we proceed by computing the relative heights between samples as the maximal difference in amplitude between a sample at time $t$ and its neighboring samples.
 
@@ -30,18 +30,18 @@ From the smoothed signal $s(t)$ the OACL method finds the changes in amplitude b
 \Delta (t) = max(&|s(t)-s(t-1)|,\\
 &|s(t+1) - s(t)|) \numberthis \label{eq:relheights}
 \end{align*}
-where we can consider $\Delta(t)$ as the describing the fluctuations in the signal.
+where we can consider $\Delta(t)$ as describing the fluctuations in the signal.
 
 Now, we want to have some measure of what an artifact signal looks like. \citet{li2015ocular} found by inspection that ocular artifacts generally occur with sudden changes in amplitude ($\Delta$) measured in $\mu V$ in the intervals $]30; 70[$ and $]70; 150[$. The problem with this approach is, that it does not generalize to data collected using different setups for the EEG measurement. For this reason, we automatically estimate the ranges by considering them parameters to be optimized through Bayesian Optimization, discussed in \cref{sec:bayesian-optimization}.
 For now, assume that we have some range $r \in R$ where
 \begin{equation}\label{eq:ranges}
-R=\{(l, u) \ | \ l,u \in \mathbb{N}_{\geq 0} \text{ and } l < u \}
+R=\{(l, u) \ | \ l,u \in \mathbb{N}_{\geq 0} \text{ and } l \leq u \}
 \end{equation}
 Note that we can have an arbitrary number of ranges; one for each artifact characteristic. For brevity, assume we have a single range r.
 
 Now we can find the sample indexes $t$ where $\Delta (t)$  lies in the range $r$:
 \begin{align*}
-P = \{t \quad | \quad &\frac{m}{2} < t < n-\frac{m}{2}  \quad \textnormal{and} \\
+P = \{t \ | \ &\frac{m}{2} < t < n-\frac{m}{2}  \quad \textnormal{and} \\
 & l < \Delta (t) < u\} \numberthis \label{eq:peaks}
 \end{align*}
 where $n$ is the number of samples in $x(t)$, and $P$ contains the indexes of samples in $s(t)$ where a change in amplitude lies within the range that characterizes an ocular artifact.
@@ -56,14 +56,14 @@ s(t)      & \quad \text{if } z_b \leq t < z_a\\
 \end{equation}
 where $z_b, z_a$ are the zero points before and after respectively. The concept of zero points of an artifact are illustrated in \cref{fig:oacl-signals}, where zero points can be seen as red dots. 
 
-Zero points are found from the smoothed signal, by iterating through the list, finding zero-crossings from sample to sample. 
-Let again $s(t)$ be the function for the smoothed signal defined in \cref{eq:movavg}. We now iterate through all values of $t$, where $t \in \{0,...,n\}$, finding all points $Z$ where one of the following two conditions is true. 
+Zero points are found from the smoothed signal, by iterating through P, finding zero-crossings from sample to sample. 
+Let again $s(t)$ be the function for the smoothed signal defined in \cref{eq:movavg}. We now iterate through all values of $t$, where $t \in P$, finding $Z \subset P$ as 
 \begin{align*}
 Z = \{t \ | \ s(t) \leq 0 \Rightarrow &(s(t+1) > 0 \ \vee \\
 & s(t-1) > 0)\}
 \numberthis\label{eq:zero_points}
 \end{align*}
-$Z$ will then be a list of indexes $\{z_1,...z_m\}$, that is used as the zero points $z_b$ and $z_a$ in \cref{eq:artifactsignal}. We find the correct zero points, by finding predecessor and successor indexes in $Z$ for the index of a given peak in the artifact signal.
+$Z$ will then be a list of indexes $\{z_1,...z_m\}$, that is used as the zero points $z_b$ and $z_a$ in \cref{eq:artifactsignal}. We can then find the correct zero points for a given peak, by finding predecessor and successor indexes in $Z$ for the index of a given peak in the artifact signal.
 
 Recalling that we can use an arbitrary number of ranges in \cref{eq:ranges}, we obtain the set of artifact signals for a single channel of a single trial as:
 \begin{equation}\label{eq:artifact-signals}
@@ -71,18 +71,19 @@ A(t)=  \begin{pmatrix}
 a_1(t) \\
 a_2(t) \\
 \vdots  \\
-a_n(t) 
+a_l(t) 
 \end{pmatrix}
 \end{equation}
+where $a_i(t)$ is the artifact signal found with the ith range and $l$ is the number of ranges.
 The idea behind this, is that different types of artifacts can be found by using different ranges. 
 \subsection{Artifact Removal}
 With the artifact signals $A(t)$ extracted from the raw EEG data the next task is to remove the artifacts characterized by $A(t)$ from the original signal $x(t)$. Since signals are closed under subtraction we can obtain the corrected signal $c(t)$ by subtracting artifact signal from the EEG signal as
 \begin{equation}\label{eq:corrected-signal}
-c(t) = x(t) - \theta A(t)
+c(t) = x(t) - \theta^T A(t)
 \end{equation}
-where $\theta \in \mathbb{R}_{\geq 0}$ is the \emph{filtering parameter}. $\theta$ is a factor that determines the percentage of the artifact signal to subtract from the raw signal. 
+where $\theta \in \mathbb{R}^{k}$ is the \emph{filtering parameter}. $\theta$ is a vector with the factors determining the percentage of the artifact signal to subtract from the raw signal. 
 
-The original approach of OACL is to obtain the $\theta$ parameter by training a binary logistic regression classifier with a modified hypothesis function. In this hypothesis function, the latent variable is derived from the power of the raw signal. Instead of this approach, we consider $\theta$ parameters as hyperparameters to the ocular artifact detection, which means that we can find the values for $\theta$ by optimizing them through the Bayesian optimization algorithm. In short, this means that we find the corrected signals for one subject as
+The original approach of OACL is to obtain the $\theta$ parameter by training a binary logistic regression classifier with a modified hypothesis function. In this hypothesis function, the latent variable is derived from the power of the raw signal. Instead, we consider $\theta$ parameters as hyperparameters to the ocular artifact detection, which means that we can find the values for $\theta$ by optimizing them through the Bayesian optimization algorithm. In short, this means that we find the corrected signals for one subject as
 \begin{align}\label{eq:corrected-signal}
 C(t)=  \begin{pmatrix}
 c_1(t) \\
@@ -90,5 +91,5 @@ c_1(t) \\
 c_{k}(t) 
 \end{pmatrix}
 \end{align}
-where $k$ is the number of channels. By \cref{eq:corrected-signal} this means that the number of $\theta$ parameters we optimize over is $k \times n$, where $n$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain the domain of the $\theta$ parameter to be between 0 and 1.  
+where $k$ is the number of channels. By \cref{eq:corrected-signal} this means that the number of $\theta$ parameters we optimize over is $k \times l$, where $l$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain $\theta \in \mathbb{R}^{l\times n}_{[0,1]}$.
 
