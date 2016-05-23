@@ -2,7 +2,6 @@ from matplotlib import pyplot as plt
 from matplotlib import style
 from preprocessing.oacl import moving_avg_filter, find_relative_heights, find_peak_indexes, find_artifact_signal, zero_index
 from preprocessing.dataextractor import load_data
-from matplotlib2tikz import save as tikz_save
 import numpy as np
 
 def plot_example1():
@@ -35,7 +34,7 @@ def plot_example1():
     fig, ax = plt.subplots(2, sharex=True, figsize=(10,5))
     #plt.subplot(211)
     # plot shit
-    ax[0].plot([x for x in range(0, len(raw_signal))], raw_signal, 'b--', label='raw signal: x(t)')
+    ax[0].plot([x for x in range(0, len(raw_signal))], raw_signal, 'b', label='raw signal: x(t)')
     ax[0].plot([x for x in range(0, len(padded_fsignal))], padded_fsignal, 'g', label='smoothed signal: s(t)')
     ax[0].plot([x for x in range(0, len(artifacts))], artifacts, 'r', label='artifacts: a(t)')
     yax = [0]*len(zero_indexes)
