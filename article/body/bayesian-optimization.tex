@@ -45,5 +45,8 @@ Z =
 $\phi$ and $\Phi$ denote the \emph{probability density function} (PDF) and \emph{cumulative distribution function} (CDF) of the standard normal distribution.
 The function for EI can then be used to probe the surrogate function with different parameter settings x, from where a new candidate point can be found to probe the objective function. The new candidate will be the parameter setting with the highest expected improvement.  
 
+\subsection{Kernel function}
+The kernel is a function for the GP, which determines the smoothness of samples drawn from it. The choice of kernel is crucial in the process of finding the right surrogate function, to fit the objective function. Many kernels have been proposed, where one of the most used is the squared exponential function \citet{brochu2010tutorial}. The function however tends to smooth the surrogate function to much, to be applicable in real world problems. The kernel function used in this method will therefor be Matérn$\frac{5}{2}$, as proposed by \citet{snoek2012practical}.
+
 
 %- Combining posterior and refit the GP
