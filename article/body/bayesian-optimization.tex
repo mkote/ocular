@@ -1,7 +1,7 @@
 \section{Bayesian Optimization}\label{sec:bayesian-optimization}
 Bayesian Optimization is a method for finding the extrema of expensive functions. In machine learning, we can see classification algorithms as functions to be optimized over their hyperparameters with respect to model accuracy, and thus Bayesian optimzation can be used to find the combination of hyperparameters that yields the highest performance in classification. \citet{snoek2012practical} shows that Bayesian Optimization can be applied to existing problems to find even better parameters than the original authors presented, as well as outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian Optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
 
-BO sees the objective function as a black box. Generally what it tries to do, it fit a gaussian process (GP) to the unknown objective function, by requesting results at various parameter settings, and eliminating GP samples which does not fit to the solution. The remaining GP samples are then used to form a posterior distribution over the objective function. An acquisition function can now be formed by probing the surrogate function. The next parameter setting for probing the objective function will now be the maximum expected expected result gain from the acquisition function.
+BO sees the objective function as a black box. Generally what it tries to do, it fit a \emph{gaussian process} (GP) to the unknown objective function, by requesting results at various parameter settings, and eliminating GP samples which does not fit to the solution. The remaining GP samples are then used to form a posterior distribution over the objective function. An acquisition function can now be formed by probing the surrogate function. The next parameter setting for probing the objective function will now be the maximum expected expected result gain from the acquisition function.
 \begin{algorithm}
 	\For{$x\in X$}{
 		$NbSuccInS(x) \longleftarrow 0$\;
@@ -20,6 +20,30 @@ where $m : X \rightarrow \mathbb{R}$ is the mean function, and $k : X \times X \
 An example of a gaussian process over one hyperparameter x is seen in figure x. 
 
 \subsection{Acquisition function}
-When Bayesian Optimzation builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function}, which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. \todo{explain with figure} Another approach is to consider the expected improvement which not only takes into consideration the  probability of improvement, but also the uncertainty e.g. the variance of the gaussian distribution at the given input.
-\todo{explain expected improvement}
+When Bayesian Optimization builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function} (AF), which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. \todo{explain with figure} Another approach is to consider the \emph{expected improvement} (EI) which not only takes into account the probability of improvement, but also the uncertainty e.g. the variance of the gaussian distribution of the surrogate at the given input.
+EI balances the trade-off between exploitation and exploring, and is therefor a well used acquisition function \citet{brochu2010tutorial}. EI(x) is the function which gives the expected improvement of choosing parameters x, and is defines as:
+
+\begin{equation}
+\label{eq:expected-improvement}
+EI(x) =
+\begin{cases}
+   (K + L & \text{ if } \sigma(x) > 0\\
+   0 	  & \text{ if } \sigma(x) = 0
+\end{cases}
+\end{equation}
+where $K = (\mu(x) - f(x^+))\Phi(Z)$ \\and $L = \sigma(x)\phi(Z)$ .
+$\mu$ and $\sigma$ are the mean and variance of the posterior distribution of the surrogate function, respectively. $Z$ is defined as:
+
+\begin{equation}
+\label{eq:expect-z}
+Z =
+\begin{cases}
+\frac{\mu(x) - f(x^+)}{\sigma(x)} & \text{ if } \sigma(x) > 0\\
+0 								  & \text{ if } \sigma(x) = 0
+\end{cases}
+\end{equation}
+$\phi$ and $\Phi$ denote the \emph{probability density function} (PDF) and \emph{cumulative distribution function} (CDF) of the standard normal distribution.
+The function for EI can then be used to probe the surrogate function with different parameter settings x, from where a new candidate point can be found to probe the objective function. The new candidate will be the parameter setting with the highest expected improvement.  
+
+
 %- Combining posterior and refit the GP
