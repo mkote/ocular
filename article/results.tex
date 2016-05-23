@@ -1,4 +1,4 @@
-\section{Experimental Results}
+\section{Experimental Results}\label{sec:results}
 In order to evaluate our method, we perform artifact correction and motor imagery classification through the pipeline illustrated in \cref{fig:pipeline} on the BCI Competition IV dataset 2a \citep{brunner2008bci}. The dataset contains 4-class motor imagery EEG data from 9 subjects. Each subject participated in two sessions of 6 runs on different days. The training data is from the first session, and the test data is from the second. A run consist of 48 labeled trials, divided evenly between the 4 classes. Each trial measured the brain signals of a subject on 22 EEG channels and 3 EOG channels. We disregard the EOG channels since we are interested in correcting artifacts without any reference signals. Examples of trials, channels, runs, and sessions are shown in \cref{fig:dataset}. What we refer to as a trial is three second span (750 samples) of motor imagery, i.e., without the cue, break, etc. in between.
 
 \begin{figure*}
@@ -46,3 +46,8 @@ In the original OACL paper by \citep{li2015ocular}, the relative height ranges s
 Moreover, we have run the Bayesian optimization with the default settings with regards to exploration vs. exploitation. Since running experiments on the pipeline with OACL is relatively expensive, it would be better to tune the Bayesian optimization to spend more time on selecting the best candidate future sample to perform the next experiment on. Additionally, using a different kernel would likely improve the results \citep{snoek2012practical}.
 
 As explained in \cite{hoffmann2008correction}, residual artifacts were still present after noise reduction methods were applied. We have also observed that residual artifacts are present, this can be seen in \cref{fig:oacl-signals}, where an event is registered around $x \approx 170$, but the following desynchronization/synchronization is not registered. A way that this could be handled is to always check if a residual artifact is present when an artifact is registered that, and mark it. These signals might need a separate $\theta$, since the signature of these artifacts is quite different from the artifacts introduced by eye blinks.
+
+\todo{integrate the paragraphs below with discussion}
+In this study we used just one range for OACL, but the method can easily be extended to use and optimize multiple ranges. That would likely increase the accuracy further, since different artifacts show up in different ranges. Each range adds to the dimensionality of the search space. Alternatively, a wavelet transform approach could be used for the removal step \citep{krishnaveni2006automatic}.
+
+The filter bank can be improved by optimizing over a wider variety of sub-bands, e.g., by mixing sub-bands with differing spans such as [4-8] and [8-11]. This would increase the complexity of the input space.
