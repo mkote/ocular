@@ -17,6 +17,15 @@ From $x(t)$ we perform all steps in artifact detection and removal.
 \subsection{Artifact Detection}
 The goal of artifact detection is to find an artifact signal $a(t)$ from $x(t)$ that represents the parts of $x(t)$ that contain ocular artifacts. Before finding the artifact signal $a(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$, in order to smooth out short-term fluctuations e.g. from external interference. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of $\frac{m}{2}$ samples on either side of the t\textsuperscript{th} sample. 
 
+\begin{figure*}%[!hbtp]
+	\centering
+	\includegraphics[width=1\textwidth]{figures/cleaned-oacl-signal.png}
+	\vspace{-2em}
+	\caption{Raw signal and corrected signal superimposed for a single channel in part of a single trial. The 3 EOG signals show ocular artifacts.}
+	\label{fig:cleaned-oacl-signals}
+\end{figure*}
+
+
 \begin{equation}
 \label{eq:movavg}
 s(t) = \frac{1}{m}\sum_{t-\frac{m}{2}}^{t+\frac{m}{2}}x(t)
