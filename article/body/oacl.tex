@@ -92,3 +92,4 @@ c_{k}(t)
 \end{align}
 where $k$ is the number of channels. By \cref{eq:corrected-signal} this means that the number of $\theta$ parameters we optimize over is $k \times l$, where $l$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain $\theta \in \mathbb{R}^{l\times n}_{[0,1]}$.
 
+With the EEG signal corrected for artifacts, we can proceed to extract the features for classification.
