@@ -1,3 +1,6 @@
+\section{Bayesian Optimization}\label{sec:bayesian-optimization}
+Bayesian optimization is a method for finding the extrema of expensive functions. In machine learning, we can see classification algorithms as functions to be optimized over their hyperparameters with respect to model accuracy, and thus Bayesian optimization can be used to find the combination of hyperparameters that yields the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to existing problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
+\todo{insert the simple algorithm for bayesian optimization}
 \begin{algorithm*}
 	\For{$t \to |budget|$}{
 		find the best candidate point $x_t$ by maximizing the acquisition function \;
@@ -7,9 +10,6 @@
 	\caption{Simplified algorithm for Bayesian Optimization.}
 	\label{alg:bayesian-optimization}
 \end{algorithm*}
-\section{Bayesian Optimization}\label{sec:bayesian-optimization}
-Bayesian optimization is a method for finding the extrema of expensive functions. In machine learning, we can see classification algorithms as functions to be optimized over their hyperparameters with respect to model accuracy, and thus Bayesian optimization can be used to find the combination of hyperparameters that yields the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to existing problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
-\todo{insert the simple algorithm for bayesian optimization}
 
 BO sees the objective function as a black box. Generally, it tries to fit a \emph{Gaussian process} (GP) to the unknown objective function by requesting results at various parameter settings, and eliminating GP samples that do not fit the solution. The remaining GP samples are then used to form a posterior distribution over the objective function. An acquisition function can now be formed by probing the surrogate function. The next parameter setting for probing the objective function will now be the maximum expected result gain from the acquisition function.
 
