@@ -6,7 +6,6 @@
 	\label{fig:oacl-signals}
 \end{figure*}
 \section{Ocular Artifact Correction}\label{sec:oacl}
-\todo{explain how eeg data is structured.}
 The OACL method consists of two parts: artifact detection and artifact removal. First, the raw EEG signals are processed to obtain the artifact signals, representing the parts of the signal that are artifacts. Then we find the \emph{filtering parameter} $\theta$ for each of the artifact signals, which determines the amount of each signal that needs to be removed from the raw signal in order to obtain the corrected signal. 
 Since the original OACL method \citep{li2015ocular} was devised for binary class datasets, we generalize the algorithm for multi-class datasets. 
 
@@ -93,3 +92,4 @@ c_{k}(t)
 \end{align}
 where $k$ is the number of channels. By \cref{eq:corrected-signal} this means that the number of $\theta$ parameters we optimize over is $k \times l$, where $l$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain $\theta \in \mathbb{R}^{l\times n}_{[0,1]}$.
 
+With the EEG signal corrected for artifacts, we can proceed to extract the features for classification.
