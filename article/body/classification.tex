@@ -1,8 +1,8 @@
 \section{Random Forest Classification}\label{sec:randomforest}
-With the feature vector $\mathbf{X}$ extracted by the multi-class CSP algorithm as the training set, we train a classifier for multi-class motor imagery.
+With the feature vector $\mathbf{X}$ extracted by the multi-class CSP algorithm, we will now train a classifier.
 
 The Random Forest technique works by splitting the training set $T$ into $n$ subsets $\{t_1,…,t_n \quad | \quad t_i \subset S\}$ and trains $n$ decision trees for each subset $t_i$. The splitting is done randomly by drawing a \emph{bootstrap sample} with replacement e.g. sets are constructed by uniformly choosing samples, with the possibility that one sample is drawn more than once. When classifying new samples, the Random Forest classifies on each of its decision trees and returns the mode result. Intuitively, the weak learners 'vote' on the result.
 
 The decision trees are constructed by randomly splitting the training subset $t_i$ on the features to obtain the training subset $t’_i \subset t_i$ containing the feature values of the randomly chosen features, in the given subset. The decision tree is then constructed according to the decision tree algorithm which constructs a node on the split with the highest information gain, and finally pruned for features which do not provide any improvements in model accuracy.
 
-The hyperparameters for Random Forest can be optimized, but the default parameters of scikit-learn's implementation are reasonable \citep{bernard2009influence}. Since we are only interested in the relative performance of OACL, we will not add Random Forest's hyperparameters.
+The hyperparameters for Random Forest can be optimized, but the default parameters of scikit-learn's implementation are reasonable \citep{bernard2009influence}. Since we are only interested in the relative performance of OACL, we will not optimize Random Forest's hyperparameters.
