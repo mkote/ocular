@@ -210,7 +210,7 @@ By applying all CSPs to the same trial, and combining the resulting feature vect
 
 \end{tikzpicture}
 \end{adjustbox}
-\caption{Overview of program pipeline}
+\caption{Overview of program pipeline. The steps are: [1] Training data for the subject in question. [2] Start Bayesian optimization iteration. [3] Cross-validation; split the data into folds. [4] Run OACL on the fold data. [5] Create filter bank. [6] Run CSP on each class vs the rest. [7] For each CSP, extract features. [8] Classify using data from all CSPs for each band. [9] Calculate the accuracy, then start next fold. [10] Find the mean accuracy across the folds, then start the next iteration.}
 \label{fig:ProgramPipeline}
 \end{figure*}
 \subsection{Filter bank}\label{sec:filterbank}
