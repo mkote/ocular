@@ -220,4 +220,6 @@ The Common Spatial Patterns algorithm assumes the user knows which frequency ran
 \todo{Remove repetition}
 Finding good frequency bands for each subject can be quite time-consuming when done manually. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as step 5.
 
-The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter will be used in the creation of CSPs, which will form the basis of feature extraction.
+The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter is used in the creation of CSPs, which form the basis of feature extraction.
+
+The feature vectors extracted by application of the Filter-Bank Common Spatial Patterns algorithm, is used as the training set to a classification algorithm.
