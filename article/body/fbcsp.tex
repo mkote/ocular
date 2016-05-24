@@ -119,7 +119,7 @@ For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne}
 \draw [-{Latex[length=1.5mm]}] (bo) -- (crossvalidation);
 
 % Draw oacl box
-\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {OACL};
+\node (oacl) at (oacls) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Artifact Correction};
 \draw [-{Latex[length=1.5mm]}] (crossvalidation) -- (oacl);
 
 % Draw Filter Bank
@@ -157,7 +157,7 @@ For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne}
 }
 
 % Draw random forest classifier node
-\node (randomforestnode) at (randomforestlearner) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {RFC};
+\node (randomforestnode) at (randomforestlearner) [draw,thick,minimum width=\boxl cm,minimum height=\boxh cm] {Random Forest};
 
 % Draw CSP OVR arrows to classifier node
 \foreach \x in \fblist
@@ -211,7 +211,7 @@ For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne}
 
 \end{tikzpicture}
 \end{adjustbox}
-\caption{Overview of program pipeline. The steps are: [1] Training data for the subject in question. [2] Start Bayesian optimization iteration. [3] Cross-validation; split the data into folds. [4] Run OACL on the fold data. [5] Create filter bank. [6] Run CSP on each class vs the rest. [7] For each CSP, extract features. [8] Classify using data from all CSPs for each band. [9] Calculate the accuracy, then start next fold. [10] Find the mean accuracy across the folds, then start the next iteration.}
+\caption{Overview of program pipeline. The steps are: [1] Training data for the subject in question. [2] Start Bayesian optimization iteration. [3] Cross-validation; split the data into folds. [4] Perform artifact correction on the fold data. [5] Create filter bank. [6] Run CSP on each class vs the rest. [7] For each CSP, extract features. [8] Classify using data from all CSPs for each band. [9] Calculate the accuracy, then start next fold. [10] Find the mean accuracy across the folds, then start the next iteration.}
 \label{fig:ProgramPipeline}
 \end{figure*}
 \subsection{Filter bank}\label{sec:filterbank}
