@@ -215,11 +215,8 @@ For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne}
 \label{fig:ProgramPipeline}
 \end{figure*}
 \subsection{Filter bank}\label{sec:filterbank}
-The Common Spatial Patterns algorithm assumes the user knows which frequency ranges contain important features for different classes. Since these are different for each subject, it is suitable to implement use a filter bank as a step before CSP. This way, we get features for various frequency ranges from the EEG data. Applying filter banks is also common when processing EEG data, and it is especially useful in conjunction with CSP, as in \cite{ang2008filter}. 
-
-\todo{Remove repetition}
-Finding good frequency bands for each subject can be quite time-consuming when done manually. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as step 5.
+The CSP algorithm assumes the user knows which frequency ranges contain important features for different classes. Finding good frequency bands for each subject can be quite time-consuming when done manually, since these are different for each subject. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. By applying CSP on each frequency range we get the most discriminative features from the EEG data \citep{ang2008filter}. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as steps 5 through 7.
 
 The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter is used in the creation of CSPs, which form the basis for feature extraction.
 
-The feature vectors extracted by application of the Filter-Bank Common Spatial Patterns algorithm, is used as the training set to a classification algorithm.
+The feature vectors extracted by application of the Filter-Bank Common Spatial Patterns algorithm are used as the training set to a classification algorithm.
