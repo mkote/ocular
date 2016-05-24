@@ -32,14 +32,9 @@ To test the generality of the pipeline, we perform 6-fold cross-validation on th
 	\label{fig:results}
 \end{table}
 
-With 200 iterations the artifact correction did not overall yield better results than with no artifact correction and, in fact performed worse on some subjects. One possible cause may be that optimizing 27 parameters over 200 iterations is not a large enough budget to find optimal values for all hyperparameters, since the search space for 27 parameters is much larger than the search space for the 2 parameters optimized in the pipeline with no artifact correction. For this reason, we increased the iterations from 200 to 300 to see if this would yield improved results as illustrated in \cref{fig:i300}. As can be seen, the accuracy increased for three subjects, decreased for two, and remained the same for four. This indicates that 300 iterations are still not enough to optimize over such a large search space.
-
+With 200 iterations the artifact correction did not overall yield better results than with no artifact correction and, in fact performed worse on some subjects. One possible cause may be that optimizing 27 parameters over 200 iterations is not a large enough budget to find optimal values for all hyperparameters, since the search space for 27 parameters is much larger than the search space for the 2 parameters optimized in the pipeline with no artifact correction. For this reason, we increased the iterations from 200 to 300 to see if this would yield improved results as illustrated in \cref{fig:results}. As can be seen, the accuracy increased for three subjects, decreased for two, and remained the same for four. This indicates that 300 iterations are still not enough to optimize over such a large search space.
 
 Because our objective is to determine whether removing the artifact signal from the raw signal yields improvements in classification accuracy, we manually set the non-artifact correction parameters to the best obtained values found in the non-correction evaluations, instead of further increasing the number of iterations. This introduces the assumption that good parameters without OACL are also good with OACL. Therefore, we now optimize the $\theta$ parameters to find the values that yield the highest accuracy. The results of running 200 iterations with this assumption are shown in \cref{fig:results}, as C4. \todo{discuss these results when we get them}
-
-To determine the significance of these results we use the Wilcoxon signed-rank test. \Cref{fig:wilcoxon} shows the results of the test.
-
-
 
 \subsection{Discussion}\label{sec:discussion}
 % OACL ranges, may not only remove Ocular artifacts.

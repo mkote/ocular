@@ -3,6 +3,7 @@
 Bayesian optimization is an optimization method for finding the extrema of functions that may be non-differentiable. In machine learning, we can consider classification algorithms in combination with preprocessing steps, as objective functions to be optimized over their hyperparameters with respect to model accuracy. For this reason, Bayesian optimization can be used to find the combination of hyperparameters that yield the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to several types of machine learning problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
 The abstract algorithm for Bayesian Optimization is illustrated in \cref{al:bayesian-optimization}
 \begin{algorithm*}
+\DontPrintSemicolon
 	best := $(p, s)$  \tcp{initially p=$\emptyset$, $s=0$} 
 	\For{$t \to n$}{
 		Find the best candidate point $x_t$ by maximizing the acquisition function \;
