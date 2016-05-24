@@ -52,6 +52,7 @@ Our approach is to apply each CSP to every trial, and combine all of their respe
 
 By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h * m$ features. We apply this method on all trials in the dataset, from which $h * m$ features are found for every trial. These features are then used as the training set for a classifier.
 
+For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne} library for Python.
 \begin {figure*}%[!hbtp]
 \centering
 \begin{adjustbox}{width=\textwidth}
