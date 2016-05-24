@@ -3,17 +3,17 @@
 % What and why CSP
 As mentioned in \cref{sec:introduction} raw EEG data consists of time series of amplitude samples. In such datasets, the information relevant for classification is hidden within the progression of the signal over time, and therefore it is not useful to consider each sample in the time series as a feature. For this reason we must perform feature extraction to extract the information relevant for classification. 
 
-To extract the EEG features we use the Common Spatial Patterns algorithm (CSP), which produces spatial filters that project the EEG data onto the subspace that best discriminates the classes.
+To extract the EEG features we use the \emph{Common Spatial Patterns} algorithm (CSP), which produces spatial filters that project the EEG data onto the subspace that best discriminates the classes.
 CSP has been shown to perform well under the assumption that there is information relevant for classes hidden in the variances between the time series, which is the case in EEG data \cite{ang2012filter}. CSP is discussed in \cref{sec:csp}
 
 % What and Why Filter bank
-Moreover, \cite{ang2012filter} discusses that some frequencies are more relevant than others in EEG classification, and that the relevant frequencies vary between subjects. To find the best frequency bands for each subject, we use a multi-class variant of FBCSP (a \emph{Filter Bank} combined with CSP) as proposed by \citet{ang2012filter}. Filter banks are described in \cref{sec:filterbank}.
+Moreover, \cite{ang2012filter} discusses that some frequencies are more relevant than others in EEG classification, and that the relevant frequencies vary between subjects. To find the best frequency bands for each subject, we use a multi-class variant of FBCSP (a \emph{Filter Bank} (FB) combined with CSP) as proposed by \citet{ang2012filter}. Filter banks are described in \cref{sec:filterbank}.
 
 \subsection{Common Spatial Patterns}\label{sec:csp}
 %We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data. The CSP algorithm has been used in several EEG classification studies within recent years, as in \cite{ang2012filter}. In all studies,\todo{source?} CSP were considered a step of improvement to the classification of EEG classes. Based on these results, we chose to incorporate CSP as part of the classification pipeline. 
 The Common Spatial Patterns algorithm finds spatial filters that, when applied to signals, give the maximal mutual information between these with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Since we are classifying on motor imagery for different body parts, this assumption can be justified \citep{blankertz2008optimizing}.
 
-Formally, CSP combines data trials with the same class. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for class 1 and 2 respectively,
+Formally, CSP combines data with the same class. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for class 1 and 2 respectively,
 
 \begin{equation}
 \label{eq:csp_data}
@@ -37,21 +37,20 @@ By applying simultaneous diagonalization between $\pmb{A_{cov}}$ and $\pmb{B_{co
 \label{eq:diagonalization_A}
 \pmb{P} \cdot \pmb{A_{cov}} \cdot \pmb{P^{-1}} = \pmb{D}, \quad \pmb{P}, \pmb{D}, \pmb{A_{cov}} \in \mathbb{R}^{k \times k}
 \end{equation}
-and
+where D is a diagonal matrix consisting of the eigenvalues for $A_{cov}$, and
 \begin{equation}
 \label{eq:diagonalization_B}
 \pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P^{-1}} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{k \times k}
 \end{equation}
-where $\pmb{I}$ is the identity matrix
-The spatial filter will now correspond to the first column of $\pmb{P}$, such that $\pmb{\vec{w}} = \pmb{P}^\mathsf{T}_{1}$ 
+where $\pmb{I}$ is the identity matrix. The spatial filter will now correspond to the first column of $\pmb{P}$, such that $\pmb{\vec{w}} = \pmb{P}^\mathsf{T}_{1}$ 
 
-$\pmb{P}$ can now be used as a linear transformation which, when applied to EEG signals, maps these into a new space, where signal features are more discriminative. The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}.
+$\pmb{\vec{w}}$ can now be used as a linear transformation which, when applied to EEG signals, maps these into a new space, where signal features are more discriminative. The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}.
 
-Generally, CSP only works for binary classes, whereas many real world applications require a greater number of classes. As our training set has 4 classes, we use the one-vs-rest approach as proposed by \cite{ang2012filter} to extend CSP to multi-class. The one-vs-rest (OVR) method constructs one CSP per class, by choosing a class, and considering every other class as being the same. In this way, we obtain 4 binary CSPs, each constructed to create the maximum variance to all other classes. Step 6 in \cref{fig:ProgramPipeline} depicts the creation of four CSPs (one for each class versus the rest) in each sub-band for a total of 12 CSPs. Features can now be extracted by applying the spatial filters from CSP to EEG trials.
+Generally, CSP only works for binary classes, whereas many real world applications require a greater number of classes. As our dataset has 4 classes, we use the one-vs-rest approach as proposed by \cite{ang2012filter} to extend CSP to multi-class. The one-vs-rest (OVR) method constructs one CSP per class, by choosing a class, and considering every other class as being the same. In this way, we obtain 4 binary CSPs, each constructed to create the maximum variance to all other classes. Step 7 in \cref{fig:ProgramPipeline} depicts the creation of four CSPs (one for each class versus the rest) in each sub-band for a total of 12 CSPs. Features can now be extracted by applying the spatial filters from CSP to EEG trials.
 
 Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $h$ components. The number of components is a parameter to the CSP algorithm that we optimize with Bayesian optimization.
 
-By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h \times m$ features. We apply this method on all trials in the dataset, from which $h * m$ features are found for every trial. These features are then used as the training set for a classifier.
+By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h * m$ features. We apply this method on all trials in the dataset, from which $h * m$ features are found for every trial. These features are then used as the training set for a classifier.
 
 \begin {figure*}%[!hbtp]
 \centering
@@ -215,11 +214,11 @@ By applying all CSPs to the same trial, and combining the resulting feature vect
 \label{fig:ProgramPipeline}
 \end{figure*}
 \subsection{Filter bank}\label{sec:filterbank}
-The Common Spatial Patterns algorithm assumes the user knows which frequency ranges contain important features for different classes. Since these are different for each subject, we have implemented the filter bank algorithm as a step before CSP. This way, we get features for various frequency ranges from the EEG data. Applying filter banks is also common when processing EEG data, and it is especially useful in conjunction with CSP, as in \cite{ang2008filter}. 
+The Common Spatial Patterns algorithm assumes the user knows which frequency ranges contain important features for different classes. Since these are different for each subject, it is suitable to implement use a filter bank as a step before CSP. This way, we get features for various frequency ranges from the EEG data. Applying filter banks is also common when processing EEG data, and it is especially useful in conjunction with CSP, as in \cite{ang2008filter}. 
 
 \todo{Remove repetition}
 Finding good frequency bands for each subject can be quite time-consuming when done manually. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as step 5.
 
-The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter is used in the creation of CSPs, which form the basis of feature extraction.
+The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter is used in the creation of CSPs, which form the basis for feature extraction.
 
 The feature vectors extracted by application of the Filter-Bank Common Spatial Patterns algorithm, is used as the training set to a classification algorithm.
