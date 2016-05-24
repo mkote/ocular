@@ -12,32 +12,34 @@ In order to evaluate our method, we perform artifact correction and classificati
 
 We set up two pipelines to be compared. The first consists of artifact correction, followed by feature extraction with FBCSP and Random Forest classification. The second pipeline is identical but without the artifact correction step, i.e., just FBCSP and Random Forest. We run Random Forest with six predefined seeds and return the mean to ensure reproducibility.
 To test the generality of the pipeline, we perform 6-fold cross-validation on the training data using five runs for training and one for validation. We run 200 iterations of Bayesian Optimization of select hyperparameters for each pipeline. The best hyperparameters from cross-validation for each pipeline is then used to construct the pipeline for the final evaluation, where we predict the labels for the test data. We repeat this for each subject. 
-\Cref{fig:results} shows the obtained accuracies with and without artifact correction, as well as KAPPA scores for each subject.
+\cref{fig:results} shows the obtained accuracies with(C2) and without (C1) artifact correction for each subject.
 
-With 200 iterations the artifact correction did not overall yield better results than with no artifact correction and, in fact performed worse on some subjects. One possible cause may be that optimizing 27 parameters over 200 iterations is not a large enough budget to find optimal values for all hyperparameters, since the search space for 27 parameters is much larger than the search space for the 2 parameters optimized in the pipeline with no artifact correction. For this reason, we increased the iterations from 200 to 300 to see if this would yield improved results as illustrated in \cref{fig:i300}. As can be seen, the accuracy increased for three subjects, decreased for two, and remained the same for four. This indicates that 300 iterations are still not enough to optimize over such a large search space. \todo{discuss in discussion that this may also indicate that we need more trials/folds for each subject to obtain better generality}
+\begin{table}[H]
+	\begin{tabular}{@{}l|llll@{}} \toprule
+		S					  & C1             & C2             & C3             & C4             \\ \midrule
+		1                     & 83,04          & 82,29          & 81,42          & \textbf{83,85} \\
+		2                     & 57,18          & 57,29          & 57,29          & \textbf{54,67} \\
+		3                     & 78,18          & \textbf{79,16} & \textbf{79,16} & 75,64          \\
+		4                     & 65,74          & 63,83          & 65,05          & \textbf{67,71} \\
+		5                     & \textbf{58,85} & 55,21          & 55,21          & 56,94          \\
+		6                     & \textbf{50,23} & 45,72          & 48,03          & 48,18          \\
+		7                     & \textbf{68,75} & 68,69          & 68,69          & 67,94          \\
+		8                     & 74,54          & 74,54          & \textbf{74,65} & 74,48          \\
+		9                     & \textbf{75,64} & 72,97          & 72,80          & \textbf{75,64} \\ \bottomrule
+	\end{tabular}
+	\centering
+	\caption{Accuracies for the best runs using 4 different setups. C1 is the baseline testing without OACL, C2 is 200 iterations of BO with OACL, C3 is 300 iterations of BO with OACL, C4 is 200 iterations with fixed parameters}
+	\label{fig:results}
+\end{table}
 
-Because our objective is to determine whether removing the artifact signal from the raw signal yields improvements in classification accuracy, we manually set the non-artifact correction parameters to the best obtained values found in the non-correction evaluations, instead of further increasing the number of iterations. This introduces the assumption that good parameters without OACL are also good with OACL. Therefore, we now optimize the $\theta$ parameters to find the values that yield the highest accuracy. The results of running 200 iterations with this assumption are shown in \cref{fig:fixed-params}. \todo{discuss these results when we get them}
+With 200 iterations the artifact correction did not overall yield better results than with no artifact correction and, in fact performed worse on some subjects. One possible cause may be that optimizing 27 parameters over 200 iterations is not a large enough budget to find optimal values for all hyperparameters, since the search space for 27 parameters is much larger than the search space for the 2 parameters optimized in the pipeline with no artifact correction. For this reason, we increased the iterations from 200 to 300 to see if this would yield improved results as illustrated in \cref{fig:i300}. As can be seen, the accuracy increased for three subjects, decreased for two, and remained the same for four. This indicates that 300 iterations are still not enough to optimize over such a large search space.
+
+
+Because our objective is to determine whether removing the artifact signal from the raw signal yields improvements in classification accuracy, we manually set the non-artifact correction parameters to the best obtained values found in the non-correction evaluations, instead of further increasing the number of iterations. This introduces the assumption that good parameters without OACL are also good with OACL. Therefore, we now optimize the $\theta$ parameters to find the values that yield the highest accuracy. The results of running 200 iterations with this assumption are shown in \cref{fig:results}, as C4. \todo{discuss these results when we get them}
 
 To determine the significance of these results we use the Wilcoxon signed-rank test. \Cref{fig:wilcoxon} shows the results of the test.
 
-\begin{table}[H]
-	\centering
-	\caption{Results for 200 iterations}
-	\label{fig:resultsi200}
-	\begin{tabular}{@{}l|llll@{}}
-		\toprule
-		S & No OACL & OACL & Diff & Rank \\ \midrule
-		1 &   83,04            & 82,29           & -0,75 &      \\
-		2 &   57,18            & 57,29   	     & 0,11 &      \\
-		3 &   78,18            & 79,16           & 0,98 &      \\
-		4 &   65,74            & 63,83           & -1,91 &      \\
-		5 &   58,85            & 55,21           & -3,65 &      \\
-		6 &   50,23            & 45,72           & -4,51 &      \\
-		7 &   68,75            & 68,69           & -0,06&      \\
-		8 &   74,54            & 74,54           & 0,00 &      \\
-		9 &   75,64            & 72,97           & -2,66 &      \\ \bottomrule
-	\end{tabular}
-\end{table}
+
 
 \subsection{Discussion}\label{sec:discussion}
 % OACL ranges, may not only remove Ocular artifacts.
@@ -49,10 +51,13 @@ Moreover, we have run Bayesian optimization with the default settings with regar
 % Removing residual artifacts
 As explained in \cite{hoffmann2008correction}, residual artifacts were still present after noise reduction methods were applied. We have also observed that residual artifacts are present, this can be seen in \cref{fig:oacl-signals}, where an event is registered around $x \approx 170$, but the following desynchronization/synchronization is not registered. A way that this could be handled is to always check if a residual artifact is present when an artifact is registered that, and mark it. These signals might need a separate $\theta$, since the signature of these artifacts is quite different from the artifacts introduced by eye blinks.
 
-Since OACL is not restricted to finding ocular artifacts, a generalization of theta values for each channel, might not be optimal. This is due to the difference in how various artifacts shows in EEG data. A better way, might be to construct a classifier for artifacts, and use a different theta value for each such artifact. The classifier will then be used in the cleaning of new EEG signals, to remove just the right amount of artifact signal, based on the type of artifact. Furthermore, theta values are found based on optimization through BO. An alternative would be optimization through logistic regression as proposed in the original OACL method by \citet{li2015ocular}. Even though their technique considered only binary classification, it would be possible to expand their logistic regression approach to the multi-class case, by applying an one-vs-rest algorithm to construct 4-binary classifiers. This should reduce the bayesian optimization search space, and increase the results of applying the ocular artifact correction.
+Since OACL is not restricted to finding ocular artifacts, a generalization of theta values for each channel, might not be optimal. This is due to the difference in how various artifacts shows in EEG data. A better way, might be to construct a classifier for artifacts, and use a different theta value for each such artifact. The classifier will then be used in the cleaning of new EEG signals, to remove just the right amount of artifact signal, based on the type of artifact. Furthermore, theta values are found based on optimization through BO. An alternative would be optimization through logistic regression. 
+\todo{Why can we use logistic regression? Something about a function being convex... - Emil} 
+%!!! Need more data to test whether theta values can be generalized between sessions
 
-
-Furthermore, in the experiments we used one range as in \cref{eq:ranges}, but the method can easily be extended to use and optimize multiple ranges. That would likely increase the accuracy further, since different artifacts may show up in different ranges. Each range does however add to the dimensionality of the optimization search space. Alternatively, a wavelet transform approach could be used for the removal step, as described in \citep{krishnaveni2006automatic}.
+% Using more oacl ranges
+\todo{integrate the paragraphs below with discussion}
+In this study we used just one range for OACL, but the method can easily be extended to use and optimize multiple ranges. That would likely increase the accuracy further, since different artifacts show up in different ranges. Each range adds to the dimensionality of the search space. Alternatively, a wavelet transform approach could be used for the removal step \citep{krishnaveni2006automatic}.
 
 % More clever use of filter bank
-Currently we use a Filter Bank algorithm with fixed bounds, and many restrictions on the values sub-bands can take. One could have easily made more intelligent sub-bands with differing spans such as [4-8] and [8-11]. This would however increase the complexity of the input space, which in turn would make the optimization of all parameters harder. 
+The filter bank can be improved by optimizing over a wider variety of sub-bands, e.g., by mixing sub-bands with differing spans such as [4-8] and [8-11]. This would increase the complexity of the input space., which in turn would make the optimization of all parameters harder. 

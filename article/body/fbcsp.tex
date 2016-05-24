@@ -7,6 +7,7 @@ To extract the EEG features we use the \emph{Common Spatial Patterns} algorithm 
 CSP has been shown to perform well under the assumption that there is information relevant for classes hidden in the variances between the time series, which is the case in EEG data \cite{ang2012filter}. CSP is discussed in \cref{sec:csp}
 
 % What and Why Filter bank
+The raw EEG signals all consists of different combinations frequencies recorded at the scalp. These are not all interesting in regards to detection of motor imagery tasks, therefore a bandpass filter will be used to limit the signals to a certain frequency band, this means that any frequencies about and below certain thresholds will be removed.
 Moreover, \cite{ang2012filter} discusses that some frequencies are more relevant than others in EEG classification, and that the relevant frequencies vary between subjects. To find the best frequency bands for each subject, we use a multi-class variant of FBCSP (a \emph{Filter Bank} (FB) combined with CSP) as proposed by \citet{ang2012filter}. Filter banks are described in \cref{sec:filterbank}.
 
 \subsection{Common Spatial Patterns}\label{sec:csp}
