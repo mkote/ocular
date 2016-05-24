@@ -12,7 +12,6 @@ def plot_example1():
         for j, y in enumerate(x[3]):
             if y == 1:
                 places.append((i, j))
-    org_ranges = ((3.2, 7),)
     for i, j in places:
         run = i+3
         sigfrom = eeg_data[run][1][j]+700
@@ -31,8 +30,6 @@ def plot_example1():
         smt = []
 
         for k, e in enumerate(chns):
-            if k > 0:
-                layer = 1
             filtered = moving_avg_filter(e, m)
             padding = [0]*(m/2)
             padded_fsignal= list(padding)
@@ -40,9 +37,7 @@ def plot_example1():
             padded_fsignal.extend(padding)
             smt.append(padded_fsignal)
             rh, zero_indexes = find_relative_heights(filtered)
-            r1, r2 = org_ranges[0]
-            r1 = r1 - k*0.08
-            ti = find_peak_indexes(rh, (r1, r2))
+            ti = find_peak_indexes(rh, (3, 7))
 
             artifacts = list(padding)
             a = find_artifact_signal(ti, filtered, zero_indexes)
