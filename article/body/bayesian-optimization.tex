@@ -1,6 +1,6 @@
 \section{Bayesian Optimization}\label{sec:bayesian-optimization}
 % What is bayesian optimization
-Bayesian optimization is an optimization method for finding the extrema of functions that may be non-differentiable \cite{shahriari2016taking, brochu2010tutorial}. In machine learning, we can consider classification algorithms in combination with preprocessing steps, as objective functions to be optimized over their hyperparameters with respect to model accuracy. For this reason, Bayesian optimization can be used to find the combination of hyperparameters that yield the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to several types of machine learning problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
+Bayesian optimization is an optimization method for finding the extrema of functions that may be non-differentiable. In machine learning, we can consider classification algorithms in combination with preprocessing steps, as objective functions to be optimized over their hyperparameters with respect to model accuracy. For this reason, Bayesian optimization can be used to find the combination of hyperparameters that yield the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to several types of machine learning problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
 The abstract algorithm for Bayesian Optimization is illustrated in \cref{al:bayesian-optimization}
 \begin{algorithm*}
 	best := $(p, s)$  \tcp{initially p=$\emptyset$, $s=0$} 
@@ -47,21 +47,19 @@ The subplot shows the acquisition function at with the posterior given by the re
 The kernel is a function for the GP, which determines the smoothness of samples drawn from it. The choice of kernel is important in the process of fitting the Gaussian Process, to fit the objective function. Many kernels have been proposed, where one of the most used is the squared exponential function \citet{brochu2010tutorial}. The function however tends to smooth the surrogate function to much, to be applicable in real world problems. The kernel function used in this method will therefor be Matérn$\frac{5}{2}$, as proposed by \citet{snoek2012practical}.
 
 \subsection{Acquisition function}\label{sec:acquisition-function}
-When Bayesian optimization builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function}, which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. The probability of improvement at point $x$ can be as with Cumulative Distribution Function at point $m(x)$ of the probability density function of the random variable in the Gaussian Process at point $x$. 
-
-Another approach is to consider the \emph{Expected Improvement} which not only takes into account the probability of improvement, but also the uncertainty e.g. the variance of the Gaussian distribution of the surrogate at the given input. Expected improvement balances the trade-off between exploitation and exploration, and is therefore a well used acquisition function \citet{brochu2010tutorial}. $EI(x)$ is the function which gives the expected improvement of choosing parameters $x$, and is defines as:
-
+When Bayesian optimization builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function} (AF), which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. \todo{explain with figure} Another approach is to consider the \emph{expected improvement} (EI) which not only takes into account the probability of improvement, but also the uncertainty e.g. the variance of the Gaussian distribution of the surrogate at the given input.
+EI balances the trade-off between exploitation and exploring, and is therefore a well used acquisiion function \citet{brochu2010tutorial}. $EI(x)$ is the function whch givs the expected improvement of choosing parameters x$x$, and is defines as:
 \begin{equation}
 \label{eq:expected-improvement}
 EI(x) =
 \begin{cases}
-   K + L & \text{ if } \sigma(x) > 0\\
+   (K + L & \text{ if } \sigma(x) > 0\\
    0 	  & \text{ if } \sigma(x) = 0
 \end{cases}
 \end{equation}
 where $K = (\mu(x) - f(x^+))\Phi(Z)$ \\and $L = \sigma(x)\phi(Z)$ .
-$\mu$ and $\sigma$ are the mean and variance of the posterior distribution of the surrogate function, respectively. $Z$ is defined as:
-\todo{øh emil fix x+}
+$\mu$ and $\sigma$ are the mean and variance of the posterior distribution of the surrogate function respectively, and $f(x^+)$ is the currently best result gained from probing the objective function. $Z$ is defined as:
+
 \begin{equation}
 \label{eq:expect-z}
 Z =
