@@ -48,14 +48,14 @@ The subplot shows the acquisition function at with the posterior given by the re
 The kernel is a function for the GP, which determines the smoothness of samples drawn from it. The choice of kernel is important in the process of fitting the Gaussian Process, to fit the objective function. Many kernels have been proposed, where one of the most used is the squared exponential function \citet{brochu2010tutorial}. The function however tends to smooth the surrogate function to much, to be applicable in real world problems. The kernel function used in this method will therefor be Matérn$\frac{5}{2}$, as proposed by \citet{snoek2012practical}.
 
 \subsection{Acquisition function}\label{sec:acquisition-function}
-When Bayesian optimization builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function} (AF), which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. Another approach is to consider the \emph{expected improvement} (EI) which not only takes into account the probability of improvement, but also the uncertainty e.g. the variance of the Gaussian distribution of the surrogate at the given input. \todo{Læs Herfra}The bayesian optimization of a dummy function can be seen in \cref{fig:bayesian-optimization}. The objective function, together with a GP and the corresponding surrogate function can be seen. We also see the EI of probing the surrogate function, and the next parameter to probe the objective function, which will be the place with maximum expected improvement, when using EI as the acquisition function.
-\todo{Læs Hertil}
-EI balances the trade-off between exploitation and exploring, and is therefore a well used acquisiion function \citet{brochu2010tutorial}. $EI(x)$ is the function whch givs the expected improvement of choosing parameters x$x$, and is defines as:
+When Bayesian optimization builds its model of the objective function, it iteratively choses inputs to sample outputs from the objective function. The choice of which inputs to sample from is determined by the \emph{acquisition function} (AF), which determines utility of sampling from a given input. Different acquisition functions yield different measures to make this decision. One measure is the \emph{Probability of Improvement} (PI) which given a candidate input computes the probability of improving the current best result. The probability of improvement at point $x$  can be computed with the Cumulative Distribution Function of the Probability Density Function of the random variable in the Gaussian Process at point $x$. 
+
+Another approach is to consider the \emph{expected improvement} (EI) which not only takes into account the probability of improvement, but also the uncertainty e.g. the variance of the Gaussian distribution of the surrogate at the given input. EI balances the trade-off between exploitation and exploring, and is therefore a well used acquisition function \citet{brochu2010tutorial}. $EI(x)$ is the function whch givs the expected improvement of choosing parameters x$x$, and is defines as:
 \begin{equation}
 \label{eq:expected-improvement}
 EI(x) =
 \begin{cases}
-   (K + L & \text{ if } \sigma(x) > 0\\
+   K + L & \text{ if } \sigma(x) > 0\\
    0 	  & \text{ if } \sigma(x) = 0
 \end{cases}
 \end{equation}
