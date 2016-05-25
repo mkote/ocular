@@ -91,7 +91,19 @@
 %----------------------------------------------------------------------------------------
 
 \begin{document}
+\section*{Resume}
+\Large
+Brain-Computer Interfaces (BCI) are becoming increasingly useful for things such as diagnosing brain conditions and restoring motor function in disabled people. One area that still needs to improve is artifact correction. In this study, we use a state-of-the-art artifact correction method OACL, and extends it in order to make it more generally applicable. Whereas the original OACL method is used in binary classification, our modified version works on multi-class classification problems, and does not require expert input. Furthermore, the original OACL method uses visual data inspection to find artifact ranges, while we use Bayesian optimization to find these automatically.
 
+We use Filter Bank Common Spatial Pattern for feature extraction, followed by Random Forest for classification. To evaluate the method it is put in a pipeline A, consisting of Ocular Artifact Correction, Feature Extraction and Classification. The classification results from this pipeline is then compared a similar pipeline without ocular artifact correction. Hyperparameters for all algorithms are optimized using bayesian optimization, which also assures we spend the same amount of time getting the best results, for each of the pipelines.
+
+We make use of 4-class EEG data from the dataset 2a of BCI Competition IV, comprising 22 EEG channels and 2 sessions of 9 subjects over 6 runs. The first session of all subjects is used to train the pipelines, whereas the second session is used to evaluate the pipelines. The results from pipeline with ocular artifact correction did not yield significantly better classification results than the pipeline with no artifact correction. The result might however stem from parameters not being optimized correctly.
+
+We showed that the hyperparameters that was manually determined in OACL, can be automatically tuned by application of Bayesian Optimization algorithm. By testing the ocular artifact correction on the dataset, we found that the best hyperparameters found after 200-300 iterations did not improve classification performance compared to classification without application of the ocular artifact correction method. 
+
+We discuss that reasons for this include the problematically large optimization space over filtering parameters and that filtering parameters may not be generalizable over several trials.
+
+Possible improvements for future work are adapting the logistic regression approach used for multi-class estimation of filtering parameters. Secondly, the detection and correction of the residual as a subprocess to the main artifact correction process.
 \maketitle % Insert title
 
 \thispagestyle{fancy} % All pages have headers and footers
