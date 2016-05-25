@@ -13,38 +13,38 @@ Moreover, \cite{ang2012filter} discuss that some frequencies are more relevant t
 %We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data. The CSP algorithm has been used in several EEG classification studies within recent years, as in \cite{ang2012filter}. In all studies,\todo{source?} CSP were considered a step of improvement to the classification of EEG classes. Based on these results, we chose to incorporate CSP as part of the classification pipeline. 
 The Common Spatial Patterns algorithm finds spatial filters that, when applied to signals, give the maximal mutual information between these with respect to signal variance. The method assumes there are classification information hidden within the variance between signals. Since we are classifying on motor imagery for different body parts, this assumption can be justified \citep{blankertz2008optimizing}.
 
-Formally, CSP combines data with the same class. Let $\pmb{A}$ and $\pmb{B}$ be matrices of combined trials for class 1 and 2 respectively,
+Formally, CSP combines data with the same class. Let $A$ and $B$ be matrices of combined trials for class 1 and 2 respectively,
 
 \begin{equation}
 \label{eq:csp_data}
-\pmb{A}, \mathbf{B} \in \mathbb{R}^{k*n}
+A, B \in \mathbb{R}^{k*n}
 \end{equation}
-where $k$ and $n$ are the number of channels (signals) and samples respectively. CSP now calculates the covariance matrices for $\pmb{A}$ and $\pmb{B}$,
+where $k$ and $n$ are the number of channels (signals) and samples respectively. CSP now calculates the covariance matrices for $A$ and $B$,
 
 \begin{equation}
 \label{eq:covariance_matrice}
-\pmb{A_{cov}} = \frac{(\pmb{A} \cdot \overline{\pmb{A}})^\mathsf{T}  \cdot (\pmb{A} \cdot \overline{\pmb{A}})}{n - 1}
+A_{cov} = \frac{(A \cdot \overline{A})^\mathsf{T}  \cdot (A \cdot \overline{A})}{n - 1}
 \end{equation}
-where elements of $\overline{\pmb{A}}$ is defined as,
+where elements of $\overline{A}$ is defined as,
 
 \begin{equation}
 \label{eq:a_bar}
-\pmb{\overline{A}_{ij}} = \frac{\pmb{A_{i,1}} + \pmb{A_{i,2}} + ... + \pmb{A_{i,n}}}{n}
+\overline{A}_{ij} = \frac{A_{i,1} + A_{i,2} + ... + A_{i,n}}{n}
 \end{equation}
 
-By applying simultaneous diagonalization between $\pmb{A_{cov}}$ and $\pmb{B_{cov}}$, we form the eigenvectors as the columns of $\pmb{P}$. $\pmb{P}$ is found when both of the following diagonalizations hold, 
+By applying simultaneous diagonalization between $A_{cov}$ and $B_{cov}$, we form the eigenvectors as the columns of $P$. $P$ is found when both of the following diagonalizations hold, 
 \begin{equation}
 \label{eq:diagonalization_A}
-\pmb{P} \cdot \pmb{A_{cov}} \cdot \pmb{P^{-1}} = \pmb{D}, \quad \pmb{P}, \pmb{D}, \pmb{A_{cov}} \in \mathbb{R}^{k \times k}
+P \cdot A_{cov} \cdot P^{-1} = D, \quad P, D, A_{cov} \in \mathbb{R}^{k \times k}
 \end{equation}
 where D is a diagonal matrix consisting of the eigenvalues for $A_{cov}$, and
 \begin{equation}
 \label{eq:diagonalization_B}
-\pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P^{-1}} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{k \times k}
+P \cdot B_{cov} \cdot P^{-1} = I, \quad P, I, B_{cov} \in \mathbb{R}^{k \times k}
 \end{equation}
-where $\pmb{I}$ is the identity matrix. The eigenvectors in $\pmb{P}$ are ordered such that the variance of the first is maximized for class A, and the variance of the last is maximized for class B. Then by choosing the $h/2$ first and last eigenvectors we can use this as a spatial filter $\pmb{W}$ and a new trial $\pmb{x}$ can then be transformed by
+where $I$ is the identity matrix. The eigenvectors in $P$ are ordered such that the variance of the first is maximized for class A, and the variance of the last is maximized for class B. Then by choosing the $h/2$ first and last eigenvectors we can use this as a spatial filter $W$ and a new trial $x$ can then be transformed by
 \begin{equation}
-\pmb{Q} = \pmb{x} \cdot \pmb{W}
+Q = x \cdot W
 \end{equation}
 The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}.
 
