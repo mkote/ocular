@@ -1,7 +1,7 @@
 \section{Feature Extraction}\label{sec:feature-extraction}
 % Repeat why feature extraction
 % What and why CSP
-As mentioned in \cref{sec:introduction} raw EEG data consists of time series of amplitude samples. In such datasets, the information relevant for classification is hidden within the progression of the signal over time, and therefore it is not useful to consider each sample in the time series as a feature. For this reason we must perform feature extraction to extract the information relevant for classification. 
+As mentioned in \cref{sec:introduction} raw EEG data consists of time series of amplitude samples. In such datasets, the information relevant for classification is hidden within the progression of the signal over time, and therefore it is not useful to consider each sample in the time series as a feature for classification. For this reason we must perform feature extraction to extract the information relevant for classification. 
 
 To extract the EEG features we use the \emph{Common Spatial Patterns} algorithm (CSP), which produces spatial filters that project the EEG data onto the subspace that best discriminates the classes.
 CSP has been shown to perform well under the assumption that there is information relevant for classes hidden in the variances between the time series, which is the case in EEG data \cite{ang2012filter}. CSP is discussed in \cref{sec:csp}
@@ -53,7 +53,7 @@ Generally, CSP only works for binary classes, whereas many real world applicatio
 
 Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $h$ components. The number of components is a parameter to the CSP algorithm that we optimize with Bayesian optimization.
 
-By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h * m$ features. We apply this method on all trials in the dataset, from which $h * m$ features are found for every trial. These features are then used as the training set for a classifier.
+By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h \times m$ features. We apply this method on all trials in the dataset, from which $h \times m$ features are found for every trial. These features are then used as the training set for a classifier.
 
 For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne} library for Python.
 \begin {figure*}%[!hbtp]
@@ -214,12 +214,12 @@ For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne}
 
 \end{tikzpicture}
 \end{adjustbox}
-\caption{Overview of program pipeline. The steps are: [1] Training data for the subject in question. [2] Start Bayesian optimization iteration. [3] Cross-validation; split the data into folds. [4] Perform artifact correction on the fold data. [5] Create filter bank. [6] Run CSP on each class vs the rest. [7] For each CSP, extract features. [8] Classify using data from all CSPs for each band. [9] Calculate the accuracy, then start next fold. [10] Find the mean accuracy across the folds, then start the next iteration.}
+\caption{Overview of program pipeline. The steps are: [1] Training data for the subject in question. [2] Start Bayesian optimization iteration. [3] Cross-validation; split the data into folds. [4] Perform artifact correction on the fold data. [5] Create filter bank. [6] Run CSP on each class vs the rest. [7] For each CSP, extract features. [8] Classify using features from all CSPs for each band. [9] Calculate the accuracy, then start next fold. [10] Find the mean accuracy across the folds, then start the next iteration.}
 \label{fig:ProgramPipeline}
 \end{figure*}
 \subsection{Filter bank}\label{sec:filterbank}
 The CSP algorithm assumes the user knows which frequency ranges contain important features for different classes. Finding good frequency bands for each subject can be quite time-consuming when done manually, since these are different for each subject. Fortunately, the process can be automated by creating a filter bank (FB) that splits a signal into components, each of which contains a frequency sub-band. By applying CSP on each frequency range we get the most discriminative features from the EEG data \citep{ang2008filter}. An example of this with three sub-bands can be seen in \cref{fig:ProgramPipeline} as steps 5 through 7.
 
-The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F \in \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter is used in the creation of CSPs, which form the basis for feature extraction.
+The sub-bands are chosen within the frequency range of 4 to 40, which should assure all relevant data is taken into account \citep{pfurtscheller1999event}. They are chosen with a span of $n \in \{3,..,8\}$. For a span of $n = 3$ we would create a set $F$ of filters, $F = \{[4, 7], [7, 10],...,[37, 40]\}$. Every filter is used in the creation of CSPs, which form the basis for feature extraction.
 
 The feature vectors extracted by application of the Filter-Bank Common Spatial Patterns algorithm are used as the training set to a classification algorithm.
