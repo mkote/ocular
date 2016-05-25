@@ -7,7 +7,7 @@ To extract the EEG features we use the \emph{Common Spatial Patterns} algorithm 
 CSP has been shown to perform well under the assumption that there is information relevant for classes hidden in the variances between the time series, which is the case in EEG data \cite{ang2012filter}. CSP is discussed in \cref{sec:csp}
 
 % What and Why Filter bank
-Moreover, \cite{ang2012filter} discusses that some frequencies are more relevant than others in EEG classification, and that the relevant frequencies vary between subjects. A way to find the informative frequencies is to use a bandpass filter to remove the frequencies above and below some threshold values, and leave us with a frequency band in between the threshold values. These are then used in our multi-class variant of FBCSP (a \emph{Filter Bank} (FB) combined with CSP) as proposed by \citet{ang2012filter}. Filter banks are described in \cref{sec:filterbank}.
+Moreover, \cite{ang2012filter} discuss that some frequencies are more relevant than others in EEG classification, and that the relevant frequencies vary between subjects. A way to find the informative frequencies is to use a bandpass filter to remove the frequencies above and below some threshold values, and leave us with a frequency band in between the threshold values. These are then used in our multi-class variant of FBCSP (a \emph{Filter Bank} (FB) combined with CSP) as proposed by \citet{ang2012filter}. Filter banks are described in \cref{sec:filterbank}.
 
 \subsection{Common Spatial Patterns}\label{sec:csp}
 %We have chosen to use a Filter bank multi class common spatial patterns (FBMCCSP) algorithm, for the purpose of extracting features from EEG data. The CSP algorithm has been used in several EEG classification studies within recent years, as in \cite{ang2012filter}. In all studies,\todo{source?} CSP were considered a step of improvement to the classification of EEG classes. Based on these results, we chose to incorporate CSP as part of the classification pipeline. 
@@ -42,18 +42,18 @@ where D is a diagonal matrix consisting of the eigenvalues for $A_{cov}$, and
 \label{eq:diagonalization_B}
 \pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P^{-1}} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{k \times k}
 \end{equation}
-where $\pmb{I}$ is the identity matrix. The variance accounted for by the first m eigenvectors in $\pmb{D}$ will maximize for class A and the m lass will be for class B. New trial can then be transformed by
+where $\pmb{I}$ is the identity matrix. The eigenvectors in $\pmb{P}$ are ordered such that the variance of the first is maximized for class A, and the variance of the last is maximized for class B. The new trial can then be transformed by
 \begin{equation}
-\pmb{Z} = \pmb{X} \cdot \pmb{D}
+\pmb{Z} = \pmb{X} \cdot \pmb{P}
 \end{equation}
 where $\pmb{X}$ are are a trial, and $\pmb{Z}$ is its transformation.
 The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}.
 
 Generally, CSP only works for binary classes, whereas many real world applications require a greater number of classes. As our dataset has 4 classes, we use the one-vs-rest approach as proposed by \cite{ang2012filter} to extend CSP to multi-class. The one-vs-rest (OVR) method constructs one CSP per class, by choosing a class, and considering every other class as being the same. In this way, we obtain 4 binary CSPs, each constructed to create the maximum variance to all other classes. Step 7 in \cref{fig:ProgramPipeline} depicts the creation of four CSPs (one for each class versus the rest) in each sub-band for a total of 12 CSPs. Features can now be extracted by applying the spatial filters from CSP to EEG trials.
 
-Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $h$ components. The number of components is a parameter to the CSP algorithm that we optimize with Bayesian optimization.
+Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $g$ CSPs after applying OVR over all classes, for all bands. If we then apply one of the $g$ CSPs to a single trial, we get a feature vector with $h$ components. The number of components is a parameter to the CSP algorithm that we optimize with Bayesian optimization.
 
-By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h \times m$ features. We apply this method on all trials in the dataset, from which $h \times m$ features are found for every trial. These features are then used as the training set for a classifier.
+By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h \times g$ features. We apply this method on all trials in the dataset, from which $h \times g$ features are found for every trial. These features are then used as the training set for a classifier.
 
 For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne} library for Python.
 \begin {figure*}%[!hbtp]
