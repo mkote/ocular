@@ -42,9 +42,12 @@ where D is a diagonal matrix consisting of the eigenvalues for $A_{cov}$, and
 \label{eq:diagonalization_B}
 \pmb{P} \cdot \pmb{B_{cov}} \cdot \pmb{P^{-1}} = \pmb{I}, \quad \pmb{P}, \pmb{I}, \pmb{B_{cov}} \in \mathbb{R}^{k \times k}
 \end{equation}
-where $\pmb{I}$ is the identity matrix. The spatial filter will now correspond to the first column of $\pmb{P}$, such that $\pmb{\vec{w}} = \pmb{P}^\mathsf{T}_{1}$ 
-
-$\pmb{\vec{w}}$ can now be used as a linear transformation which, when applied to EEG signals, maps these into a new space, where signal features are more discriminative. The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}.
+where $\pmb{I}$ is the identity matrix. The variance accounted for by the first m eigenvectors in $\pmb{D}$ will maximize for class A and the m lass will be for class B. New trial can then be transformed by
+\begin{equation}
+\pmb{Z} = \pmb{X} \cdot \pmb{D}
+\end{equation}
+where $\pmb{X}$ are are a trial, and $\pmb{Z}$ is its transformation.
+The drawback of CSP is that it does not work well if the frequency bands are not adjusted to fit each subject \citep{novi2007sub}.
 
 Generally, CSP only works for binary classes, whereas many real world applications require a greater number of classes. As our dataset has 4 classes, we use the one-vs-rest approach as proposed by \cite{ang2012filter} to extend CSP to multi-class. The one-vs-rest (OVR) method constructs one CSP per class, by choosing a class, and considering every other class as being the same. In this way, we obtain 4 binary CSPs, each constructed to create the maximum variance to all other classes. Step 7 in \cref{fig:ProgramPipeline} depicts the creation of four CSPs (one for each class versus the rest) in each sub-band for a total of 12 CSPs. Features can now be extracted by applying the spatial filters from CSP to EEG trials.
 
