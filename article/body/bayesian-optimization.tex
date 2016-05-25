@@ -22,23 +22,9 @@ The abstract algorithm for Bayesian Optimization is illustrated in \cref{al:baye
 Bayesian Optimization considers the objective function as an unknown black box, from which we can sample outputs. By sampling input-output pairs, the algorithm iteratively constructs a model of the objective function as a \emph{Gaussian Process}. The Gaussian Process model essentially provides a probability distribution over functions which describe the unknown objective function. In order to obtain the posterior, we must decide at which input to next sample the objective function at. The best candidate input is obtained by maximizing the \emph{acquisition function}. This function determines the utility of sampling the objective function at a given input. In this way, we iteratively construct a more accurate posterior distribution of the objective function, which in our case is the whole pipeline. We optimize over the hyperparameters of the ocular artifact detection and FBCSP algorithm.
 
 We discuss gaussian processes in \cref{sec:gp} and the kernel function in \cref{sec:kernel-function}. The acquisition functions are explained in \cref{sec:acquisition-function}.
-\begin{table*}[]
-\centering
-\caption{Hyperparameters we optimize for each method and the best values found through Bayesian Optimization.}
-\label{tab:hyperparameters}
-\begin{tabular}{@{}lllll@{}}
-\toprule
-\textbf{Method}     & \textbf{Hyperparameter} & \\ \midrule
-Artifact Correction & moving average $m$ &    \\
-Artifact Correction & artifact range $r$ &    \\
-Artifact Correction & filtering parameter $\theta$ &  \\
-CSP                 & number of components $h$     &  \\
-Filter Bank         & band span                    &  \\  
-\end{tabular}
-\end{table*}
 
 \subsection{Gaussian Processes}\label{sec:gp}
-A random variable is a probability distribution over an event. One example is the random variable $CoinFlip = (0.5, 0.5)$ with a 50\% chance of either heads or tails. Such probability distributions can be Gaussian described by the mean $\mu$ and variance $\sigma^2$. Generalizing the notion of Gaussians, two random variables can also be jointly Gaussian or multivariate Gaussian in their common mean and covariances. The covariance then describes how the two variables change together.
+A random variable is a probability distribution over an event. One example is the random variable $CoinFlip = (0.5, 0.5)$ with a 50\% chance of either heads or tails. Such probability distributions can be Gaussian described by the mean $\mu$ and variance $\sigma^2$. Generalizing the notion of Gaussians, two random variables can also be jointly Gaussian or multivariate Gaussian in their mean and covariances. The covariance then describes how the two variables change together.
 
 A \emph{Gaussian process} over a set S, is a set of random variables $GP = \{Z_t \ | \ t \in S\}$ such that all linear combinations of $Z_t$ are multivariate Gaussian. Intuitively, we can think of gaussian processes as a probability distribution over functions. For example, given a $t \in S$, we can obtain the probability density function describing the probability distribution of random variable $Z_t$. Since a Gaussian distribution is defined by the mean value $\mu$ and variance $\sigma^2$, we can consider a Gaussian process as a function $GP : X \rightarrow \mathbb{R} \times \mathbb{R}$ where X is the set of combinations of hyperparameters:
 
@@ -87,5 +73,18 @@ Z =
 \end{equation}
 $\phi$ and $\Phi$ denote the \emph{probability density function} (PDF) and \emph{cumulative distribution function} (CDF) of the standard normal distribution.
 The function for EI can then be used to probe the surrogate function with different parameter settings x, from where a new candidate point can be found to probe the objective function. The new candidate will be the parameter setting with the highest expected improvement.  
-
 %- Combining posterior and refit the GP
+\begin{table*}[]
+\centering
+\caption{Hyperparameters we optimize for each method with Bayesian Optimization.}
+\label{tab:hyperparameters}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Method}     & \textbf{Hyperparameter}      \\ \midrule
+Artifact Correction & moving average $m$           \\
+Artifact Correction & artifact range $r$           \\
+Artifact Correction & filtering parameter $\theta$ \\
+CSP                 & number of components $h$     \\
+Filter Bank         & band span                   
+\end{tabular}
+\end{table*}
