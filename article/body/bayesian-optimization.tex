@@ -1,6 +1,7 @@
 \section{Bayesian Optimization}\label{sec:bayesian-optimization}
 % What is bayesian optimization
-Bayesian optimization is an optimization method for finding the extrema of functions that may be non-differentiable. In machine learning, we can consider classification algorithms in combination with preprocessing steps, as objective functions to be optimized over their hyperparameters with respect to model accuracy. For this reason, Bayesian optimization can be used to find the combination of hyperparameters that yield the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to several types of machine learning problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible.
+Bayesian optimization is an optimization method for finding the extrema of functions that may be non-differentiable. In machine learning, we can consider classification algorithms in combination with preprocessing steps, as objective functions to be optimized over their hyperparameters with respect to model accuracy. For this reason, Bayesian optimization can be used to find the combination of hyperparameters that yield the highest classification accuracy. \citet{snoek2012practical} show that Bayesian optimization can be applied to several types of machine learning problems and in some cases outperform even experts at tuning machine learning algorithms. Other benefits of Bayesian optimization is the fairness when evaluating algorithms against each other as well as configuration of algorithms being more reproducible. The hyperparameters that we optimize with Bayesian Optimization for the methods discussed in previous sections  are shown in \cref{tab:hyperparameters}. 
+
 The abstract algorithm for Bayesian Optimization is illustrated in \cref{al:bayesian-optimization}
 \begin{algorithm*}
 \DontPrintSemicolon
@@ -21,6 +22,20 @@ The abstract algorithm for Bayesian Optimization is illustrated in \cref{al:baye
 Bayesian Optimization considers the objective function as an unknown black box, from which we can sample outputs. By sampling input-output pairs, the algorithm iteratively constructs a model of the objective function as a \emph{Gaussian Process}. The Gaussian Process model essentially provides a probability distribution over functions which describe the unknown objective function. In order to obtain the posterior, we must decide at which input to next sample the objective function at. The best candidate input is obtained by maximizing the \emph{acquisition function}. This function determines the utility of sampling the objective function at a given input. In this way, we iteratively construct a more and more accurate posterior distribution of the objective function, which in our case is the whole pipeline. We optimize over the hyperparameters of the ocular artifact detection and FBCSP algorithm.
 
 We discuss gaussian processes in \cref{sec:gp} and the kernel function in \cref{sec:kernel-function}. The acquisition functions are explained in \cref{sec:acquisition-function}.
+\begin{table*}[]
+\centering
+\caption{Hyperparameters we optimize for each method and the best values found through Bayesian Optimization.}
+\label{tab:hyperparameters}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Method}     & \textbf{Hyperparameter} & \\ \midrule
+Artifact Correction & moving average $m$ &    \\
+Artifact Correction & artifact range $r$ &    \\
+Artifact Correction & filtering parameter $\theta$ &  \\
+CSP                 & number of components $h$     &  \\
+Filter Bank         & band span                    &  \\  
+\end{tabular}
+\end{table*}
 
 \subsection{Gaussian Processes}\label{sec:gp}
 A random variable is a probability distribution over an event. One example is the random variable $CoinFlip = (0.5, 0.5)$ with a 50\% chance of either heads or tails. Such probability distributions can be Gaussian described by the mean $\mu$ and variance $\sigma^2$. Generalizing the notion of Gaussians, two random variables can also be jointly Gaussian or multivariate Gaussian in their common mean and covariances. The covariance then describes how the two variables change together.
