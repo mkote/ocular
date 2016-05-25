@@ -13,7 +13,7 @@ An EEG signal is a sequence of $n$ samples. Let $x = (s_0,...,s_t,...,s_n)$ wher
 %Let $t \in \mathbb{N}_{\geq 0}$ be the time of a EEG sample, then $x(t)$ denotes the amplitude measured at time $t$, that is, $x(t)$ denotes the raw EEG signal for some channel.
 
 \subsection{Artifact Detection}
-The goal of artifact detection is to find an artifact signal $a(t)$ from $x(t)$ that represents the parts of $x(t)$ that contain ocular artifacts. Before finding the artifact signal $a(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$, in order to smooth out short-term fluctuations e.g. from external interference. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of $\frac{m}{2}$ samples on either side of the t\textsuperscript{th} sample. 
+The goal of artifact detection is to find an artifact signal $a(t)$ from $x(t)$ that represents the parts of $x(t)$ that contain ocular artifacts. Before finding the artifact signal $a(t)$, we first obtain a smoothed signal by applying a \emph{moving average filter} to $x(t)$, in order to smooth out short-term fluctuations from external interference. A moving average filter is a function $s: \mathbb{N} \rightarrow \mathbb{R}$ that given time t, computes the average of $\frac{m}{2}$ samples on either side of the t\textsuperscript{th} sample. 
 
 \begin{equation}
 \label{eq:movavg}
