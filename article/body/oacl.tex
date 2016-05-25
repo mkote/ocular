@@ -62,7 +62,7 @@ Z = \{t \ | \ s(t) \leq 0 \Rightarrow &(s(t+1) > 0 \ \vee \\
 \end{align*}
 $Z$ will then be a list of indexes $\{z_1,...z_m\}$, that is used as the zero points $z_b$ and $z_a$ in \cref{eq:artifactsignal}. We can then find the correct zero points for a given peak by finding predecessor and successor indexes in $Z$ for the index of a given peak in the artifact signal.
 
-Recalling that we can use an arbitrary number of ranges in \cref{eq:ranges}, we obtain the set of artifact signals for a single channel as:
+Recalling that we can use an arbitrary number of ranges in \cref{eq:ranges}, we obtain all the artifact signals for a single channel as:
 \begin{equation}\label{eq:artifact-signals}
 A(t)=  \begin{pmatrix}
 a_1(t) \\
@@ -89,9 +89,9 @@ c_1(t) \\
 c_{k}(t) 
 \end{pmatrix}
 \end{align}
-where $k$ is the number of channels. By \cref{eq:corrected-signals} this means that the number of $\theta$ parameters we optimize over is $k \times l$, where $l$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain $\theta \in \mathbb{R}^{l\times n}_{[0,1]}$.
+where $k$ is the number of channels. By \cref{eq:corrected-signals} this means that the number of $\theta$ parameters we optimize over is $k \times l$, where $l$ is the number of artifact signals in \cref{eq:artifact-signals}. As we expect to remove 0-100\% of the artifact signal from the raw signal, we constrain $\theta \in \mathbb{R}^{l}_{[0,1]}$.
 
-With the EEG signal corrected for artifacts, we can proceed to extract the features for classification.
+With the EEG signals corrected for artifacts, we can proceed to extract the features for classification.
 \begin{figure*}%[!hbtp]
 	\centering
 	\includegraphics[width=1\textwidth]{figures/cleaned-oacl-signal.png}
