@@ -50,7 +50,7 @@ Generally, CSP only works for binary classes, whereas many real world applicatio
 
 Our approach is to apply each CSP to every trial, and combine all of their respective feature vectors. As an example, say we have $m$ CSP, after applying OVR over all classes, for all bands. If now we apply one of the $m$ CSP to a single trial, we get a feature vector with $h$ components. The number of components is a parameter to the CSP algorithm that we optimize with Bayesian optimization.
 
-By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h * m$ features. We apply this method on all trials in the dataset, from which $h * m$ features are found for every trial. These features are then used as the training set for a classifier.
+By applying all CSPs to the same trial, and combining the resulting feature vectors, we get a trial with $h \times m$ features. We apply this method on all trials in the dataset, from which $h \times m$ features are found for every trial. These features are then used as the training set for a classifier.
 
 For the implementation of CSP, we use the mne-toolbox by \citep{gramfort2014mne} library for Python.
 \begin {figure*}%[!hbtp]

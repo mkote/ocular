@@ -78,7 +78,7 @@ With the artifact signals $A(t)$ extracted from the raw EEG data the next task i
 \begin{equation}\label{eq:corrected-signal}
 c(t) = x(t) - \theta^T A(t)
 \end{equation}
-where $\theta \in \mathbb{R}^{k}$ is the \emph{filtering parameter}. $\theta$ is a vector with the factors determining the percentage of the artifact signal to subtract from the raw signal. 
+where $\theta \in \mathbb{R}^{l}$ is the \emph{filtering parameter}. $\theta$ is a vector with the factors determining the percentage of the artifact signal to subtract from the raw signal. 
 
 The original approach of OACL is to obtain the $\theta$ parameter by training a binary logistic regression classifier with a modified hypothesis function. In this hypothesis function, the latent variable is derived from the power of the raw signal. Instead, we consider $\theta$ parameters as hyperparameters to the ocular artifact detection, which means that we can find the values for $\theta$ by optimizing them through the Bayesian optimization algorithm. In short, this means that we find the corrected signals for one subject as
 \begin{align}\label{eq:corrected-signals}
