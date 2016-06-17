@@ -87,6 +87,13 @@ def extract_trials_two(matrix, trials):
     return transpose(new_matrix), [int(x) * TRIAL_LENGTH for x in range(0, num_trials)]
 
 
+def extract_real_trials(matrix, trials):
+    new_matrix = []
+    num_trials = len(trials)
+    for trial in trials:
+        new_matrix.append(matrix[0:len(matrix), trial+TRIAL_BEGINNING:trial+JUMP])
+    return new_matrix
+
 def d3_matrix_creator(matrix, num_trials):
     """
     :param matrix: 2d matrix

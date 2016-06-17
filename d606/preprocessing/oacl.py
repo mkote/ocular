@@ -11,7 +11,6 @@ from numpy.random import rand, uniform
 from multiprocessing import Pool, Array, cpu_count
 from ctypes import c_float, c_int
 from itertools import product
-from eval.timing import timed_block
 from bisect import bisect_left
 
 
@@ -419,9 +418,8 @@ def clean_signal(data, thetas, params):
     channels, trials, labels, artifacts = data
     cleaned_signal = []
     for channel, theta in zip(channels, thetas):
-        with timed_block('Cleaning signal '):
-            artifacts_signals = find_artifact_signals(channel, m, range_list)
-            cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
+        artifacts_signals = find_artifact_signals(channel, m, range_list)
+        cleaned_signal.append(remove_ocular_artifacts(channel, theta, artifacts_signals))
     return cleaned_signal
 
 

@@ -5,7 +5,6 @@ import filehandler
 import numpy as np
 from skll import metrics
 from sklearn.ensemble import RandomForestClassifier
-from eval.timing import timed_block
 from featureselection.mnecsp import csp_one_vs_all
 from preprocessing.dataextractor import load_data, restructure_data, separate_eog_eeg, d3_matrix_creator
 from preprocessing.filter import Filter
@@ -60,9 +59,8 @@ def run_oacl(subject, runs, oacl_ranges, m):
     # Check whether the data is already present as serialized data
     # If not run OACL and serialize, else load data from file
     if filehandler.file_is_present('runs' + filename_suffix) is False:
-        with timed_block('Iteration '):
-            runs, train_oacl = remake_trial(runs, m=m, oacl_ranges=oacl_ranges)
-            thetas = train_oacl.trial_thetas
+        runs, train_oacl = remake_trial(runs, m=m, oacl_ranges=oacl_ranges)
+        thetas = train_oacl.trial_thetas
 
         # Save data, could be a method instead
         filehandler.save_data(runs, 'runs' + filename_suffix)

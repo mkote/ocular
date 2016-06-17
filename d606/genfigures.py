@@ -4,6 +4,22 @@ from preprocessing.oacl import moving_avg_filter, find_relative_heights, find_pe
 from preprocessing.dataextractor import load_data
 import numpy as np
 
+
+def get_layer(val):
+    if val in [0]:
+        return 0
+    elif val in range(1, 6):
+        return 1
+    elif val in range(6, 13):
+        return 2
+    elif val in range(13, 18):
+        return 3
+    elif val in range(18, 21):
+        return 4
+    elif val in [21]:
+        return 5
+
+
 def plot_example1():
     # load the data.
     eeg_data = load_data(1, 'T')
@@ -30,6 +46,8 @@ def plot_example1():
         smt = []
 
         for k, e in enumerate(chns):
+            layer = get_layer(k)
+            rng = (3-layer*0.27, 7-layer*0.27)
             filtered = moving_avg_filter(e, m)
             padding = [0]*(m/2)
             padded_fsignal= list(padding)
@@ -37,7 +55,7 @@ def plot_example1():
             padded_fsignal.extend(padding)
             smt.append(padded_fsignal)
             rh, zero_indexes = find_relative_heights(filtered)
-            ti = find_peak_indexes(rh, (3, 7))
+            ti = find_peak_indexes(rh, rng)
 
             artifacts = list(padding)
             a = find_artifact_signal(ti, filtered, zero_indexes)
@@ -70,4 +88,6 @@ def plot_example1():
         # plt.savefig('oacl-signal9'+str(run)+str(j)+'.png', format='png', dpi=300)
         plt.close()
 
-plot_example1()
+
+if __name__ == '__main__':
+    plot_example1()

@@ -1,7 +1,6 @@
 import ast
 import os
 import main
-from eval.timing import timed_block
 
 band_sample = [[[8, 12], [12, 16], [16, 20], [20, 24]]]
 band_sample += [[8, 12], [12, 16], [16, 20], [20, 24], [24, 28]]
@@ -17,8 +16,7 @@ def branin(n_comp, c, kernel, band_list, oacl_ranges, m):
     if 'd606' not in old_path:
         os.chdir('../../../d606')
 
-    with timed_block('Iteration '):
-        result = main.main(n_comp, c, kernel, band_list, oacl_ranges, m)
+    result = main.main(n_comp, c, kernel, band_list, oacl_ranges, m)
 
     os.chdir(old_path)
 

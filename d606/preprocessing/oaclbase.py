@@ -2,7 +2,6 @@ from sklearn.base import TransformerMixin
 from preprocessing.oacl import estimate_theta, clean_signal, clean_signal_multiproc, special_purpose_estimator
 from multiprocessing import Queue, Process
 from numpy import array, median
-from eval.timing import timed_block
 
 
 class OACL(TransformerMixin):
@@ -28,8 +27,7 @@ class OACL(TransformerMixin):
         else:
             returned = []
             thetas = []
-            with timed_block("Time took: "):
-                returned = special_purpose_estimator(x, self.get_params())
+            returned = special_purpose_estimator(x, self.get_params())
 
             returned = sorted(returned, key=lambda theta: theta[0])
             thetas = [[] for z in range(0, len(x))]

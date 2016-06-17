@@ -2,15 +2,15 @@
   "s" : {
     "name":"s",
     "type":"int",
-    "min":2,
-    "max":10,
+    "min":3,
+    "max":5,
     "size":1
-  },
+},
   "r" : {
   "name":"r",
   "type":"int",
-  "min":1,
-  "max":30,
+  "min":2,
+  "max":5,
   "size":1
 },
   "m" : {
@@ -20,158 +20,11 @@
   "max":8,
   "size":1
 },
-  "c1" : {
-  "name":"c1",
+  "k" : {
+  "name":"k",
   "type":"float",
   "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c2" : {
-  "name":"c2",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c3" : {
-  "name":"c3",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c4" : {
-  "name":"c4",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c5" : {
-  "name":"c5",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c6" : {
-  "name":"c6",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c7" : {
-  "name":"c7",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c8" : {
-  "name":"c8",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c9" : {
-  "name":"c9",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c10" : {
-  "name":"c10",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c11" : {
-  "name":"c11",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c12" : {
-  "name":"c12",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c13" : {
-  "name":"c13",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c14" : {
-  "name":"c14",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c15" : {
-  "name":"c15",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c16" : {
-  "name":"c16",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c17" : {
-  "name":"c17",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c18" : {
-  "name":"c18",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c19" : {
-  "name":"c19",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c20" : {
-  "name":"c20",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c21" : {
-  "name":"c21",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
-  "size":1
-},
-  "c22" : {
-  "name":"c22",
-  "type":"float",
-  "min":0.0,
-  "max":1.0,
+  "max":0.5,
   "size":1
 }
 }
